@@ -43,8 +43,6 @@ class vector : public vector_dense<Coeff_Field>
         Coeff_Field  read(Integer j) const;  // read_data
         Coeff_Field& set(Integer j);
         Integer dim() const;
-        void read_hb(char* filename, Integer k);
-        void read_hb(std::string filename, Integer k);
         void resize(Integer newsize, Coeff_Field d);
         void resize_without_initialization(Integer newsize);
         void set_all(Coeff_Field t);
@@ -67,8 +65,6 @@ class matrix : public matrix_sparse<Coeff_Field>
         Integer columns() const;
         Integer non_zeroes() const;        // returns the number of non-zeroes of *this. i.e. the reserved memory.
         Integer actual_non_zeroes() const; // returns the actual number of non-zeroes, i.e. the used memory.
-        void read_hb(char* filename); // makes a sparse column matrix out of a Harwell-Boeing file; only use for Real data; implementation for complex data still needed.
-        void read_hb(std::string filename); // makes a sparse column matrix out of a Harwell-Boeing file; only use for Real data; implementation for complex data still needed.
         void print_info() const;
         void print_all() const;
 };
@@ -119,11 +115,6 @@ bool solve_with_multilevel_preconditioner(orientation_type O, const std::vector<
           const std::vector<Coeff_Field>& b_vec, const std::vector<Coeff_Field>& x_exact_vec, std::vector<Coeff_Field>& x_vec, bool exact_solution_known,
           Real& eps_rel_residual, Real& abs_residual, Integer& max_iter_iterations_used, Real& abs_error,
           std::string directory, std::string matrix_name, const iluplusplus_precond_parameter &IP, bool detailed_output = false, std::string directory_data = "");
-
-void test_multilevel_preconditioner(iluplusplus_precond_parameter &IP,
-        std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        std::string directory, bool use_exact_rhs_if_available, bool write_detailed_output = false, std::string output_directory = "");
 }  // end namespace iluplusplus
 
 #endif

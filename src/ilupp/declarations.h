@@ -45,7 +45,7 @@ namespace iluplusplus {
 //**************************************************************************************//
 
 typedef double Real;                                     // will be used for those quantities that are always Real (e.g. norms)
-typedef int Integer;                                     // for integers, particularly indices; changing this will also require adjustments by hand in iohb.h / iohb.c
+typedef int Integer;                                     // for integers, particularly indices
 typedef std::complex<Real> Complex;                      // declarations for complex numbers. Will only be used if set below for the Coeff_Field.
 #ifndef ILUPLUSPLUS_USES_COMPLEX
     typedef Real Coeff_Field;                            // will be used for the coefficients of vectors and matrices

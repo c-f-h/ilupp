@@ -47,10 +47,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-    bool test_without_preconditioner_with_hb_matrix(std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-                Real eps, Integer max_iter, Real& time, std::string directory, bool use_exact_rhs_if_available);
-
-template <class T, class matrix_type, class vector_type>
     bool test_without_preconditioner_with_random_matrix(Integer dim, Integer min_nnz, Integer max_nnz, Real eps, Integer max_iter, Real& time, std::string directory);
 
 
@@ -76,12 +72,6 @@ template <class T, class matrix_type, class vector_type>
     void test_multilevel_preconditioner(iluplusplus_precond_parameter &IP, const matrix_type& A, const vector_type& b,
         Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
         Real& time, std::string directory, std::string matrix_name, bool write_detailed_output = false, std::string output_directory = "");
-
-template <class T, class matrix_type, class vector_type>
-    void test_multilevel_preconditioner_with_hb_matrix(iluplusplus_precond_parameter &IP,
-        std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        Real& time, std::string directory, bool use_exact_rhs_if_available, bool write_detailed_output = false, std::string output_directory = "");
 
 template <class T, class matrix_type, class vector_type>
     void test_multilevel_preconditioner_with_random_matrix(iluplusplus_precond_parameter &IP,

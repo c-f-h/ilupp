@@ -26,8 +26,7 @@ ext_modules = [
     Extension(
         'ilupp',
         ['src/binding.cpp',
-         'src/ilupp/iluplusplus_interface.cpp',
-         'src/ilupp/iohb.cpp'],
+         'src/ilupp/iluplusplus_interface.cpp'],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),

@@ -149,9 +149,6 @@ template<class T> class vector_dense
         // vector_dense-valued operators
            void switch_entry (Integer i, Integer j); // switches elements having indices i and j respectively.
            void switch_entry (Integer i, Integer j, T& h);   // same as above, only quicker because auxiliary variable h is already provided.
-       // reading
-           void read_hb(char* filename, Integer k);
-           void read_hb(std::string filename, Integer k);
        // writing to file:
            void write(std::string filename) const;
            void append(std::string filename) const;
@@ -465,15 +462,12 @@ template<class T> class matrix_sparse
            void read_binary(std::string filename);
            void write_mtx(std::string filename) const;  // matlab format
            void write_binary(std::string filename) const;
-           void read_hb(char* filename); // makes a sparse column matrix out of a Harwell-Boeing file; only use for Real data; implementation for complex data still needed.
-           void read_hb(std::string filename); // makes a sparse column matrix out of a Harwell-Boeing file; only use for Real data; implementation for complex data still needed.
            // A random matrix having  at least min_nnz, at most max_nnz elements per row/column (depending on orientation)
            void random(Integer m, Integer n, orientation_type O, Integer min_nnz, Integer max_nnz);
            // A matrix of the form diag(1,...,1,0,...,0), Eigenvalue 1 has multiplicity EV1 is perturbed by a random matrix having Frobenius-Norm < eps, at least min_nnz, at most max_nnz elements per row/column (depending on orientation)
            void random_perturbed_projection_matrix(Integer n, Integer EV1, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps);
            // same as matrix_dense:
            void random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity);
-           void write_hb(std::string filename, std::string title, std::string key) const; //only use for Real data; implementation for complex data still needed.
            void extract(const matrix_sparse<T> &A, Integer m, Integer n); // *this will contain the rows/columns m to m+n-1 of A - determined by orientation.
         // Testing
            bool check_consistency() const;

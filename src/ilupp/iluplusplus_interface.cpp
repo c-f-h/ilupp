@@ -80,26 +80,6 @@ Coeff_Field& vector::set(Integer j) {return vector_dense<Coeff_Field>::set(j);}
 
 Integer vector::dim() const {return vector_dense<Coeff_Field>::dimension();}
 
-void vector::read_hb(char* filename, Integer k) {
-    try {
-        vector_dense<Coeff_Field>::read_hb(filename,k);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector::read_hb: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
-void vector::read_hb(std::string filename, Integer k) {
-    try {
-        vector_dense<Coeff_Field>::read_hb(filename,k);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector::read_hb: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
 void vector::resize(Integer newsize, Coeff_Field d) {
     try {
         vector_dense<Coeff_Field>::resize(newsize,d);
@@ -202,26 +182,6 @@ Integer matrix::columns() const {return matrix_sparse<Coeff_Field>::columns();}
 Integer matrix::non_zeroes() const {return matrix_sparse<Coeff_Field>::non_zeroes();}
 
 Integer matrix::actual_non_zeroes() const {return matrix_sparse<Coeff_Field>::actual_non_zeroes();}
-
-void matrix::read_hb(char* filename) {
-    try {
-       matrix_sparse<Coeff_Field>::read_hb(filename);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix::read_hb: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
-void matrix::read_hb(std::string filename) {
-    try {
-        matrix_sparse<Coeff_Field>::read_hb(filename);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix::read_hb: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
 
 void matrix::print_info() const {matrix_sparse<Coeff_Field>::print_info();}
 
@@ -418,20 +378,6 @@ bool solve_with_multilevel_preconditioner(orientation_type O, const std::vector<
     }
 }
 
-
-void test_multilevel_preconditioner(iluplusplus_precond_parameter &IP,
-        std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        std::string directory, bool use_exact_rhs_if_available, bool write_detailed_output, std::string output_directory){
-    try {
-       Real time = 0.0;
-       test_multilevel_preconditioner_with_hb_matrix<Coeff_Field,matrix,vector>(IP,matrix_directory,matrix_name,matrix_suffix,begin_threshold,end_threshold,testnumber,eps,max_iter,time,directory,use_exact_rhs_if_available,write_detailed_output,output_directory);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"test_multilevel_preconditioner: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
 
 bool BiCGstab(const multilevel_preconditioner& P, const matrix& A, const vector& b, vector& x, Integer min_iter,
            Integer& max_iter_iterations_used,Real& eps_rel_residual, Real& abs_residual){

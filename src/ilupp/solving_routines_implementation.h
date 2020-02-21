@@ -239,31 +239,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-    bool test_without_preconditioner_with_hb_matrix(std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-                Real eps, Integer max_iter, Real& time, std::string directory, bool use_exact_rhs_if_available)
-{
-    try {
-        bool success;
-        matrix_type A;
-        A.read_hb(matrix_directory+matrix_name+matrix_suffix);
-        if(non_fatal_error(!A.square_check(),"test_without_preconditioner_with_hb_matrix: Argument needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        vector_type b;
-        if(use_exact_rhs_if_available) b.read_hb(matrix_directory+matrix_name+matrix_suffix,1);
-        bool have_rhs = (b.dimension()>0);
-        if (!have_rhs){
-            success = test_without_preconditioner<T,matrix_type,vector_type>(A,eps,max_iter,time,directory,matrix_name);
-        } else {
-            success = test_without_preconditioner<T,matrix_type,vector_type>(A,b,eps,max_iter,time,directory,matrix_name);
-        }
-        return success;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"test_without_preconditioner_with_matrix: "<<ippe.error_message()<<". Returning."<<std::endl;
-        return false;
-    }
-  }
-
-template <class T, class matrix_type, class vector_type>
     bool test_without_preconditioner_with_random_matrix(Integer dim, Integer min_nnz, Integer max_nnz, Real eps, Integer max_iter, Real& time, std::string directory)
 {
     try {
@@ -449,32 +424,6 @@ template <class T, class matrix_type, class vector_type>
     }
 }
 
-
-
-template <class T, class matrix_type, class vector_type>
-    void test_multilevel_preconditioner_with_hb_matrix(iluplusplus_precond_parameter &IP,
-                std::string matrix_directory, std::string matrix_name, std::string matrix_suffix,
-                Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-                Real& time, std::string directory, bool use_exact_rhs_if_available, bool write_detailed_output, std::string output_directory)
-{
-    try {
-        matrix_type A;
-        A.read_hb(matrix_directory+matrix_name+matrix_suffix);
-        if(non_fatal_error(!A.square_check(),"test_multilevel_preconditioner: Argument needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        vector_type b;
-        if(use_exact_rhs_if_available) b.read_hb(matrix_directory+matrix_name+matrix_suffix,1);
-        bool have_rhs = (b.dimension()>0);
-        if (!have_rhs){
-            test_multilevel_preconditioner<T,matrix_type,vector_type>(IP,A,begin_threshold,end_threshold,testnumber,eps,max_iter,time,directory,matrix_name,write_detailed_output,output_directory);
-        } else {
-            test_multilevel_preconditioner<T,matrix_type,vector_type>(IP,A,b,begin_threshold,end_threshold,testnumber,eps,max_iter,time,directory,matrix_name,write_detailed_output,output_directory);
-        }
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"test_multilevel_preconditioner_with_hb_matrix: "<<ippe.error_message()<<". Returning."<<std::endl;
-        return;
-    }
-  }
 
 template <class T, class matrix_type, class vector_type>
     void test_multilevel_preconditioner_with_random_matrix(iluplusplus_precond_parameter &IP,
