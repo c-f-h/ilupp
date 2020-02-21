@@ -18,10 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #ifndef SOLVING_ROUTINES_H
 #define SOLVING_ROUTINES_H
-
 
 namespace iluplusplus {
 
@@ -38,20 +36,7 @@ template <class T, class matrix_type, class vector_type>
                   Real& eps_rel_residual, Real& abs_residual, Integer& max_iter_iterations_used, Real& abs_error,
                   Real& time, std::string directory, std::string matrix_name);
 
-template <class T, class matrix_type, class vector_type>
-    bool test_without_preconditioner(const matrix_type& A, const vector_type& b,Real eps, Integer max_iter, Real& time, std::string directory, std::string matrix_name);
-
-
-template <class T, class matrix_type, class vector_type>
-    bool test_without_preconditioner(const matrix_type& A, Real eps, Integer max_iter,Real& time, std::string directory, std::string matrix_name);
-
-
-template <class T, class matrix_type, class vector_type>
-    bool test_without_preconditioner_with_random_matrix(Integer dim, Integer min_nnz, Integer max_nnz, Real eps, Integer max_iter, Real& time, std::string directory);
-
-
 // ***************************************** //
-
 
 template <class T, class matrix_type, class vector_type>
     bool solve_with_multilevel_preconditioner(const matrix_type& A, const vector_type& b, const vector_type& x_exact, vector_type& x, bool exact_solution_known,
@@ -63,25 +48,6 @@ template <class T, class matrix_type, class vector_type>
                   Real& eps_rel_residual, Real& abs_residual, Integer& max_iter_iterations_used, Real& abs_error,
                   Real& time, std::string directory, std::string matrix_name, std::string output_directory, const iluplusplus_precond_parameter &IP);
 
-template <class T, class matrix_type, class vector_type>
-    void test_multilevel_preconditioner(iluplusplus_precond_parameter &IP, const matrix_type& A,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        Real& time, std::string directory, std::string matrix_name, bool write_detailed_output = false, std::string output_directory = "");
-
-template <class T, class matrix_type, class vector_type>
-    void test_multilevel_preconditioner(iluplusplus_precond_parameter &IP, const matrix_type& A, const vector_type& b,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        Real& time, std::string directory, std::string matrix_name, bool write_detailed_output = false, std::string output_directory = "");
-
-template <class T, class matrix_type, class vector_type>
-    void test_multilevel_preconditioner_with_random_matrix(iluplusplus_precond_parameter &IP,
-        Integer dim, Integer min_nnz, Integer max_nnz,
-        Real begin_threshold, Real end_threshold, Integer testnumber, Real eps, Integer max_iter,
-        Real& time, std::string directory, bool write_detailed_output = false, std::string output_directory = "");
-
-
 } // end namespace iluplusplus
-
-
 
 #endif

@@ -767,7 +767,7 @@ template <class T> void vector_dense<T>::sort(index_list& list, Integer left, In
          if(right<=left+1){
              if(right==left+1 && data[right]<data[left]){
                  switch_entry(left,right,help);
-                 list.switch_index(left,right,h);  
+                 list.switch_index(left,right,h);
              }  // end if
              break;
          } else {
@@ -946,7 +946,7 @@ template<class T> void vector_dense<T>::insert_at_end(const vector_dense<T>& v){
     #endif
     Integer k;
     Integer offset = dimension() - v.dimension();
-    for(k=0;k<v.dimension();k++) set(k+offset) = v.get(k); 
+    for(k=0;k<v.dimension();k++) set(k+offset) = v.get(k);
 }
 
 template<class T> void vector_dense<T>::insert(const vector_dense<T>& b, Integer position, T value){
@@ -972,7 +972,7 @@ template<class T> void vector_dense<T>::permute(const vector_dense<T>& x, const 
             if(non_fatal_error((x.size!= perm.dim()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         #endif
         erase_resize_data_field(x.size);
-        for(Integer k=0;k<size;k++) set(k) = x.get(perm.get(k)); 
+        for(Integer k=0;k<size;k++) set(k) = x.get(perm.get(k));
     }
     catch(iluplusplus_error ippe){
         std::cerr<<"vector_dense<T>::permute: "<<ippe.error_message()<<std::endl;
@@ -12790,7 +12790,7 @@ template<class T> Real matrix_sparse<T>::test_diag_dominance() const {
          maximum = max(maximum,current);
          minimum = min(minimum,current);
      }
-     std::cout<<"test_diag_dominance: "<<std::endl; 
+     std::cout<<"test_diag_dominance: "<<std::endl;
      std::cout<<"    worst-case: "<<maximum<<std::endl;
      std::cout<<"    average:    "<<sum/(pointer_size-1)<<std::endl;
      std::cout<<"    best-case: "<<minimum<<std::endl<<std::endl;
@@ -13067,7 +13067,7 @@ template<class T> void matrix_dense<T>::generic_matrix_transpose_vector_multipli
 
 template<class T> void matrix_dense<T>::generic_matrix_matrix_multiplication_addition(const matrix_dense<T>& A, const matrix_dense<T>& B) {
      for(Integer i=0;i<number_columns;i++)
-         for(Integer j=0;j<number_rows;j++) 
+         for(Integer j=0;j<number_rows;j++)
              for(Integer k=0; k<A.number_columns; k++) data[i][j] += A.data[i][k] * B.data[k][j];
   }
 
@@ -13357,7 +13357,7 @@ template<class T> void matrix_dense<T>::resize(Integer m, Integer n){
     Integer i;
     if(m != number_rows || n != number_columns){
         if(data != 0){
-            for(i=0;i<number_rows;i++) 
+            for(i=0;i<number_rows;i++)
                 if (data[i] != 0){
                     delete[] data[i];
                     data[i] = 0;
@@ -13955,7 +13955,7 @@ template<class T> void matrix_dense<T>::GaussJordan(const vector_dense<T> &b, ve
 
 template<class T> bool matrix_dense<T>::solve(const vector_dense<T> &b, vector_dense<T> &x) const {
   try {
-    Gauss(b,x); 
+    Gauss(b,x);
     return true;
   }
   catch(iluplusplus_error ippe){
@@ -14188,7 +14188,7 @@ index_list::index_list(Integer m, Integer n){
      #ifdef DEBUG
          if(m>n){
              std::cerr<<"index_list::index_list: size must be larger than reserved memory. Correcting this."<<std::endl;
-             n=m;  
+             n=m;
         }
      #endif
      size = 0; reserved_memory = 0; indices = 0;
@@ -14367,7 +14367,7 @@ Integer& index_list::operator[](Integer j){
              std::cerr<<"complete list"<<std::endl;
              std::cerr<<*this;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }  
+         }
      #endif
      return indices[j];
   }
@@ -14380,7 +14380,7 @@ const Integer& index_list::operator[](Integer j) const {
              std::cerr<<"complete list"<<std::endl;
              std::cerr<<*this;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }  
+         }
      #endif
      return indices[j];
   }
@@ -14537,7 +14537,7 @@ void index_list::permute(const index_list& x, const index_list& perm){
         if(non_fatal_error((x.dim()!= perm.dim()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     #endif
     resize_without_initialization(x.size);
-    for(Integer k=0;k<dim();k++) set(k) = x.get(perm.get(k)); 
+    for(Integer k=0;k<dim();k++) set(k) = x.get(perm.get(k));
   }
   catch(iluplusplus_error ippe){
      std::cerr<<"index_list::permute: "<<ippe.error_message()<<std::endl;
@@ -14728,7 +14728,7 @@ Integer index_list::equality(const index_list& v, Integer from, Integer to) cons
          }
          if(from < 0 || to > size){
              std::cerr<<"index_list::equality: range exceeds indices. Returning -1."<<std::endl;
-             return (Integer) -1;     
+             return (Integer) -1;
          }
      #endif
      Integer counter = 0;
@@ -14753,7 +14753,7 @@ Real index_list::relative_equality(const index_list& v, Integer from, Integer to
         #ifdef DEBUG
             if(to <= from){
                 std::cerr<<"index_list::relative_equality: range is empty. Returning -1."<<std::endl;
-                return (Real) -1.0;     
+                return (Real) -1.0;
             }
         #endif
         return (Real) equality(v,from,to) / (Real) (to-from);
@@ -14848,7 +14848,7 @@ void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, Int
     // distribute P_k
     while(h!=-1){
         i=h;
-        h=list[i];    
+        h=list[i];
         if(first[i]<pointer[i+1]){
             j=indices[first[i]];
             list[i]=list[j];
@@ -14877,12 +14877,12 @@ void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, arr
         // distribute P_k
         while(h!=-1){
             i=h;
-           h=list[i];    
+           h=list[i];
             if(first[i]<pointer[i+1]){
                 j=indices[first[i]];
                list[i]=list[j];
            list[j]=i;
-            }    
+            }
         }
     }
     catch(iluplusplus_error ippe){
@@ -14911,7 +14911,7 @@ void insert(Integer *list,Integer *head, Integer i, Integer j){
 void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, Integer *list, Integer *head, Integer *first){
     int k;
     for(k=0;k<n;k++) head[k]=-1;
-    for(k=0;k<n;k++){ 
+    for(k=0;k<n;k++){
         first[k]=pointer[k];
         if(pointer[k]<pointer[k+1]) insert(list,head,k,indices[pointer[k]]); // inserting k into P_indices[pointer[k]]
     }
@@ -14921,7 +14921,7 @@ void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indic
     try {
         int k;
         for(k=0;k<n;k++) head[k]=-1;
-        for(k=0;k<n;k++){ 
+        for(k=0;k<n;k++){
             first[k]=pointer[k];
             if(pointer[k]<pointer[k+1]) insert(list,head,k,indices[pointer[k]]); // inserting k into P_indices[pointer[k]]
         }
