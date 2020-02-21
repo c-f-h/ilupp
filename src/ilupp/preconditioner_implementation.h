@@ -2110,9 +2110,9 @@ template <class T, class matrix_type, class vector_type>
           std::cout<<"* Level: "<<k<<std::endl; 
           print_info(k);
       }
-      std::cout<<"    Memory: needed to store precondtioner        (kB) : "<<this->memory()/1000.0<<std::endl;
-      std::cout<<"            needed to calculate precondtione     (kB) : "<<this->memory_used_calculations()/1000.0<<std::endl;
-      std::cout<<"            allocated to calculate precondtioner (kB) : "<<this->memory_allocated_calculations()/1000.0<<std::endl;
+      std::cout<<"    Memory: needed to store preconditioner        (kB): "<<this->memory()/1000.0<<std::endl;
+      std::cout<<"            needed to calculate preconditioner    (kB): "<<this->memory_used_calculations()/1000.0<<std::endl;
+      std::cout<<"            allocated to calculate preconditioner (kB): "<<this->memory_allocated_calculations()/1000.0<<std::endl;
       std::cout<<"    Non-zero elements in factors of preconditioner    : "<<this->total_nnz()<<std::endl;
   }
 
