@@ -95,7 +95,6 @@ py::array_t<Real> solve(py::buffer A_data, py::buffer A_indices, py::buffer A_in
             rel_tol, abs_tol, max_iter, abs_error,
             "", "", param);
 
-    std::cout << "Used " << max_iter << " iterations.\n";
     if (success) {
         return result;
     } else {
