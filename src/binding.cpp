@@ -40,6 +40,8 @@ py::array_t<Real> solve(py::buffer A_data, py::buffer A_indices, py::buffer A_in
         throw std::runtime_error("matrix has size 0!");
     if (nnz != A_data_info.shape[0])
         throw std::runtime_error("indices and data should have the same size!");
+    if (n != rhs_info.shape[0])
+        throw std::runtime_error("right-hand side has wrong size!");
 
     //iluplusplus_precond_parameter param;
     //param.default_configuration(10);
