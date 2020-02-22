@@ -7,6 +7,13 @@ import setuptools
 
 __version__ = '0.0.1'
 
+def readme():
+    with open(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'README'
+            ), encoding='utf8') as fp:
+        return fp.read()
+
 class get_pybind_include(object):
     """Helper class to determine the pybind11 include path
 
@@ -104,8 +111,15 @@ setup(
     author = 'Clemens Hofreither',
     author_email = 'chofreither@gmail.com',
     url = 'https://github.com/c-f-h/ilupp',
-    description = 'Python bindings for Jan Mayer\'s ILU++ package for incomplete LU factorization',
-    long_description = '',
+    description = "Python bindings for Jan Mayer's ILU++ package for incomplete LU factorization",
+    long_description = readme(),
+    classifiers=[
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+    ],
     ext_modules = ext_modules,
     install_requires = [],
     setup_requires = ['pybind11>=2.4'],
