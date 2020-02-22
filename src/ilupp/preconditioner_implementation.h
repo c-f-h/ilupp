@@ -2095,11 +2095,11 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
   void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::print_info(Integer k) const {
-      std::cout<<"The left matrix of chosen level:"<<std::endl;
+      std::cout<<" left matrix at level " << k << ":\n";
       Precond_left.get(k).print_info();
-      std::cout<<"The right matrix of chosen level:"<<std::endl;
+      std::cout<<" right matrix at level " << k << ":\n";
       Precond_right.get(k).print_info();
-      std::cout<<"The middle matrix of chosen level:"<<std::endl;
+      std::cout<<" middle matrix at level " << k << ":\n";
       Precond_middle.get(k).print_info();
             }
 
@@ -2110,6 +2110,7 @@ template <class T, class matrix_type, class vector_type>
           std::cout<<"* Level: "<<k<<std::endl; 
           print_info(k);
       }
+      std::cout<<"\n";
       std::cout<<"    Memory: needed to store preconditioner        (kB): "<<this->memory()/1000.0<<std::endl;
       std::cout<<"            needed to calculate preconditioner    (kB): "<<this->memory_used_calculations()/1000.0<<std::endl;
       std::cout<<"            allocated to calculate preconditioner (kB): "<<this->memory_allocated_calculations()/1000.0<<std::endl;
