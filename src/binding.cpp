@@ -61,11 +61,6 @@ py::array_t<Real> solve(py::buffer A_data, py::buffer A_indices, py::buffer A_in
     if (n != rhs_info.shape[0])
         throw std::runtime_error("right-hand side has wrong size!");
 
-    //iluplusplus_precond_parameter param;
-    //param.default_configuration(10);
-    //param.set_MEM_FACTOR(5.0);
-    //param.set_threshold(1.0);
-
     Real rel_tol   = -std::log10(rtol);  // actual tolerance is 10^{-rel_tol}
     Real abs_tol   = -std::log10(atol);  // actual tolerance is 10^{-abs_tol}
     Real abs_error = 0;
