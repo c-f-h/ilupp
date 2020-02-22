@@ -111,6 +111,50 @@ PYBIND11_MODULE(ilupp, m)
 
     m.def("solve", &solve, "Solve a linear system using ILU");
 
+    py::class_<multilevel_preconditioner>(m, "multilevel_preconditioner")
+        .def(py::init<>())
+        .def("setup",
+            [](multilevel_preconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, iluplusplus_precond_parameter param)
+            {
+                py::buffer_info A_data_info = A_data.request();
+                check_is_1D_contiguous_array<Real>(A_data_info, "A_data");
+                py::buffer_info A_indices_info = A_indices.request();
+                check_is_1D_contiguous_array<Integer>(A_indices_info, "A_indices");
+                py::buffer_info A_indptr_info = A_indptr.request();
+                check_is_1D_contiguous_array<Integer>(A_indptr_info, "A_indptr");
+
+                Integer nnz = A_indices_info.shape[0];
+                Integer n = A_indptr_info.shape[0] - 1;
+
+                if (A_indptr_info.shape[0] <= 1)
+                    throw std::runtime_error("matrix has size 0!");
+                if (nnz != A_data_info.shape[0])
+                    throw std::runtime_error("indices and data should have the same size!");
+
+                pr.setup((Real*)A_data_info.ptr, (Integer*)A_indices_info.ptr, (Integer*)A_indptr_info.ptr,
+                    n, nnz, is_csr ? ROW : COLUMN, param);
+            }
+        )
+        .def("apply",
+            [](const multilevel_preconditioner& pr, py::buffer x)
+            {
+                py::buffer_info x_info = x.request();
+                check_is_1D_contiguous_array<Real>(x_info, "x");
+                if (x_info.shape[0] != pr.dim())
+                    throw std::runtime_error("vector has wrong size for preconditioner!");
+                pr.apply_preconditioner((Real*)x_info.ptr, x_info.shape[0]);
+            }
+        )
+        .def_property_readonly("memory_used_calculations", &multilevel_preconditioner::memory_used_calculations)
+        .def_property_readonly("memory_allocated_calculations", &multilevel_preconditioner::memory_allocated_calculations)
+        .def_property_readonly("memory", &multilevel_preconditioner::memory)
+        .def_property_readonly("exists", &multilevel_preconditioner::exists)
+        .def_property_readonly("special_info", &multilevel_preconditioner::special_info)
+        .def_property_readonly("total_nnz", &multilevel_preconditioner::total_nnz)
+        .def("print_info", &multilevel_preconditioner::print_info)
+        .def_property_readonly("dim", &multilevel_preconditioner::dim)
+    ;
+
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
         .def(py::init<>())
         .def("default_configuration", &iluplusplus_precond_parameter::default_configuration)
