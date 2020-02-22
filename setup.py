@@ -1,6 +1,7 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
+import os
 import setuptools
 
 # setup.py adapted from the pybind11 python_example by Sylvain Corlay
@@ -31,7 +32,7 @@ class get_pybind_include(object):
 
 ext_modules = [
     Extension(
-        'ilupp',
+        'ilupp._ilupp',
         ['src/binding.cpp',
          'src/ilupp/iluplusplus_interface.cpp'],
         include_dirs=[
@@ -121,6 +122,7 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     ],
     ext_modules = ext_modules,
+    packages = ['ilupp'],
     install_requires = [],
     setup_requires = ['pybind11>=2.4'],
     cmdclass = {'build_ext': BuildExt},

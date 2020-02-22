@@ -39,7 +39,8 @@ void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
         throw std::runtime_error("Expected contiguous array for " + name + "!");
 }
 
-py::array_t<Real> solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
+std::tuple<py::array_t<Real>, Integer, Real, Real>
+solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
         py::buffer rhs, double rtol, double atol, int max_iter, iluplusplus_precond_parameter param)
 {
     py::buffer_info A_data_info = A_data.request();
@@ -111,13 +112,13 @@ py::array_t<Real> solve(py::buffer A_data, py::buffer A_indices, py::buffer A_in
             "", "", param);
 
     if (success) {
-        return result;
+        return std::make_tuple(result, max_iter, std::pow(10.0, -rel_tol), std::pow(10.0, -abs_tol));
     } else {
         throw std::runtime_error("did not converge");
     }
 }
 
-PYBIND11_MODULE(ilupp, m)
+PYBIND11_MODULE(_ilupp, m)
 {
     // optional module docstring
     m.doc() = "ILU++ library for incomplete LU factorization";
