@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+before_install:
+  - pip install -U --only-binary=numpy,scipy numpy scipy pybind11
+install:
+  - python setup.py install
+  - python setup.py build_ext -i   # for tests
+script:
+  nosetests --verbosity=2
+
+notifications:
+  email: false
