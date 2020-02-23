@@ -1847,81 +1847,29 @@ void quicksort(index_list& v, const index_list& permutation, Integer left, Integ
 
 
 template<class T> vector_sparse_dynamic<T>::vector_sparse_dynamic(){
-    size=0; nnz=0; data=0; occupancy=0; pointer=0;
+    size=0; nnz=0;
   }
 
 template<class T> void vector_sparse_dynamic<T>::erase_resize_data_fields(Integer m) {
-  try {
-    if(size != m){
+    if(size != m) {
         nnz = 0;
-        if(data !=0){      delete [] data;       data = 0;}
-        if(occupancy !=0){ delete [] occupancy;  occupancy = 0;}
-        if(pointer !=0){   delete [] pointer;    pointer = 0;}
-        if(m>0){
-             data   = new T[m];
-             occupancy = new  Integer[m];
-             pointer = new Integer[m];
-        } else {
-            data=0; occupancy=0; pointer=0;
-        }
+        data.resize(m);
+        occupancy.resize(m);
+        pointer.resize(m);
         size = m;
     }
-  }
-  catch(std::bad_alloc){
-      std::cerr<<"vector_sparse_dynamic::erase_resize_data_fields:  Error allocating memory. Returning vector of dimension 0."<<std::endl;
-      if(data !=0)      delete [] data;
-      if(occupancy !=0) delete [] occupancy;
-      if(pointer !=0)   delete [] pointer;
-      size=0; nnz=0; data=0; occupancy=0; pointer=0;
-      throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 template<class T> void vector_sparse_dynamic<T>::resize(Integer m) {
-    try {
-        erase_resize_data_fields(m);
-        zero_set();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic::resize: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-        throw;
-    }
+    erase_resize_data_fields(m);
+    zero_set();
 }
 
 
 template<class T> vector_sparse_dynamic<T>::vector_sparse_dynamic(Integer m) {
-    try {
-        size=0; nnz=0; data=0; occupancy=0; pointer=0;
-        resize(m);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic::vector_sparse_dynamic: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-        throw;
-    }
- }
-
-template<class T> vector_sparse_dynamic<T>::vector_sparse_dynamic(const vector_sparse_dynamic& x) {
-  try {
-    Integer i;
-    size=0; nnz=0; data=0; occupancy=0; pointer=0;
-    erase_resize_data_fields(x.size);
-    size=x.size;
-    nnz=x.nnz;
-    for(i=0;i<nnz;i++) data[i]=x.data[i];
-    for(i=0;i<nnz;i++) pointer[i]=x.pointer[i];
-    //for(i=0;i<nnz;i++) occupancy[pointer[i]]=x.occupancy[pointer[i]];
-    for(i=0;i<size;i++) occupancy[i]=x.occupancy[i];
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic::vector_sparse_dynamic(vector_sparse_dynamic): "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-      throw;
-  }
- }
-
-template<class T> vector_sparse_dynamic<T>::~vector_sparse_dynamic() {
-     if (data != 0) delete[] data; data=0;
-     if (pointer != 0) delete[] pointer; pointer=0;
-     if (occupancy != 0) delete[] occupancy; occupancy=0;
+    size=0;
+    nnz=0;
+    resize(m);
  }
 
 //*************************************************************************************************************************************
@@ -1940,26 +1888,6 @@ template<class T> Integer vector_sparse_dynamic<T>::non_zeroes() const {
     return nnz;
   }
 
-template<class T> vector_sparse_dynamic<T>& vector_sparse_dynamic<T>::operator =(const vector_sparse_dynamic<T>& x){   // Assignment-Operator
-  try {
-    if(this == &x) return *this;
-    erase_resize_data_fields(x.size);
-    Integer i;
-    size=x.size;
-    nnz=x.nnz;
-    for(i=0;i<nnz;i++) data[i]=x.data[i];
-    for(i=0;i<nnz;i++) pointer[i]=x.pointer[i];
-    //for(i=0;i<nnz;i++) occupancy[pointer[i]]=x.occupancy[pointer[i]];
-    for(i=0;i<size;i++) occupancy[i]=x.occupancy[i];
-    return *this;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic::operator = : "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-      size = 0; nnz=0; data = 0; occupancy=0; pointer=0;
-      throw;
-  }
-}
-
 template<class T> T& vector_sparse_dynamic<T>::operator[](Integer j){
      #ifdef DEBUG
         if(j<0 || j>=size){
@@ -1971,7 +1899,7 @@ template<class T> T& vector_sparse_dynamic<T>::operator[](Integer j){
          occupancy[j]=nnz;
          pointer[nnz]=j;
          nnz++;
-         data[occupancy[j]]= (T) 0;
+         data[occupancy[j]] = static_cast<T>(0);
          return data[occupancy[j]];
      } else {
          return data[occupancy[j]];
@@ -2000,7 +1928,7 @@ template<class T> void vector_sparse_dynamic<T>::zero_set(Integer j){
         }
      #endif
      if(occupancy[j]>=0){
-         data[occupancy[j]]=0.0;
+         data[occupancy[j]] = static_cast<T>(0);
          occupancy[j]=-1;
      }
   }
@@ -2061,22 +1989,23 @@ template<class T>  T vector_sparse_dynamic<T>::read(Integer j) const {
             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         }
      #endif
-     if(occupancy[j]<0) return (T) 0;
-     else return data[occupancy[j]];
+     if (occupancy[j] < 0)
+         return static_cast<T>(0);
+     else
+         return data[occupancy[j]];
 }
 
-template<class T> void vector_sparse_dynamic<T>::zero_reset(){
-     Integer i;
-     for(i=0;i<nnz;i++) occupancy[pointer[i]]=-1;
-     nnz=0;
-  }
+template<class T> void vector_sparse_dynamic<T>::zero_reset() {
+    for (Integer i=0; i<nnz; ++i)
+        occupancy[pointer[i]] = -1;
+    nnz = 0;
+}
 
 template<class T> void vector_sparse_dynamic<T>::zero_set(){
-     Integer i;
-     for(i=0;i<size;i++) occupancy[i]=-1;
-     //for(i=0;i<size;i++) data[i]=0.0;
-     nnz=0;
-  }
+    for (Integer i=0; i<size; i++)
+        occupancy[i] = -1;
+    nnz = 0;
+}
 
 
 template<class T> void vector_sparse_dynamic<T>::print_non_zeroes() const {
@@ -2093,27 +2022,27 @@ template<class T> vector_dense<T> vector_sparse_dynamic<T>::expand() const {
 
 template<class T> Real vector_sparse_dynamic<T>::norm1() const {
      Real z=0.0;
-     for(Integer i=0;i<nnz;i++) z += fabs(data[i]);
+     for(Integer i=0;i<nnz;i++) z += std::abs(data[i]);
      return z;
   }
 
 template<class T> Real vector_sparse_dynamic<T>::norm2() const {
      Real z=0.0;
-     for(Integer i=0;i<nnz;i++) z += sqr(fabs(data[i]));
+     for(Integer i=0;i<nnz;i++) z += sqr(std::abs(data[i]));
      return sqrt(z);
   }
 
 
 template<class T> Real vector_sparse_dynamic<T>::norm_max() const {
      Real z=0.0;
-     for(Integer i=0;i<nnz;i++) z=max(fabs(data[i]),z);
+     for(Integer i=0;i<nnz;i++) z=max(std::abs(data[i]),z);
      return z;
   }
 
 template<class T> T vector_sparse_dynamic<T>::abs_max() const {
      Real max=0.0;
      Real z;
-     for(Integer i=0;i<nnz;i++) if(fabs(data[i])>max){max=fabs(data[i]); z=data[i];}
+     for(Integer i=0;i<nnz;i++) if(std::abs(data[i])>max){max=std::abs(data[i]); z=data[i];}
      return z;
   }
 
@@ -2122,8 +2051,8 @@ template<class T> T vector_sparse_dynamic<T>::abs_max(Integer& pos) const {
      Real max = 0.0;
      T z = 0.0;
      for(Integer i=0;i<nnz;i++)
-         if(fabs(data[i])>max){
-             max=fabs(data[i]);
+         if(std::abs(data[i])>max){
+             max=std::abs(data[i]);
              z=data[i]; 
              pos=pointer[i];
      }
@@ -2131,8 +2060,9 @@ template<class T> T vector_sparse_dynamic<T>::abs_max(Integer& pos) const {
   }
 
 
-template<class T> void vector_sparse_dynamic<T>::scale(T d) const {
-     for(Integer i=0;i<nnz;i++) data[i] *= d;
+template<class T> void vector_sparse_dynamic<T>::scale(T d) {
+     for(Integer i=0; i<nnz; i++)
+         data[i] *= d;
   }
 
 template<class T> T vector_sparse_dynamic<T>::operator * (const vector_sparse_dynamic<T>& y) const { // scalar product
@@ -2173,8 +2103,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=fabs(data[i]);
+            if(std::abs(data[i]) > norm*tau){
+                input_abs[number_elements_larger_tau] = std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
             }
@@ -2216,8 +2146,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=fabs(data[i]);
+            if(std::abs(data[i]) > norm*tau){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
             }
@@ -2264,14 +2194,14 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
         if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])>val_larg_el) val_larg_el=fabs(data[i]);
+            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
             norm += absvalue_squared(data[i]);
         }
-        if(val_larg_el*perm_tol>fabs(read(pivot_position))){ // do pivoting
+        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
             norm=sqrt(norm);
             for(i=0;i<nnz;i++){
-                if(fabs(data[i])> norm*tau){
-                    input_abs[number_elements_larger_tau]=fabs(data[i]);
+                if(std::abs(data[i])> norm*tau){
+                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
                     complete_list[number_elements_larger_tau]=pointer[i];
                     number_elements_larger_tau++;
                 }
@@ -2303,8 +2233,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             }
             norm=sqrt(norm);
             for(i=0;i<nnz;i++){
-                if(fabs(data[i])> norm*tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=fabs(data[i]);
+                if(std::abs(data[i])> norm*tau && pointer[i] != pivot_position){
+                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
                     complete_list[number_elements_larger_tau]=pointer[i];
                     number_elements_larger_tau++;
                 }
@@ -2345,13 +2275,13 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
         if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])>val_larg_el) val_larg_el=fabs(data[i]);
+            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
             norm += absvalue_squared(data[i]);
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=fabs(data[i]);
+            if(std::abs(data[i])> norm*tau){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
             }
@@ -2400,13 +2330,13 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
         if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
         if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])>val_larg_el) val_larg_el=fabs(data[i]);
+            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
             norm += absvalue_squared(weights.read(pointer[i])*data[i]);
         }
-        if(val_larg_el*perm_tol>fabs(read(pivot_position))){ // do pivoting
+        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
             norm=sqrt(norm);
             for(i=0;i<nnz;i++){
-                product=fabs(data[i])*weights.read(pointer[i]);
+                product=std::abs(data[i])*weights.read(pointer[i]);
                 if(product> norm*tau){
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
@@ -2439,8 +2369,8 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
             }
             norm=sqrt(norm);
             for(i=0;i<nnz;i++){
-                if(fabs(data[i])*weights.read(pointer[i])> norm*tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=fabs(data[i]);
+                if(std::abs(data[i])*weights.read(pointer[i])> norm*tau && pointer[i] != pivot_position){
+                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
                     complete_list[number_elements_larger_tau]=pointer[i];
                     number_elements_larger_tau++;
                 }
@@ -2482,21 +2412,21 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
         if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
         for(i=0;i<nnz;i++){
-            if(fabs(data[i])>val_larg_el){
-                val_larg_el=fabs(data[i]);
+            if(std::abs(data[i])>val_larg_el){
+                val_larg_el=std::abs(data[i]);
                 pos_larg_el=pointer[i]; // position in *this
             }
             norm += absvalue_squared(data[i]);
         }
-        if(val_larg_el*perm_tol>fabs(read(pivot_position))){ // do pivoting
+        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
             xiplus=1.0+weights.get(pos_larg_el);
             ximinus=-1.0+weights.get(pos_larg_el);
-            if(fabs(xiplus)<fabs(ximinus)) weights[pos_larg_el] = ximinus/read(pos_larg_el);
+            if(std::abs(xiplus)<std::abs(ximinus)) weights[pos_larg_el] = ximinus/read(pos_larg_el);
             else weights[pos_larg_el] = xiplus/read(pos_larg_el);
-            weight=fabs(weights[pos_larg_el]);
+            weight=std::abs(weights[pos_larg_el]);
             for(i=0;i<nnz;i++){
-                product=fabs(data[i]*weight);
-                if(product/fabs(read(pos_larg_el))>tau){
+                product=std::abs(data[i]*weight);
+                if(product/std::abs(read(pos_larg_el))>tau){
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
                     number_elements_larger_tau++;
@@ -2504,7 +2434,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
             }
             if(number_elements_larger_tau==0){
                 for(i=0;i<nnz;i++){
-                    input_abs[i]=fabs(data[i]*weight);
+                    input_abs[i]=std::abs(data[i]*weight);
                     complete_list[i]=pointer[i];
                 }   // end for
                 number_elements_larger_tau=nnz;
@@ -2519,8 +2449,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
                 pos_larg_el=0;
                 val_larg_el=0.0;
                 for(i=0;i<number_elements_larger_tau;i++){
-                    if(fabs(read(complete_list.get(i)))>val_larg_el){
-                        val_larg_el=fabs(read(complete_list.get(i)));
+                    if(std::abs(read(complete_list.get(i)))>val_larg_el){
+                        val_larg_el=std::abs(read(complete_list.get(i)));
                         pos_larg_el=i;                 // position in complete_list
                    }
                 }
@@ -2538,12 +2468,12 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
             }
             xiplus=1.0+weights.get(pivot_position);
             ximinus=-1.0+weights.get(pivot_position);
-            if(fabs(xiplus)<fabs(ximinus)) weights[pivot_position] = ximinus/read(pivot_position);
+            if(std::abs(xiplus)<std::abs(ximinus)) weights[pivot_position] = ximinus/read(pivot_position);
             else weights[pivot_position] = xiplus/read(pivot_position);
             weight=weights[pivot_position];
             for(i=0;i<nnz;i++){
-                if(fabs(data[i]*weight/read(pivot_position)) > tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=fabs(data[i]);
+                if(std::abs(data[i]*weight/read(pivot_position)) > tau && pointer[i] != pivot_position){
+                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
                     complete_list[number_elements_larger_tau]=pointer[i];
                     number_elements_larger_tau++;
                 }
@@ -2589,8 +2519,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(from<=pointer[i] && pointer[i]<to && fabs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=fabs(data[i]);
+            if(from<=pointer[i] && pointer[i]<to && std::abs(data[i])> norm*tau){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
             }
@@ -2636,7 +2566,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            product = weights.read(pointer[i])* fabs(data[i]);
+            product = weights.read(pointer[i])* std::abs(data[i]);
             if(from<=pointer[i] && pointer[i]<to && product > norm*tau){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -2679,7 +2609,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         #endif
         if(IP.get_SUM_DROPPING()){
             for(i=0;i<nnz;i++){
-                 product = weight * fabs(data[i]);
+                 product = weight * std::abs(data[i]);
                  input_abs[i]=product;
                  complete_list[i]=pointer[i];
             }
@@ -2698,7 +2628,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         } // end SUM_DROPPING
         if(IP.get_WEIGHTED_DROPPING()){
             for(i=0;i<nnz;i++){ // mark elements to be kept
-                product = weight * fabs(data[i]);
+                product = weight * std::abs(data[i]);
                 if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
@@ -2744,7 +2674,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         #endif
         if(IP.get_SUM_DROPPING()){
             for(i=0;i<nnz;i++){
-                 product = weight * fabs(data[i]);
+                 product = weight * std::abs(data[i]);
                  input_abs[i]=product;
                  complete_list[i]=pointer[i];
             }
@@ -2767,7 +2697,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         if(IP.get_WEIGHTED_DROPPING()){
             for(i=0;i<nnz;i++){ // mark elements to be kept
                 if(from<=pointer[i] && pointer[i]<to){  // in the proper range
-                    product = weight * fabs(data[i]);
+                    product = weight * std::abs(data[i]);
                     if(product >= tau){  // mark to keep
                         input_abs[number_elements_larger_tau]=product;
                         complete_list[number_elements_larger_tau]=pointer[i];
@@ -2825,8 +2755,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         #endif
         if(IP.get_SUM_DROPPING()){
             for(i=0;i<nnz;i++){
-                 //product = (weight + weights.read(pointer[i])) * fabs(data[i]);
-                 product = max(weight,weights.read(pointer[i])) * fabs(data[i]);
+                 //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+                 product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
                  input_abs[i]=product;
                  complete_list[i]=pointer[i];
             }
@@ -2845,8 +2775,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         } // end SUM_DROPPING
         if(IP.get_WEIGHTED_DROPPING()){
             for(i=0;i<nnz;i++){ // mark elements to be kept
-                //product = (weight + weights.read(pointer[i])) * fabs(data[i]);
-                product = max(weight,weights.read(pointer[i])) * fabs(data[i]);
+                //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+                product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
                 if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
@@ -2895,8 +2825,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         #endif
         if(IP.get_SUM_DROPPING()){
             for(i=0;i<nnz;i++){
-                 //product = (weight + weights.read(pointer[i])) * fabs(data[i]);
-                 product = max(weight,weights.read(pointer[i])) * fabs(data[i]);
+                 //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+                 product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
                  input_abs[i]=product;
                  complete_list[i]=pointer[i];
             }
@@ -2918,8 +2848,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         } // end SUM_DROPPING
         if(IP.get_WEIGHTED_DROPPING()){
             for(i=0;i<nnz;i++){ // mark elements to be kept
-                //product = (weight + weights.read(pointer[i])) * fabs(data[i]);
-                product = max(weight,weights.read(pointer[i])) * fabs(data[i]);
+                //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+                product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
                 if(from<=pointer[i] && pointer[i]<to){ // in right range
                     if(product >= tau){ // mark to keep
                         input_abs[number_elements_larger_tau]=product;
@@ -2977,13 +2907,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = weight * fabs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
-                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * fabs(data[i]);
-            //else  product = weight * fabs(data[i]);
-            else  product = weight * fabs(data[i]);
-             //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
+                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
+            //else  product = weight * std::abs(data[i]);
+            else  product = weight * std::abs(data[i]);
+             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3002,13 +2932,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
-            //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * fabs(data[i]); // Abstand von der Diagonalen
-                product = weight * fabs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-            //else  product = weight * fabs(data[i]);
-            else  product =weight * fabs(data[i]);
-           //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]); // Abstand von der Diagonalen
+                product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+            //else  product = weight * std::abs(data[i]);
+            else  product =weight * std::abs(data[i]);
+           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -3058,13 +2988,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = weight * fabs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
-                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * fabs(data[i]);
-            //else  product = weight * fabs(data[i]);
-            else  product = weight * fabs(data[i]);
-             //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
+                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
+            //else  product = weight * std::abs(data[i]);
+            else  product = weight * std::abs(data[i]);
+             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3087,13 +3017,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
             if(from<=pointer[i] && pointer[i]<to){  // if in proper range
-                //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+                //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
                 if(pointer[i]<=max_pos_drop)
-                    //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * fabs(data[i]); // Abstand von der Diagonalen
-                    product = weight * fabs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-                //else  product = weight * fabs(data[i]);
-                else  product =weight * fabs(data[i]);
-               //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                    //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]); // Abstand von der Diagonalen
+                    product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+                //else  product = weight * std::abs(data[i]);
+                else  product =weight * std::abs(data[i]);
+               //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
                 if(product >= tau){ // mark to keep
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
@@ -3150,14 +3080,14 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i]);
-            //else  product = weight * fabs(data[i]);
-            else  product = weight * fabs(data[i]);
-             //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+                  //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
+                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+            //else  product = weight * std::abs(data[i]);
+            else  product = weight * std::abs(data[i]);
+             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3176,15 +3106,15 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
-            //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i]);
-                 //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-                 //product = weight * fabs(data[i]) * ; // Abstand von der Diagonalen
-            //else  product = weight * fabs(data[i]);
-            else  product =weight * fabs(data[i]);
-           //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+                 //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+                 //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
+            //else  product = weight * std::abs(data[i]);
+            else  product =weight * std::abs(data[i]);
+           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -3233,14 +3163,14 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i]);
-            //else  product = weight * fabs(data[i]);
-            else  product = weight * fabs(data[i]);
-             //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+                  //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
+                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+            //else  product = weight * std::abs(data[i]);
+            else  product = weight * std::abs(data[i]);
+             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3261,15 +3191,15 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
-            //product = max(fabs(data[i]),weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*fabs(data[i]);
-                 //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-                 //product = weight * fabs(data[i]) * ; // Abstand von der Diagonalen
-            //else  product = weight * fabs(data[i]);
-            else  product =weight * fabs(data[i]);
-           //product = weight * fabs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+                 //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+                 //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
+            //else  product = weight * std::abs(data[i]);
+            else  product =weight * std::abs(data[i]);
+           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if((from<=pointer[i] && pointer[i]<to) ){ // in proper range
                 if(product >= tau){ // mark to keep
                     input_abs[number_elements_larger_tau]=product;
@@ -3342,15 +3272,15 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     norm_input_U=sqrt(norm_input_U);
     for(i=0;i<nnz;i++){
         if(invperm.get(pointer[i])<mid){
-            if(fabs(data[i]) > norm_input_L*tau_L){
-                input_abs_L[number_elements_larger_tau_L]=fabs(data[i]);
+            if(std::abs(data[i]) > norm_input_L*tau_L){
+                input_abs_L[number_elements_larger_tau_L]=std::abs(data[i]);
                 //complete_list_L[number_elements_larger_tau_L]=invperm.get(pointer[i]);
                 complete_list_L[number_elements_larger_tau_L]=pointer[i];
                 number_elements_larger_tau_L++;
             }
         } else {
-            if(fabs(data[i]) > norm_input_U*tau_U){
-                input_abs_U[number_elements_larger_tau_U]=fabs(data[i]);
+            if(std::abs(data[i]) > norm_input_U*tau_U){
+                input_abs_U[number_elements_larger_tau_U]=std::abs(data[i]);
                 //complete_list_U[number_elements_larger_tau_U]=invperm.get(pointer[i]); // the true index in w
                 complete_list_U[number_elements_larger_tau_U]=pointer[i]; // the true index in w
                 number_elements_larger_tau_U++;
@@ -3439,7 +3369,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
     #endif
     for(i=0;i<nnz;i++){
-        fabsdata[i]=fabs(data[i]);
+        fabsdata[i]=std::abs(data[i]);
         if (invperm.get(pointer[i])<mid) norm_input_L += absvalue_squared(data[i]);
         else if (invperm.get(pointer[i])>mid){ 
             norm_input_U += absvalue_squared(data[i]);
@@ -3552,7 +3482,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     norm_input_U=sqrt(norm_input_U);
     for(i=0;i<nnz;i++){
         if(invperm.get(pointer[i])<mid){
-            product = fabs(weights_L.read(invperm.get(pointer[i]))*data[i]);
+            product = std::abs(weights_L.read(invperm.get(pointer[i]))*data[i]);
             if (product>tau_L*norm_input_L){
                 input_abs_L[number_elements_larger_tau_L]=product;
                 //complete_list_L[number_elements_larger_tau_L]=invperm.get(pointer[i]);
@@ -3560,8 +3490,8 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
                 number_elements_larger_tau_L++;
             }
         } else {
-            if(fabs(data[i])>tau_U*norm_input_U){
-                input_abs_U[number_elements_larger_tau_U]=fabs(data[i]);
+            if(std::abs(data[i])>tau_U*norm_input_U){
+                input_abs_U[number_elements_larger_tau_U]=std::abs(data[i]);
                 //complete_list_U[number_elements_larger_tau_U]=invperm.get(pointer[i]); // the true index in w
                 complete_list_U[number_elements_larger_tau_U]=pointer[i]; // the true index in w
                 number_elements_larger_tau_U++;
@@ -3601,9 +3531,9 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     // move largest element to the end of list to be the new pivot
     if(list_U.dimension()>0){
         pos_larg_element=0;
-        value_larg_element=fabs(read(list_U.get(0)));
+        value_larg_element=std::abs(read(list_U.get(0)));
             for(i=1;i<list_U.dimension();i++){
-                value=fabs(read(list_U.get(i)));
+                value=std::abs(read(list_U.get(i)));
                 if(value>value_larg_element){
                     pos_larg_element=i;
                     value_larg_element=value;
@@ -4163,18 +4093,18 @@ template<class T> void matrix_sparse<T>::insert_orient(const matrix_sparse<T> &A
         array<bool> selected_against_orient(against_orient.dimension(),false);
         Integer number_selected_along_orient = 0;
         Integer number_selected_against_orient = 0;
-        bool selected_center = (fabs(center)>threshold);
+        bool selected_center = (std::abs(center)>threshold);
         bool not_inserted = true;
         Integer i,j;
         Integer counter = 0;
         for(i=0;i<along_orient.dimension();i++){
-            if(fabs(along_orient.get(i))>threshold){
+            if(std::abs(along_orient.get(i))>threshold){
                 selected_along_orient.set(i) = true;
                 number_selected_along_orient++;
             }
         }
         for(i=0;i<against_orient.dimension();i++){
-            if(fabs(against_orient.get(i))>threshold){
+            if(std::abs(against_orient.get(i))>threshold){
                 selected_against_orient.set(i) = true;
                 number_selected_against_orient++;
             }
@@ -4281,8 +4211,8 @@ template<class T> Integer matrix_sparse<T>::largest_absolute_value_along_orienta
         if(non_fatal_error(k<0 || k+1>=pointer_size, "matrix_sparse<T>::largest_absolute_values_along_orientation: no such row/column exists")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     #endif
     for(Integer i=pointer[k]; i<pointer[k+1];i++)
-        if(fabs(data[i])>absvalue){
-            absvalue=fabs(data[i]);
+        if(std::abs(data[i])>absvalue){
+            absvalue=std::abs(data[i]);
             index=i;
         }
     return index;
@@ -4294,7 +4224,7 @@ template<class T> void matrix_sparse<T>::sum_absolute_values_along_orientation(v
      v.resize(pointer_size-1,0.0);
      for(Integer i=0;i<pointer_size-1;i++)
         for(Integer j=pointer[i];j<pointer[i+1];j++)
-            v[i]+=fabs(data[j]);
+            v[i]+=std::abs(data[j]);
   }
   catch(iluplusplus_error ippe){
       v.resize(0);
@@ -4308,7 +4238,7 @@ template<class T> void matrix_sparse<T>::sum_absolute_values_against_orientation
      v.resize(dim_against_orientation(),0.0);
      for(Integer i=0;i<pointer_size-1;i++)
         for(Integer j=pointer[i];j<pointer[i+1];j++)
-            v[indices[j]]+=fabs(data[j]);
+            v[indices[j]]+=std::abs(data[j]);
   }
   catch(iluplusplus_error ippe){
       std::cerr<<"matrix_sparse::sum_absolute_values_against_orientation: "<<ippe.error_message()<<"Returning empty vector."<<std::endl<<std::flush;
@@ -4647,7 +4577,7 @@ template<class T> void matrix_sparse<T>::keepFillin(const matrix_sparse<T> &m, I
           }
           absvalue.resize(m.pointer[1]);
           list.resize(m.pointer[1]);
-          for(i=0;i<m.pointer[1];i++) absvalue[i]=fabs(m.data[i]);
+          for(i=0;i<m.pointer[1];i++) absvalue[i]=std::abs(m.data[i]);
           absvalue.quicksort(list,0,m.pointer[1]-1);
           list.quicksort(m.pointer[1]-fillin,m.pointer[1]-1);
           if(n.nnz<fillin) n.reformat(m.number_rows,1,fillin,COLUMN);
@@ -5610,14 +5540,14 @@ template<class T> void matrix_sparse<T>::compress(const matrix_dense<T>& A, orie
          number_columns=A.columns();
          for(i=0;i<A.rows();i++)
             for(j=0;j<A.columns();j++)
-                if (fabs(A.read(i,j)) > threshold) counter++;
+                if (std::abs(A.read(i,j)) > threshold) counter++;
          reformat(number_rows, number_columns,counter,o);
          counter = 0;
          if(o == ROW){
              for(i=0;i<A.rows();i++){
                  pointer[i]=counter;
                  for(j=0;j<A.columns();j++)
-                     if(fabs(A.read(i,j)) > threshold) {
+                     if(std::abs(A.read(i,j)) > threshold) {
                          indices[counter] = j;
                          data[counter] = A.read(i,j);
                          counter++;
@@ -5628,7 +5558,7 @@ template<class T> void matrix_sparse<T>::compress(const matrix_dense<T>& A, orie
              for(j=0;j<A.columns();j++){
                  pointer[j]=counter;
                  for(i=0;i<A.rows();i++)
-                     if (fabs(A.read(i,j)) > threshold) {
+                     if (std::abs(A.read(i,j)) > threshold) {
                          indices[counter] = i;
                          data[counter] = A.read(i,j);
                          counter++;
@@ -5661,7 +5591,7 @@ template<class T> void matrix_sparse<T>::compress(double threshold){
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
         for (j=pointer[i]; j<pointer[i+1]; j++){
-            if (fabs(data[j]) >threshold){
+            if (std::abs(data[j]) >threshold){
                new_data[counter]=data[j];
                new_indices[counter]=indices[j];
                counter++;
@@ -5700,7 +5630,7 @@ template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_p
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
         for (j=pointer[i]; j<pointer[i+1]; j++){
-            if (fabs(data[j])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(indices[j]-i))/size) >threshold){
+            if (std::abs(data[j])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(indices[j]-i))/size) >threshold){
                new_data[counter]=data[j];
                new_indices[counter]=indices[j];
                counter++;
@@ -8137,7 +8067,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
 /*
           if(eliminate){  // select potential pivot
               val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-              if (fabs(val_larg_el*perm_tol)>fabs(z.read(perm.get(k))) && pos_pivot>=0){ 
+              if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
                   pivoting = true;
                   pivot = val_larg_el;
               } else {
@@ -8151,7 +8081,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
           if(eliminate){  // select potential pivot
               val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
               if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (fabs(val_larg_el*perm_tol)>fabs(z.read(selected_row)) && pos_pivot>=0){
+                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0){
 std::cout<<"*1 "; 
                       pivoting = true;
                       pivot = val_larg_el;
@@ -8162,7 +8092,7 @@ std::cout<<"*2 ";
                       pivot = z.read(pos_pivot);
                   }
               } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-                  if (fabs(val_larg_el*perm_tol)>fabs(z.read(perm.get(k))) && pos_pivot>=0){ 
+                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
 std::cout<<"*3 "; 
                       pivoting = true;
                       pivot = val_larg_el;
@@ -8178,7 +8108,7 @@ std::cout<<"*4 ";
           if(eliminate){  // select potential pivot
               val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
               if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (fabs(val_larg_el*perm_tol)>fabs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
                       //pivoting = true;
                       pivot = val_larg_el;
                   } else {
@@ -8187,7 +8117,7 @@ std::cout<<"*4 ";
                       pivot = z.read(pos_pivot);
                   }
               } else {   // pivot if possible... only if nothing else works, use corresponding column
-                  if ( (fabs(val_larg_el)>0.0) && pos_pivot>=0){ 
+                  if ( (std::abs(val_larg_el)>0.0) && pos_pivot>=0){ 
                       //pivoting = true;
                       pivot = val_larg_el;
                   } else {
@@ -8203,7 +8133,7 @@ std::cout<<"*4 ";
           if(eliminate){  // select potential pivot
               val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
               if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (fabs(val_larg_el*perm_tol)>fabs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
                       pivoting = true;
                       pivot = val_larg_el;
                   } else {
@@ -8212,7 +8142,7 @@ std::cout<<"*4 ";
                       pivot = z.read(pos_pivot);
                   }
               } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-                  if (fabs(val_larg_el*perm_tol)>fabs(z.read(perm.get(k))) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
+                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
                       pivoting = true;
                       pivot = val_larg_el;
                   } else {
@@ -8225,7 +8155,7 @@ std::cout<<"*4 ";
 
 */
 
-          if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && fabs(pivot) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
+          if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && std::abs(pivot) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
                eliminate = false;
                end_level_now = true;
                threshold *= threshold_Schur_factor;
@@ -8258,7 +8188,7 @@ std::cout<<"*4 ";
               non_pivot[pos_pivot]=false;
           }
           if(use_weightsLU){
-              for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += fabs(z.get_data(j));
+              for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += std::abs(z.get_data(j));
           }
            // (8.) read w
           #ifdef VERBOSE
@@ -8300,7 +8230,7 @@ std::cout<<"*4 ";
           w.scale(Dinv[k]);
           if(use_weightsLU){
               for(j=0;j<w.non_zeroes();j++){ 
-                  weightsL.set(w.get_pointer(j)) += fabs(w.get_data(j));
+                  weightsL.set(w.get_pointer(j)) += std::abs(w.get_data(j));
               }
           }
           #ifdef VERBOSE
@@ -8323,24 +8253,24 @@ std::cout<<"*4 ";
                   nuplus  = 0.0;
                   numinus = 0.0;
                   // do x_k
-                  for(j=0;j<z.non_zeroes();j++) nuplus  += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
-                  for(j=0;j<z.non_zeroes();j++) numinus += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
+                  for(j=0;j<z.non_zeroes();j++) nuplus  += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
+                  for(j=0;j<z.non_zeroes();j++) numinus += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
                   if(nuplus > numinus) xU[pk] = xplus;
                   else xU[pk] = xminus;
                   for(j=0;j<z.non_zeroes();j++) vxU[z.get_pointer(j)] +=  z.get_data(j)*xU.get(pk);
-                  xU[pk]=max(fabs(xplus),fabs(xminus));
+                  xU[pk]=max(std::abs(xplus),std::abs(xminus));
                   // do y_k
                   for(j=0;j<z.non_zeroes();j++){
                       vi=vyU[z.get_pointer(j)];
-                      if(fabs(vi+z.get_data(j)*yplus) > max(2.0*fabs(vi),(Real)0.5)) nplus++;
-                      if(max(2.0*fabs(vi+z.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
-                      if(fabs(vi+z.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
-                      if(max(2.0*fabs(vi+z.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
+                      if(std::abs(vi+z.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real)0.5)) nplus++;
+                      if(max(2.0*std::abs(vi+z.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
+                      if(std::abs(vi+z.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
+                      if(max(2.0*std::abs(vi+z.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
                   }
                   if(nplus > nminus) yU[pk]=yplus;
                   else yU[pk]= yminus;
                   for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)] += z.get_data(j)*yU.get(pk);
-                  yU[pk]=max(fabs(yplus),fabs(yminus));
+                  yU[pk]=max(std::abs(yplus),std::abs(yminus));
               }
           }   // values for dropping are now in xU[pk],yU[pk]
           #ifdef STATISTICS
@@ -8353,15 +8283,15 @@ std::cout<<"*4 ";
               weightU=IP.get_NEUTRAL_ELEMENT();
               if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
               if(IP.get_USE_STANDARD_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP2());  // drop if |w_i|<tau
-              if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xU[pk]),fabs(yU[pk])));
+              if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xU[pk]),std::abs(yU[pk])));
               if(IP.get_USE_WEIGHTED_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_WEIGHTED_DROP()*weightsU.get(pk));
               if(IP.get_USE_ERR_PROP_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP()*w.norm1());
               //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(w.norm_max()));
               //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(1.0+w.norm_max()));
-              if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/fabs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= fabs(Dinv[k]);
-              if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,fabs(Dinv[k])); weightU *= max_inv_piv;}
+              if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/std::abs(Dinv[k]));
+              if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
+              if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= std::abs(Dinv[k]);
+              if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,std::abs(Dinv[k])); weightU *= max_inv_piv;}
               if(use_improved_SCHUR){
                   switch (IP.get_DROP_TYPE_U()){
                       case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,0,n); break; // usual dropping
@@ -8436,7 +8366,7 @@ std::cout<<"*4 ";
                  pos=U.pointer[k]+j+1;
                  U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
                  U.indices[pos]=list_U[list_U.dimension()-1-j];
-                 if(use_norm_row_U) norm_row_U.set(k) += fabs(U.data[pos]);
+                 if(use_norm_row_U) norm_row_U.set(k) += std::abs(U.data[pos]);
                  h=startU[U.indices[pos]];
                  startU[U.indices[pos]]=pos;
                  linkU.set(pos)=h;
@@ -8545,35 +8475,35 @@ std::cout<<"*4 ";
                       nuplus  = 0.0;
                       numinus = 0.0;
                   // do x_k
-                      for(j=0;j<w.non_zeroes();j++) nuplus  += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
-                      for(j=0;j<w.non_zeroes();j++) numinus += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
+                      for(j=0;j<w.non_zeroes();j++) nuplus  += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
+                      for(j=0;j<w.non_zeroes();j++) numinus += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
                       if(nuplus > numinus) xL[pk] = xplus;
                       else xL[pk] = xminus;
                       for(j=0;j<w.non_zeroes();j++) vxL[w.get_pointer(j)] +=  w.get_data(j)*xL.get(pk);
-                      xL[pk]=max(fabs(xplus),fabs(xminus));
+                      xL[pk]=max(std::abs(xplus),std::abs(xminus));
                       // do y_k
                       for(j=0;j<w.non_zeroes();j++){
                           vi=vyL[w.get_pointer(j)];
-                          if(fabs(vi+w.get_data(j)*yplus) > max(2.0*fabs(vi),(Real) 0.5)) nplus++;
-                          if(max(2.0*fabs(vi+w.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
-                          if(fabs(vi+w.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
-                          if(max(2.0*fabs(vi+w.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
+                          if(std::abs(vi+w.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real) 0.5)) nplus++;
+                          if(max(2.0*std::abs(vi+w.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
+                          if(std::abs(vi+w.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
+                          if(max(2.0*std::abs(vi+w.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
                       }
                       if(nplus > nminus) yL[pk]=yplus;
                       else yL[pk]= yminus;
                       for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)] += w.get_data(j)*yL.get(pk);
-                      yL[pk]=max(fabs(yplus),fabs(yminus));
+                      yL[pk]=max(std::abs(yplus),std::abs(yminus));
                   }  // values for dropping are now in xL[pk],yL[pk]
               }
               weightL=IP.get_NEUTRAL_ELEMENT();
               if(IP.get_USE_STANDARD_DROPPING()) {norm = w.norm2(); if(norm==0.0) norm=1e-16; weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP()/norm);}
               if(IP.get_USE_STANDARD_DROPPING2()) weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP2());
-              if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xL[pk]),fabs(yL[pk])));
+              if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xL[pk]),std::abs(yL[pk])));
               if(IP.get_USE_WEIGHTED_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_WEIGHTED_DROP()*weightsL.get(pk));
               if(IP.get_USE_ERR_PROP_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP()*z.norm1());
-              if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/fabs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= fabs(Dinv[k]);
+              if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/std::abs(Dinv[k]));
+              if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
+              if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= std::abs(Dinv[k]);
               if(IP.get_SCALE_WGT_MAXINVDIAG())  weightL *= max_inv_piv;
               if(use_improved_SCHUR){
                   switch (IP.get_DROP_TYPE_L()){
@@ -8663,9 +8593,9 @@ std::cout<<"*4 ";
                           numb_el_row_L.switch_entry(a,b);
                       } else {   // resorting by 1-norm of number of elements in row of L. Eliminating in increasing order.
                           switch(IP.get_FINAL_ROW_CRIT()){
-                              case -2: row_reorder_weight.add(b,fabs(data[pos])); break;
-                              case -3: row_reorder_weight.add(b,fabs(data[pos])*norm_row_U.get(b)); break;
-                              case -4: row_reorder_weight.add(b,fabs(data[pos])/fabs(Dinv.get(b))*norm_row_U.get(b)); break;
+                              case -2: row_reorder_weight.add(b,std::abs(data[pos])); break;
+                              case -3: row_reorder_weight.add(b,std::abs(data[pos])*norm_row_U.get(b)); break;
+                              case -4: row_reorder_weight.add(b,std::abs(data[pos])/std::abs(Dinv.get(b))*norm_row_U.get(b)); break;
                               default: std::cerr<<"matrix_sparse::partialILUCDP: FINAL_ROW_CRIT has undefined value. Please set to correct value."<<std::endl;
                                   reformat(0,0,0,COLUMN);
                                   U.reformat(0,0,0,ROW);

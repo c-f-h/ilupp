@@ -209,19 +209,17 @@ template<class T> class vector_dense
 
  template<class T> class vector_sparse_dynamic
    {
-       protected:
+       private:
            Integer size;
            Integer nnz;
-           T* data;
-           Integer* occupancy;
-           Integer* pointer;
+           std::vector<T> data;
+           std::vector<Integer> occupancy;
+           std::vector<Integer> pointer;
            void erase_resize_data_fields(Integer m);
        public:
         // constructors & destructors
            vector_sparse_dynamic();
            vector_sparse_dynamic(Integer m);
-           vector_sparse_dynamic(const vector_sparse_dynamic& x);
-           virtual ~vector_sparse_dynamic();
            void resize(Integer m);
         // functions
            Integer dimension() const;
@@ -236,7 +234,7 @@ template<class T> class vector_dense
            void zero_reset();
            T abs_max() const;  // returns value of largest element by absolute value
            T abs_max(Integer& pos) const;
-           void scale(T d) const; // scales
+           void scale(T d); // scales
            T  operator * (const vector_sparse_dynamic<T>& y) const; // scalar product
            T scalar_product_pos_factors(const vector_sparse_dynamic<T>&y) const;  // scalar product only using positive factors
        // Accessing elements
@@ -246,8 +244,6 @@ template<class T> class vector_dense
            const T& operator[](Integer j) const;
            void zero_set(Integer j);
            void print_non_zeroes() const;
-       // Assignment
-           vector_sparse_dynamic<T>& operator =(const vector_sparse_dynamic<T>& x);        // Assignment
        // conversion
            vector_dense<T> expand() const;
        // Norm
