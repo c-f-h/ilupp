@@ -656,7 +656,7 @@ template<class T> void  vector_dense<T>::write_with_indices(std::string filename
     file.close();
   }
 
-template<class T> void  vector_dense<T>::append_with_indices(std::string filename, Integer shift = 0) const {
+template<class T> void  vector_dense<T>::append_with_indices(std::string filename, Integer shift) const {
     std::ofstream file(filename.c_str(), std::ios_base::app);
     if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
     for (Integer i=0;i<size;i++) file<<i+shift<<"\t"<<data[i]<<std::endl;
@@ -10640,7 +10640,7 @@ template<class T> Integer matrix_sparse<T>::choose_ddPQ(const iluplusplus_precon
 }
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Real tau = 0.0) const {
+template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Real tau) const {
   try {
       if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
       Integer j,k,count,Qcount,pos;
@@ -10700,7 +10700,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, R
 }
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ_dyn_av(index_list& P, index_list& Q, Real tau = 0.0) const {
+template<class T> Integer matrix_sparse<T>::ddPQ_dyn_av(index_list& P, index_list& Q, Real tau) const {
   try {
       if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
       Integer i,j,k,count,Qcount,pos;
@@ -10785,7 +10785,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ_dyn_av(index_list& P, index_lis
 }
 
 
-template<class T> Integer matrix_sparse<T>::symm_ddPQ_dyn_av(index_list& P, index_list& Q, Real tau = 0.0) const {
+template<class T> Integer matrix_sparse<T>::symm_ddPQ_dyn_av(index_list& P, index_list& Q, Real tau) const {
   try {
       if(non_fatal_error(!square_check(),"matrix_sparse::symm_ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
       #ifdef DEBUG
@@ -10873,7 +10873,7 @@ template<class T> Integer matrix_sparse<T>::symm_ddPQ_dyn_av(index_list& P, inde
 
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Integer from, Integer to, Real tau = 0.0) const {
+template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Integer from, Integer to, Real tau) const {
   try {
       // selects only from "from" to "to", including "from", excluding "to"
       if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -12367,7 +12367,7 @@ template<class T> void matrix_sparse<T>::metis_node_nd(Integer* P, Integer* invP
 #endif
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau = 0.0) {
+template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau) {
   try {
     Integer pos;
     matrix_sparse<T> B;
@@ -12395,7 +12395,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
 }
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau = 0.0) {
+template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau) {
   try {
     Integer pos;
     matrix_sparse<T> B;
@@ -12423,7 +12423,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
 
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau = 0.0){
+template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau){
   try {
     Integer pos;
     matrix_sparse<T> B;
@@ -12455,7 +12455,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
   }
 }
 
-template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau = 0.0){
+template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau){
   try {
     Integer pos;
     matrix_sparse<T> B;
@@ -12487,7 +12487,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
   }
 }
 
-template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer& level, Real tau = 0.0){
+template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer& level, Real tau){
   try {
     const Integer maxlevel = 4;
     if (!A.square_check()){

@@ -2732,7 +2732,7 @@ template <class T, class matrix_type, class vector_type>
   ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(){this->pre_image_size=0; this->image_size=0; this->intermediate_size=0;this->preconditioner_exists=true;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold=-1.0){
+  ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
   try {
       clock_t time_begin, time_end;
       time_begin = clock();
@@ -2893,7 +2893,7 @@ template <class T, class matrix_type, class vector_type>
   ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(){this->pre_image_size=0; this->image_size=0; this->intermediate_size=0;this->preconditioner_exists=true;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold=1000){
+  ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
   try {
       if(A.orient()==ROW){
           // NOTE: ILUT2 does not yet work.
@@ -3063,7 +3063,7 @@ template <class T, class matrix_type, class vector_type>
   ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;this->left_matrix_usage = NOPERM;this->right_matrix_usage = PERM1;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold=-1.0, Real pt = 0.0, Integer rp=0){
+  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real pt, Integer rp=0){
   try {
       if(A.orient()==ROW){
           this->preconditioner_exists = this->Precond_left.ILUTP2(A,this->Precond_right,this->permutation,max_fill_in,threshold,pt,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
@@ -3239,7 +3239,7 @@ template <class T, class matrix_type, class vector_type>
   ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold=-1.0, Real perm_tol=0.0, Integer rp = -1){
+  ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp){
   try {
       if(Acol.orient()==COLUMN){
           this->preconditioner_exists = this->Precond_left.ILUCP4(Acol,this->Precond_right,this->permutation,max_fill_in,threshold,perm_tol,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
@@ -3402,7 +3402,7 @@ template <class T, class matrix_type, class vector_type>
   ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;}
 
  template <class T, class matrix_type, class vector_type>
-  ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold=1000.0, Real perm_tol=1000.0, Integer bpr = -1){
+  ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr){
   try {
       if(Acol.orient()==COLUMN && Arow.orient()==ROW){
           this->preconditioner_exists = this->Precond_left.ILUCDP(Arow,Acol,this->Precond_right,this->permutation,this->permutation2,max_fill_in,threshold,perm_tol,bpr,this->zero_pivots,this->setup_time);      // preconditioner of A.
@@ -3427,7 +3427,7 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-  ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold=1000.0, Real perm_tol=1000.0, Integer bpr = -1){
+  ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr){
   try {
       index_list invperm,invperm2; Integer last_row;
       Real memory_allocated_factorization, memory_used_factorization;
