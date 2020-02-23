@@ -65,6 +65,8 @@ template<class T> class vector_dense
            void free(Integer& n, T*& data_array);
            // sets vector to dimension 0, but frees no memory. You still have be able to access the data somehow to free it....
            void null_vector_keep_data();
+
+           friend class matrix_sparse<T>;
        public:
         // constructors & destructors
            vector_dense();
@@ -333,6 +335,7 @@ template<class T> class matrix_sparse
            T* data;
            Integer* pointer;
            Integer* indices;
+           bool non_owning = false;     // if true, data won't be freed in the destructor
            void insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index);
              // copies the indices from list into indices and the data stored in data_vector corresponding to the appropriate indices into data.
            void insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index_matrix, Integer begin_index_list, Integer n, Integer offset=0);
@@ -365,7 +368,7 @@ template<class T> class matrix_sparse
            matrix_sparse(orientation_type o, Integer m, Integer n, Integer nz); // allocates memory
            matrix_sparse(const matrix_sparse& X);    // copy constructor
            virtual ~matrix_sparse();
-           matrix_sparse(T* _data, Integer* _indices, Integer* _pointer, Integer _rows, Integer _columns, orientation_type _orientation);
+           matrix_sparse(T* _data, Integer* _indices, Integer* _pointer, Integer _rows, Integer _columns, orientation_type _orientation, bool _non_owning=false);
         // Basic functions
            T get_data(Integer k) const;
            Integer get_index(Integer k) const;
@@ -478,7 +481,7 @@ template<class T> class matrix_sparse
            void print_info() const;
            void print_detailed_info() const;
            void print_all() const;
-           Real degree_of_symmetry() const;
+           //Real degree_of_symmetry() const;
            special_matrix_type shape() const;
         // Interaction with systems of linear equations
            void lower_triangular_solve(const vector_dense<T>& b, vector_dense<T>& x) const;
@@ -531,10 +534,12 @@ template<class T> class matrix_sparse
            // ILUCP: standard implementation, ILUCPinv: implementation with inverse dropping; old implementations have slow access for L
            bool ILUCP4(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
            // with linked lists for A and L, only needs Acol. With companion structure for L
-           bool ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
+           // cfh: disabled because it doesn't compile
+           //bool ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
            // same as ILUCP4 only with inverse-based dropping
            bool ILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor = 6.0);
-           bool ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor = 6.0);
+           // cfh: disabled because it doesn't compile
+           //bool ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor = 6.0);
            // pivots rows and columns, rows based on number of elements in row of L; possibly with inverse based dropping.
            bool partialILUC(const matrix_sparse<T>& Arow, matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_sparse<T>& U, vector_dense<T>& Dinv, Integer last_row_to_eliminate, Real threshold, Integer& zero_pivots, Real& time_self, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used);
            bool partialILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_sparse<T>& U, vector_dense<T>& Dinv, index_list& perm, index_list& permrows, index_list& inverse_perm, index_list& inverse_permrows,Integer last_row_to_eliminate, Real threshold, Integer bp,  Integer bpr,  Integer epr, Integer& zero_pivots, Real& time_self, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used);

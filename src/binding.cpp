@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cmath>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "ilupp/iluplusplus_interface.h"
+#include "ilupp/iluplusplus_interface.cpp"
 
 namespace py = pybind11;
 

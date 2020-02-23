@@ -4711,13 +4711,16 @@ template<class T> matrix_sparse<T>::matrix_sparse(orientation_type o, Integer m,
    }
  }
 
-template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, Integer* _pointer, Integer _rows, Integer _columns, orientation_type _orientation){
+template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, Integer* _pointer,
+        Integer _rows, Integer _columns, orientation_type _orientation, bool _non_owning)
+{
     orientation = _orientation;
     number_rows = _rows;
     number_columns = _columns;
     data = _data;
     indices = _indices;
     pointer = _pointer;
+    non_owning = _non_owning;
     if (orientation == ROW) pointer_size = number_rows+1;
     else pointer_size = number_columns+1;
     nnz = pointer[pointer_size-1];
@@ -5036,8 +5039,7 @@ template<class T> bool matrix_sparse<T>::numerical_zero_check(Real threshold) co
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::operator *(T d) const {
     try {
-         matrix_sparse<T> A (orientation);
-         A=(*this);
+         matrix_sparse<T> A(*this);
          A.scalar_multiply(d);
          return A;
     }
@@ -6102,7 +6104,7 @@ template<class T> special_matrix_type matrix_sparse<T>::shape() const{
   }
 
 
-
+/*
 template<class T> Real matrix_sparse<T>::degree_of_symmetry() const {
      try {
          matrix_sparse<T> symmetric_part;
@@ -6121,6 +6123,7 @@ template<class T> Real matrix_sparse<T>::degree_of_symmetry() const {
        throw;
     }
   }
+*/
 
 
 //***********************************************************************************************************************
@@ -6797,8 +6800,10 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop_against_orient
 
 template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix_type form, const matrix_sparse<T>& M, const vector_dense<T> weights, orientation_type o, Integer max_fill_in, Real tau){
    try {
-        if (o=M.orient()) weighted_triangular_drop_along_orientation(form,M,weights,max_fill_in,tau);
-        else weighted_triangular_drop_against_orientation(form,M,weights,max_fill_in,tau);
+        if (o == M.orient())
+            weighted_triangular_drop_along_orientation(form,M,weights,max_fill_in,tau);
+        else
+            weighted_triangular_drop_against_orientation(form,M,weights,max_fill_in,tau);
    }
    catch(iluplusplus_error ippe){
       std::cerr << "matrix_sparse<T>::weighted_triangular_drop: "<<ippe.error_message() << std::endl;
@@ -10049,7 +10054,7 @@ template<class T> bool matrix_sparse<T>::preprocessed_partialILUCDP(const iluplu
 }
 
 
-
+/*
 template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol,  Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor){
     try {
       clock_t time_begin, time_end;
@@ -10235,7 +10240,7 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
           #endif
           // (12.) sort and copy data to L
           // sort
-          w.take_single_weight_largest_elements_by_abs_value_with_threshold(list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
+          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
           if(pointer[k]+list_L.dimension()+1>reserved_memory){
               std::cerr<<"matrix_sparse::ILUCDPinv: memory reserved was insufficient."<<std::endl;
               return false;
@@ -10326,7 +10331,9 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
       throw;
    }
   }
+*/
 
+/*
 template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol,Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor){
   try {
       clock_t time_begin, time_end;
@@ -10500,7 +10507,7 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
           #endif
          // (12.) sort and copy data to L
          // sort
-          w.take_single_weight_largest_elements_by_abs_value_with_threshold(list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
+          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
           if(pointer[k]+list_L.dimension()+1>reserved_memory){
               std::cerr<<"matrix_sparse::ILUCP4inv: memory reserved was insufficient."<<std::endl;
               return false;
@@ -10571,10 +10578,11 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
       return true;
    }
    catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse<T>:: ILUCDPinv: "<<ippe.error_message() << std::endl;
+      std::cerr << "matrix_sparse<T>:: ILUCP4inv: "<<ippe.error_message() << std::endl;
       throw;
    }
   }
+*/
 
 #ifdef ILUPLUSPLUS_USES_SPARSPAK
 
