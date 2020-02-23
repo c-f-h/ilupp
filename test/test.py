@@ -43,7 +43,7 @@ def test_precond():
     assert np.allclose(x, x_exact)
 
 def test_ILUT():
-    n = 20
+    n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
     P = ilupp.ILUTPreconditioner(A, threshold=0.0)
@@ -55,3 +55,12 @@ def test_ILUT():
     # each L/u factor has a diagonal and an off-diagonal,
     # but ILU++ reports by n less for unknown reasons
     assert P.total_nnz <= 2 * (n + (n-1))
+    ##
+    A = scipy.sparse.random(50, 50, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(50)
+    P = ilupp.ILUTPreconditioner(A, fill_in=1000, threshold=0.0)
+    x_exact = np.ones(50)
+    b = A.dot(x_exact)
+    x = b.copy()
+    P.apply(x)
+    print('Error:', np.linalg.norm(x - x_exact))
+    assert np.allclose(x, x_exact)
