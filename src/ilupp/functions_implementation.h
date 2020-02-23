@@ -31,63 +31,8 @@
 namespace iluplusplus {
 
 
-std::string integertostring(Integer k){
-    std::string part;
-    Integer trunc;
-    if(k == 0) return "0";
-    if(k < 0) trunc = -k;
-    else trunc = k;
-    while(trunc != 0){
-        switch(trunc % 10){
-            case 0: part = "0"+part; break;
-            case 1: part = "1"+part; break;
-            case 2: part = "2"+part; break;
-            case 3: part = "3"+part; break;
-            case 4: part = "4"+part; break;
-            case 5: part = "5"+part; break;
-            case 6: part = "6"+part; break;
-            case 7: part = "7"+part; break;
-            case 8: part = "8"+part; break;
-            case 9: part = "9"+part; break;
-        }
-        trunc = trunc/10;
-    }
-    if(k<0) part = "-"+part;
-    return part;
-  }
-
-std::string integertostring_with_spaces(Integer k){
-    std::string part;
-    Integer trunc;
-    Integer counter = 0;
-    if(k == 0) return "0";
-    if(k < 0) trunc = -k;
-    else trunc = k;
-    while(trunc != 0){
-        counter++;
-        switch(trunc % 10){
-            case 0: part = "0"+part; break;
-            case 1: part = "1"+part; break;
-            case 2: part = "2"+part; break;
-            case 3: part = "3"+part; break;
-            case 4: part = "4"+part; break;
-            case 5: part = "5"+part; break;
-            case 6: part = "6"+part; break;
-            case 7: part = "7"+part; break;
-            case 8: part = "8"+part; break;
-            case 9: part = "9"+part; break;
-        }
-        trunc = trunc/10;
-        if(counter % 3 == 0 && trunc != 0) part = " "+part;
-    }
-    if(k<0) part = "-"+part;
-    return part;
-  }
-
 std::string booltostring(bool b){
-    std::string out;
-    if(b) out = "TRUE"; else out = "FALSE";
-    return out;
+    return b ? "TRUE" : "FALSE";
 }
 
 Integer RoundRealToInteger(Real d){
@@ -147,51 +92,47 @@ std::string string(preprocessing_type pt){
 }
 
 std::string cap_string(data_type t){
-    std::string output;
     switch(t){
-        case SUCC_SOLVE:    output = "SUCC_SOLVE";       break;
-        case THRESHOLD:     output = "THRESHOLD";        break; 
-        case FILLIN:        output = "FILLIN";           break; 
-        case MEM_STORAGE:   output = "MEM_STORAGE";      break; 
-        case MEM_USED:      output = "MEM_USED";         break; 
-        case MEM_ALLOCATED: output = "MEM_ALLOCATED";    break; 
-        case ITERATIONS:    output = "ITERATIONS";       break; 
-        case ABS_ERROR:     output = "ABS_ERROR";        break; 
-        case REL_RESIDUAL:  output = "REL_RESIDUAL";     break; 
-        case ABS_RESIDUAL:  output = "ABS_RESIDUAL";     break; 
-        case SETUP_TIME:    output = "SETUP_TIME";       break; 
-        case ITER_TIME:     output = "ITER_TIME";        break; 
-        case TOTAL_TIME:    output = "TOTAL_TIME";       break; 
-        case MATRIX_DIM:    output = "MATRIX_DIM";       break; 
-        case MATRIX_NNZ:    output = "MATRIX_NNZ";       break; 
-        case LEVELS:        output = "LEVELS";           break;
-        default:            output = "???";              break;
+        case SUCC_SOLVE:    return "SUCC_SOLVE";
+        case THRESHOLD:     return "THRESHOLD";
+        case FILLIN:        return "FILLIN";
+        case MEM_STORAGE:   return "MEM_STORAGE";
+        case MEM_USED:      return "MEM_USED";
+        case MEM_ALLOCATED: return "MEM_ALLOCATED";
+        case ITERATIONS:    return "ITERATIONS";
+        case ABS_ERROR:     return "ABS_ERROR";
+        case REL_RESIDUAL:  return "REL_RESIDUAL";
+        case ABS_RESIDUAL:  return "ABS_RESIDUAL";
+        case SETUP_TIME:    return "SETUP_TIME";
+        case ITER_TIME:     return "ITER_TIME";
+        case TOTAL_TIME:    return "TOTAL_TIME";
+        case MATRIX_DIM:    return "MATRIX_DIM";
+        case MATRIX_NNZ:    return "MATRIX_NNZ";
+        case LEVELS:        return "LEVELS";
+        default:            return "???";
     }
-    return output;
 }
 
 std::string string(data_type t){
-    std::string output;
     switch(t){
-        case SUCC_SOLVE:    output = "successful solve";   break;
-        case THRESHOLD:     output = "threshold";          break; 
-        case FILLIN:        output = "fill-in";            break; 
-        case MEM_STORAGE:   output = "memory for storage"; break; 
-        case MEM_USED:      output = "memory used";        break; 
-        case MEM_ALLOCATED: output = "memory allocated";   break; 
-        case ITERATIONS:    output = "iterations";         break; 
-        case ABS_ERROR:     output = "absolute error";     break; 
-        case REL_RESIDUAL:  output = "relative residual";  break; 
-        case ABS_RESIDUAL:  output = "absolute residual";  break; 
-        case SETUP_TIME:    output = "setup time";         break; 
-        case ITER_TIME:     output = "iteration time";     break; 
-        case TOTAL_TIME:    output = "total time";         break; 
-        case MATRIX_DIM:    output = "dimension";          break; 
-        case MATRIX_NNZ:    output = "non-zeroes";         break; 
-        case LEVELS:        output = "levels";             break;
-        default:            output = "???";                break;
+        case SUCC_SOLVE:    return "successful solve";
+        case THRESHOLD:     return "threshold";
+        case FILLIN:        return "fill-in";
+        case MEM_STORAGE:   return "memory for storage";
+        case MEM_USED:      return "memory used";
+        case MEM_ALLOCATED: return "memory allocated";
+        case ITERATIONS:    return "iterations";
+        case ABS_ERROR:     return "absolute error";
+        case REL_RESIDUAL:  return "relative residual";
+        case ABS_RESIDUAL:  return "absolute residual";
+        case SETUP_TIME:    return "setup time";
+        case ITER_TIME:     return "iteration time";
+        case TOTAL_TIME:    return "total time";
+        case MATRIX_DIM:    return "dimension";
+        case MATRIX_NNZ:    return "non-zeroes";
+        case LEVELS:        return "levels";
+        default:            return "???";
     }
-    return output;
 }
 
 std::string long_string(preprocessing_type pt){
@@ -395,33 +336,6 @@ Integer bin(Integer n, Integer k){
       for(i=1;i<=k;i++) b /= i;
       return b;
   }
-
-std::string replace_underscore_with_backslash_underscore(std::string oldstring){
-    std::string newstring="";
-    unsigned int pos1=0;
-    unsigned int pos2=0;
-    while(pos2<oldstring.size()){
-        pos2=oldstring.find("_",pos1);
-        newstring += oldstring.substr(pos1, pos2-pos1);
-        if(pos2<oldstring.size()) newstring += "\\_";
-        pos1=pos2+1;
-    }
-    return newstring;
-  }
-
-std::string replace_underscore_with_double_backslash_underscore(std::string oldstring){
-    std::string newstring="";
-    unsigned int pos1=0;
-    unsigned int pos2=0;
-    while(pos2<oldstring.size()){
-        pos2=oldstring.find("_",pos1);
-        newstring += oldstring.substr(pos1, pos2-pos1);
-        if(pos2<oldstring.size()) newstring += "\\\\_";
-        pos1=pos2+1;
-    }
-    return newstring;
-  }
-
 
 
 template<class T> bool equal_to_zero(T t){

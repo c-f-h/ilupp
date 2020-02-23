@@ -23,6 +23,7 @@
 #ifndef PARAMETERS_IMPLEMENATION_H
 #define PARAMETERS_IMPLEMENATION_H
 
+#include <string>
 #include "parameters.h"
 
 namespace iluplusplus {
@@ -45,7 +46,7 @@ void iluplusplus_precond_parameter::set(Integer fi, Real th, Real pt){fill_in=fi
 std::string iluplusplus_precond_parameter::filename() const {
     std::string name;
     if(get_PRECON_PARAMETER()>=0){
-        name = ("ML_"+integertostring(get_PRECON_PARAMETER())+"_"+get_PREPROCESSING().string_with_hyphen()+".out"); 
+        name = ("ML_"+std::to_string(get_PRECON_PARAMETER())+"_"+get_PREPROCESSING().string_with_hyphen()+".out");
     } else {
         #ifdef ILUPLUSPLUS_USES_PARDISO
             if(get_PRECON_PARAMETER()==-1) name = "PARDISO.out";
@@ -72,7 +73,7 @@ std::string iluplusplus_precond_parameter::filename() const {
 std::string iluplusplus_precond_parameter::precondname() const {
     std::string name;
     if(get_PRECON_PARAMETER()>=0){
-        name = ("ML "+integertostring(get_PRECON_PARAMETER())+"-"+get_PREPROCESSING().string()+": "+convert_to_string());
+        name = ("ML "+std::to_string(get_PRECON_PARAMETER())+"-"+get_PREPROCESSING().string()+": "+convert_to_string());
     } else {
         #ifdef ILUPLUSPLUS_USES_PARDISO
             if(get_PRECON_PARAMETER()==-1){
@@ -101,7 +102,7 @@ std::string iluplusplus_precond_parameter::precondname() const {
 std::string iluplusplus_precond_parameter::filename(std::string matrix_name) const {
     std::string name;
     if(get_PRECON_PARAMETER()>=0){
-         name = ("ML_"+integertostring(get_PRECON_PARAMETER())+"_"+get_PREPROCESSING().string_with_hyphen()+"_"+matrix_name+".out"); 
+         name = ("ML_"+std::to_string(get_PRECON_PARAMETER())+"_"+get_PREPROCESSING().string_with_hyphen()+"_"+matrix_name+".out");
     } else {
         #ifdef ILUPLUSPLUS_USES_PARDISO
             if(get_PRECON_PARAMETER()==-1){
@@ -132,7 +133,7 @@ std::string iluplusplus_precond_parameter::filename(std::string matrix_name) con
 std::string iluplusplus_precond_parameter::short_string() const {
     std::string name;
     if(get_PRECON_PARAMETER()>=0){
-        name = (get_PREPROCESSING().string()+"+"+integertostring(get_PRECON_PARAMETER())); 
+        name = (get_PREPROCESSING().string()+"+"+std::to_string(get_PRECON_PARAMETER()));
     } else {
         #ifdef ILUPLUSPLUS_USES_PARDISO
             if(get_PRECON_PARAMETER()==-1){
