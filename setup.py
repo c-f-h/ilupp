@@ -11,8 +11,7 @@ __version__ = '0.0.1'
 def readme():
     with open(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            'README'
-            ), encoding='utf8') as fp:
+            'README')) as fp:
         return fp.read()
 
 class get_pybind_include(object):
