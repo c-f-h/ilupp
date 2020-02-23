@@ -62,7 +62,7 @@ template<class T> class vector_dense
            // uses the pointers indicated to setup a matrix. No memory is allocated.
            // These routines have not been tested.
            void setup(Integer n, T* data_array);
-           // sets vector to dimension 0 and returns the information needed to use or free the data           
+           // sets vector to dimension 0 and returns the information needed to use or free the data
            void free(Integer& n, T*& data_array);
            // sets vector to dimension 0, but frees no memory. You still have be able to access the data somehow to free it....
            void null_vector_keep_data();
@@ -184,7 +184,9 @@ template<class T> class vector_dense
            void insert(const vector_dense<T>& b, Integer position, T value);
            // this is constructed as follows: inserts value at position into b.
            void insert_at_end(const vector_dense<T>& v);
+           // permute this vector according to perm
            void permute(const index_list& perm);
+           // assign the permutation of x according to perm to this vector
            void permute(const vector_dense<T>& x, const index_list& perm);
            void permute_at_end(const index_list& perm);
            void permute_at_end(const vector_dense<T>& x, const index_list& perm);
@@ -754,7 +756,10 @@ class index_list
            index_list();
            index_list(Integer _size);
            index_list(Integer _size, Integer _reserved);
+           std::vector<Integer>& vec()              { return indices; }
+           const std::vector<Integer>& vec() const  { return indices; }
            Integer dimension() const    { return indices.size(); }
+           size_t size() const          { return indices.size(); }
            Integer memory_used() const;
            Integer find(Integer k) const; // returns -1 if k is not found in list, else the position of k.
            void resize(Integer newsize);
@@ -782,6 +787,7 @@ class index_list
            index_list permute(const index_list& perm);
            void permute(const index_list& x, const index_list& perm);
            //friend void matrix_sparse<T>::insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index);
+           // assign the inverse of the permutation perm to this list
            void invert(const index_list& perm);
            void reflect(const index_list& perm);
            void compose(const index_list& P, const index_list& Q);
@@ -835,6 +841,20 @@ template<class T> std::istream& operator >> (std::istream& is, matrix_dense<T>& 
 
 void quicksort(index_list& v, index_list& list, const index_list& permutation, Integer left, Integer right);
 void quicksort(index_list& v, const index_list& permutation, Integer left, Integer right);
+
+template<class VT, class VInt>
+VT permute_vec(const VT& vec, const VInt& perm)
+{
+#ifdef DEBUG
+    if (x.dimension() != perm.dimension()) {
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    VT result(vec.size());
+    for (size_t i = 0; i < vec.size(); ++i)
+        result[i] = vec[perm[i]];
+    return result;
+}
 
 #ifdef ILUPLUSPLUS_USES_PARDISO // requires: libpardiso
     extern "C" {int mps_pardiso(int, int, int, int*, int*, double*, int*, double*, double*, int);

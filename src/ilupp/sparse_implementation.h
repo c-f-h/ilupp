@@ -972,17 +972,12 @@ template<class T> void vector_dense<T>::insert(const vector_dense<T>& b, Integer
 
 
 template<class T> void vector_dense<T>::permute(const vector_dense<T>& x, const index_list& perm){
-    try {
-        #ifdef DEBUG
-            if(non_fatal_error((x.size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        erase_resize_data_field(x.size);
-        for(Integer k=0;k<size;k++) set(k) = x.get(perm.get(k));
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::permute: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+#ifdef DEBUG
+    if(non_fatal_error((x.size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    erase_resize_data_field(x.size);
+    for(Integer k=0;k<size;k++)
+        (*this)[k] = x[perm[k]];
 }
 
 template<class T> void vector_dense<T>::permute(const index_list& perm){
@@ -10583,63 +10578,64 @@ template<class T> Integer matrix_sparse<T>::choose_ddPQ(const iluplusplus_precon
 }
 
 
-template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Real tau) const {
-  try {
-      if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer j,k,count,Qcount,pos;
-      Integer n = columns();
-      //Real tau = 0.01;
-      Real current_max;
-      Real divisor=0.0;
-      index_list I(n);
-      index_list J(n);
-      vector_dense<Real> W(n);
-      P.resize_with_constant_value(n,-1);
-      Q.resize_with_constant_value(n,-1);
-       for(k=0;k<n;k++){
-          current_max = W.set(k) = 0.0;
-          J.set(k) = 0;
-          for(j=pointer[k];j<pointer[k+1];j++){
-              W.set(k) += fabs(data[j]);
-              if (fabs(data[j])> current_max){
-                  current_max = fabs(data[j]);
-                  J.set(k) = indices[j];
-              }
-          }
-          divisor = W.get(k)*(pointer[k+1]-pointer[k]);
-          //divisor = W.get(k);
-          if(divisor == 0.0) W.set(k)=0.0;
-          else W.set(k) = -current_max /divisor;
-      }
-      W.quicksort(I,0,n-1);
-      J = J.permute(I); 
-      count = -1;
-      for (k=0;k<n;k++){
-          if ((P.get(I.get(k)) == -1) && (Q.get(J.get(k)) == -1) && (-W.get(k) >= tau)) {
-              count++;
-              P.set(I.get(k)) = count;
-              Q.set(J.get(k)) = count;
-          }
-      }
-      pos = Qcount = count;
-      for (k=0;k<n;k++){
-          if(P.get(k)<0){
-              count++;
-              P.set(k) = count;
-          }
-      }
-      for (k=0;k<n;k++){
-          if(Q.get(k)<0){
-              Qcount++;
-              Q.set(k) = Qcount;
-          }
-      }
-      return pos+1;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Real tau) const
+{
+    if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer j,k,count,Qcount,pos;
+    Integer n = columns();
+    //Real tau = 0.01;
+    Real current_max;
+    Real divisor=0.0;
+    index_list I(n);
+    std::vector<Integer> J(n);
+    vector_dense<Real> W(n);
+    P.resize_with_constant_value(n,-1);
+    Q.resize_with_constant_value(n,-1);
+    for(k=0; k<n; k++) {
+        current_max = 0.0;
+        W[k] = 0.0;
+        J[k] = 0;
+
+        // find column J[k] with maximum absolute value in row k
+        // W[k] is L_1 norm of row k
+        for(j=pointer[k]; j<pointer[k+1]; j++){
+            W[k] += std::abs(data[j]);
+            if (std::abs(data[j]) > current_max) {
+                current_max = std::abs(data[j]);
+                J[k] = indices[j];
+            }
+        }
+        divisor = W[k] * (pointer[k+1]-pointer[k]);
+        //divisor = W[k];
+        if(divisor == 0.0)
+            W[k] = 0.0;
+        else
+            W[k] = -current_max / divisor;
+    }
+    W.quicksort(I,0,n-1);
+    J = permute_vec(J, I);
+    count = -1;
+    for (k=0;k<n;k++){
+        if ((P[I[k]] == -1) && (Q[J[k]] == -1) && (-W[k] >= tau)) {
+            count++;
+            P[I[k]] = count;
+            Q[J[k]] = count;
+        }
+    }
+    pos = Qcount = count;
+    for (k=0;k<n;k++){
+        if(P[k]<0){
+            count++;
+            P[k] = count;
+        }
+    }
+    for (k=0;k<n;k++){
+        if(Q[k]<0){
+            Qcount++;
+            Q[k] = Qcount;
+        }
+    }
+    return pos+1;
 }
 
 
@@ -14173,8 +14169,7 @@ void index_list::resize_init(Integer newsize, Integer begin){
 }
 
 void index_list::resize_with_constant_value(Integer newsize, Integer d){
-    resize_without_initialization(newsize);
-    std::fill(indices.begin(), indices.end(), d);
+    indices.resize(newsize, d);
 }
 
 void index_list::switch_index(Integer i, Integer j){
@@ -14326,55 +14321,25 @@ void index_list::quicksort(index_list& list, Integer left, Integer right){
   }
 
 void index_list::permute(const index_list& x, const index_list& perm){
-  try {
-    #ifdef DEBUG
-        if(non_fatal_error((x.dimension()!= perm.dimension()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
-    resize_without_initialization(x.dimension());
-    for(Integer k=0;k<dimension();k++) set(k) = x.get(perm.get(k));
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::permute: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    indices = permute_vec(x.vec(), perm);
 }
 
  index_list index_list::permute(const index_list& perm){
-  try {
-    #ifdef DEBUG
-        if(non_fatal_error((dimension()!= perm.dimension()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
-    index_list x;
-    x.permute(*this,perm);
-    return x;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::permute: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
+     index_list x;
+     x.permute(*this, perm);
+     return x;
+ }
 
 void index_list::invert(const index_list& perm){
-  try {
-    resize_without_initialization(perm.dimension());
-    for(Integer i=0; i<dimension(); i++) set(perm.get(i)) = i;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::invert: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    indices.resize(perm.dimension());
+    for(Integer i=0; i<dimension(); i++)
+        indices[perm[i]] = i;
 }
 
 
 void index_list::reflect(const index_list& perm){
-  try {
     resize_without_initialization(perm.dimension());
     for(Integer i=0; i<dimension(); i++) set(i) = dimension() - 1 - perm.get(i);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::reflect: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
