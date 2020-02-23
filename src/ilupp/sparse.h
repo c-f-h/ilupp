@@ -750,14 +750,11 @@ class index_list
   {
        private:
            Integer size;
-           Integer reserved_memory;
-           Integer* indices;
+           std::vector<Integer> indices;
        public:
            index_list();
-           index_list(Integer m);
-           index_list(Integer m, Integer n);
-           index_list(const index_list& x);
-           virtual ~index_list();
+           index_list(Integer _size);
+           index_list(Integer _size, Integer _reserved);
            Integer dim() const;
            Integer dimension() const;
            Integer memory_used() const;
@@ -769,11 +766,8 @@ class index_list
            void resize_without_initialization(Integer newsize, Integer new_memory);
            void resize_with_constant_value(Integer newsize, Integer d);
            void switch_index(Integer i,Integer j);   // switch indices having index i and j
-           void switch_index(Integer i,Integer j,Integer& h); // same as above only faster
            Integer& operator[](Integer j);
            const Integer& operator[](Integer j) const;
-           index_list& operator = (const index_list& x);
-           void copy_and_destroy(index_list& A);
            void interchange(index_list& A);
            Integer  read(Integer j) const;
            Integer  read_index(Integer j) const;

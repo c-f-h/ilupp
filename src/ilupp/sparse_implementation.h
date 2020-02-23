@@ -758,7 +758,7 @@ template <class T> void vector_dense<T>::quicksort(index_list& list, Integer lef
   }
 
 template <class T> void vector_dense<T>::sort(index_list& list, Integer left, Integer right, Integer m){
-     Integer i,j,mid,a_list,h;
+     Integer i,j,mid,a_list;
      T a,help;
      #ifdef DEBUG
          Integer n = right-left+1; // number of elements to be sorted
@@ -772,24 +772,24 @@ template <class T> void vector_dense<T>::sort(index_list& list, Integer left, In
          if(right<=left+1){
              if(right==left+1 && data[right]<data[left]){
                  switch_entry(left,right,help);
-                 list.switch_index(left,right,h);
+                 list.switch_index(left,right);
              }  // end if
              break;
          } else {
              mid = (left+right)/2;
              switch_entry(mid,left+1,help);
-             list.switch_index(mid,left+1,h);
+             list.switch_index(mid,left+1);
              if(data[left]>data[right]){
                  switch_entry(left,right,help);
-                 list.switch_index(left,right,h);
+                 list.switch_index(left,right);
              }
              if(data[left+1]>data[right]){
                  switch_entry(left+1,right,help);
-                 list.switch_index(left+1,right,h);
+                 list.switch_index(left+1,right);
              }
              if(data[left]>data[left+1]){
                  switch_entry(left,left+1,help);
-                 list.switch_index(left,left+1,h);
+                 list.switch_index(left,left+1);
              }
              i=left+1;
              j=right;
@@ -800,7 +800,7 @@ template <class T> void vector_dense<T>::sort(index_list& list, Integer left, In
                  do j--; while(data[j]>a);
                  if(j<i) break;
                  switch_entry(i,j,help);
-                 list.switch_index(i,j,h);
+                 list.switch_index(i,j);
              } // end while
              data[left+1]=data[j];
              list[left+1]=list[j];
@@ -2397,8 +2397,8 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
   }
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
-  try {
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const
+{
     Real norm=0.0;
     Integer offset=0;
     Integer i;
@@ -2492,58 +2492,46 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
                 list[number_elements_larger_tau]=pivot_position;
             }
         }  // end if "to pivot or not to pivot"
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        norm = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        for(i=0;i<nnz;i++){
-            if(from<=pointer[i] && pointer[i]<to)
-                norm += absvalue_squared(data[i]);
-        }
-        norm=sqrt(norm);
-        for(i=0;i<nnz;i++){
-            if(from<=pointer[i] && pointer[i]<to && std::abs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                complete_list[number_elements_larger_tau]=pointer[i];
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            complete_list.quicksort(0,number_elements_larger_tau-1);
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-        }
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>::vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const
+{
+    norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    #ifdef DEBUG
+        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    #endif
+    for(i=0;i<nnz;i++){
+        if(from<=pointer[i] && pointer[i]<to)
+            norm += absvalue_squared(data[i]);
     }
-  }
+    norm=sqrt(norm);
+    for(i=0;i<nnz;i++){
+        if(from<=pointer[i] && pointer[i]<to && std::abs(data[i])> norm*tau){
+            input_abs[number_elements_larger_tau]=std::abs(data[i]);
+            complete_list[number_elements_larger_tau]=pointer[i];
+            number_elements_larger_tau++;
+        }
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+           // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        complete_list.quicksort(0,number_elements_larger_tau-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+    }
+}
 
 
 template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, const vector_dense<Real>& weights, Integer n, Real tau, Integer from, Integer to) const {
@@ -6977,7 +6965,16 @@ template<class T> bool matrix_sparse<T>::ILUT(const matrix_sparse<T>& A, matrix_
           }     // end for k
           // (3.) begin for k
           const Real norm_w = w.norm2();
-          for (Integer k = 0; k < i; ++k) {        // TODO: iterate only over nonzeros
+          /*
+           * cfh:
+           *
+           * It would be nice to iterate only over the non-zeros in w here, but
+           * the modification to w below creates non-sorted nonzeros which
+           * breaks the algorithm.
+           *
+           * It would be possible to re-sort w in each iteration; worth it?
+           */
+          for (Integer k = 0; k < i; ++k) {
               if (w.non_zero_check(k)) {
                   // (4.) w[k]= w[k] / U[k,k]
                   // NB: the first entry of the k-th row of U is the diagonal entry
@@ -14115,263 +14112,127 @@ template<class T>  Real matrix_dense<T>::memory() const{
 //***********************************************************************************************************************
 
 index_list::index_list(){
-    size = 0; reserved_memory = 0; indices = 0;
-  }
-
-index_list::index_list(Integer m){
-  try {
-     size = 0; reserved_memory = 0; indices = 0;
-     resize(m,m);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::index_list: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    size = 0;
 }
 
-index_list::index_list(Integer m, Integer n){
-  try {
-     #ifdef DEBUG
-         if(m>n){
-             std::cerr<<"index_list::index_list: size must be larger than reserved memory. Correcting this."<<std::endl;
-             n=m;
-        }
-     #endif
-     size = 0; reserved_memory = 0; indices = 0;
-     resize(m,n);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::index_list: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+index_list::index_list(Integer _size){
+    size = 0;
+    resize(_size, _size);
+}
+
+index_list::index_list(Integer _size, Integer _reserved){
+     size = 0;
+     resize(_size, _reserved);
 }
 
 void index_list::init(){
-     for(Integer i=0;i<size;i++)indices[i]=i;
-  }
+    for(Integer i=0;i<size;i++)
+        indices[i]=i;
+}
 
-void index_list::init_offset(Integer begin){
-     for(Integer i=0;i<size;i++)indices[i]=i+begin;
-  }
+void index_list::init_offset(Integer begin) {
+    for(Integer i=0;i<size;i++)
+        indices[i]=i+begin;
+}
 
-void index_list::init(Integer n){
-     #ifdef DEBUG
-         non_fatal_error(size<n,"index_list::init(Integer): index list cannot be initialized for integers larger than its size.");
-     #endif
-     for(Integer i=0;i<min(n,size);i++)indices[i]=i;
-  }
+void index_list::init(Integer n) {
+#ifdef DEBUG
+    non_fatal_error(size<n,"index_list::init(Integer): index list cannot be initialized for integers larger than its size.");
+#endif
+    for(Integer i=0;i<std::min(n,size);i++)
+        indices[i]=i;
+}
 
 void index_list::init(Integer n, Integer begin){
-     #ifdef DEBUG
-         non_fatal_error(n>size,"index_list::init(Integer, Integer): index list cannot be initialized for integers larger than its size.");
-     #endif
-     for(Integer i=0;i<n;i++)indices[i]=i+begin;
-  }
-
-index_list::index_list(const index_list& x){
-     size = 0; reserved_memory = 0; indices = 0;
-     resize_without_initialization(x.size,x.reserved_memory);
-     for(Integer i=0;i<size;i++) indices[i]=x.indices[i];
-  }
-
-index_list::~index_list(){
-     if (indices != 0) {delete[] indices; indices = 0;};
-  }
+#ifdef DEBUG
+    non_fatal_error(n>size,"index_list::init(Integer, Integer): index list cannot be initialized for integers larger than its size.");
+#endif
+    for(Integer i=0;i<n;i++)
+        indices[i]=i+begin;
+}
 
 void index_list::resize_without_initialization(Integer newsize){
-  try {
-    if (newsize<0) newsize=0;
-    if (size != newsize){
-        size = newsize;
-        if (reserved_memory<newsize){
-            reserved_memory = newsize;
-            if (indices != 0){ delete [] indices; indices = 0;}
-            if(newsize == 0){
-                indices = 0;
-            } else {
-                indices = new Integer[newsize];
-            }
-        }
-    }
-  }
-  catch(std::bad_alloc){
-     std::cerr<<"index_list::resize_without_initialization: Error allocating memory. Returning empty list."<<std::endl;
-     if(indices != 0) delete [] indices;
-     indices = 0;
-     size = 0;
-     reserved_memory = 0;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
+    indices.resize(newsize);
+    size = newsize;
 }
 
 void index_list::resize_without_initialization(Integer newsize, Integer new_memory){
-  try {
-     if(newsize<0){
-         std::cerr<<"index_list:resize(): newsize must be positive. Setting newsize = 0."<<std::endl;
-         newsize = 0;
-     }
-     if(new_memory<0){
-         std::cerr<<"index_list:resize(): new_memory must be positive. Setting new_memory = 0."<<std::endl;
-         new_memory = 0;
-     }
-     if (new_memory<newsize){
-         std::cerr<<"index_list:resize(): new_memory is smaller than newsize. Correcting: new_memory := newsize."<<std::endl;
-         new_memory=newsize;
-     }
-     if (size != newsize) size = newsize;
-     if (reserved_memory != new_memory){
-             reserved_memory = new_memory;
-             if (indices != 0) { delete [] indices; indices = 0;}
-             if(new_memory == 0) indices = 0;
-             else indices = new Integer[new_memory];
-     }
-  }
-  catch(std::bad_alloc){
-     std::cerr<<"index_list::resize_without_initialization: Error allocating memory. Returning empty list."<<std::endl;
-     if(indices != 0) delete [] indices;
-     indices = 0;
-     size = 0;
-     reserved_memory = 0;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
+    indices.resize(newsize);
+    indices.reserve(new_memory);
+    size = newsize;
 }
 
 void index_list::resize(Integer newsize){
-  try {
-     resize_without_initialization(newsize);
-     init();
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::resize: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    resize_without_initialization(newsize);
+    init();
 }
 
 void index_list::resize(Integer newsize, Integer new_memory){
-  try {
-     resize_without_initialization(newsize, new_memory);
-     init();
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::resize: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    resize_without_initialization(newsize, new_memory);
+    init();
 }
 
 void index_list::resize_init(Integer newsize, Integer begin){
-  try {
-     resize_without_initialization(newsize);
-     init_offset(begin);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::resize_init: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    resize_without_initialization(newsize);
+    init_offset(begin);
 }
 
 void index_list::resize_with_constant_value(Integer newsize, Integer d){
-  try {
-     resize_without_initialization(newsize);
-     for(Integer i=0;i<newsize;i++) indices[i]=d;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::resize_with_constant_value: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    resize_without_initialization(newsize);
+    std::fill(indices.begin(), indices.end(), d);
 }
 
 void index_list::switch_index(Integer i, Integer j){
-     #ifdef DEBUG
-         if((i>=size)||(j>=size)|| (i<0) || (j<0)){
-             std::cerr << "index_list::switch_index: out of domain error: size of list "<<size<<" indices to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     Integer h;
-     h=indices[i];
-     indices[i]=indices[j];
-     indices[j]=h;
-  }
-
-void index_list::switch_index(Integer i, Integer j, Integer& h){
-     #ifdef DEBUG
-         if((i>=size)||(j>=size)|| (i<0) || (j<0)){
-             std::cerr << "index_list::switch_index: out of domain error: size of list "<<size<<" indices to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     h=indices[i];
-     indices[i]=indices[j];
-     indices[j]=h;
-  }
+#ifdef DEBUG
+    if((i>=size)||(j>=size)|| (i<0) || (j<0)){
+        std::cerr << "index_list::switch_index: out of domain error: size of list "<<size<<" indices to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    std::swap(indices[i], indices[j]);
+}
 
 Integer& index_list::operator[](Integer j){
-     #ifdef DEBUG
-         if (j >= size || j<0 ){
-             std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
-             std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
-             std::cerr<<"complete list"<<std::endl;
-             std::cerr<<*this;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+#ifdef DEBUG
+    if (j >= size || j<0 ){
+        std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
+        std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
+        std::cerr<<"complete list"<<std::endl;
+        std::cerr<<*this;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    return indices[j];
+}
 
 const Integer& index_list::operator[](Integer j) const {
-     #ifdef DEBUG
-         if (j >= size || j<0 ){
-             std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
-             std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
-             std::cerr<<"complete list"<<std::endl;
-             std::cerr<<*this;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+#ifdef DEBUG
+    if (j >= size || j<0 ){
+        std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
+        std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
+        std::cerr<<"complete list"<<std::endl;
+        std::cerr<<*this;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    return indices[j];
+}
 
 Integer index_list::read(Integer j) const {
-     #ifdef DEBUG
-         if (j >= size || j<0){
-             std::cerr<<"index_list::read_index: given index is out of domain"<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+    return (*this)[j];
+}
 
 Integer index_list::read_index(Integer j) const {
-     #ifdef DEBUG
-         if (j >= size || j<0){
-             std::cerr<<"index_list::read_index: given index is out of domain"<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+    return (*this)[j];
+}
 
 Integer index_list::get(Integer j) const {
-     #ifdef DEBUG
-         if (j >= size|| j<0){
-             std::cerr<<"index_list::get: given index is out of domain"<<std::endl;
-             std::cerr<<"trying to access "<<j<<" in a list having size "<<size<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+    return (*this)[j];
+}
 
 Integer& index_list::set(Integer j) {
-     #ifdef DEBUG
-         if (j >= size|| j<0){
-             std::cerr<<"index_list::set: given index is out of domain"<<std::endl;
-             std::cerr<<"trying to access "<<j<<" in a list having size "<<size<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return indices[j];
-  }
+    return (*this)[j];
+}
 
 void index_list::print_info() const {
     std::cout<<"An index list of dimension "<<size<<std::endl;
@@ -14391,7 +14252,7 @@ Integer index_list::dimension() const {
   }
 
 Integer index_list::memory_used() const {
-    return reserved_memory;
+    return indices.capacity();
   }
 
 void index_list::quicksort(Integer left, Integer right){
@@ -14530,41 +14391,9 @@ void index_list::reflect(const index_list& perm){
 }
 
 
-index_list& index_list::operator = (const index_list& x){
-  try {
-     if(this==&x) return *this;
-     resize_without_initialization(x.size,x.reserved_memory);
-     for(Integer i=0;i<size;i++) indices[i]=x.indices[i];
-     return *this;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::operator =: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-void index_list::copy_and_destroy(index_list& A){
-    reserved_memory = A.reserved_memory;
-    A.reserved_memory = 0;
-    size = A.size;
-    A.size = 0;
-    if (indices != 0) delete [] indices;
-    indices = A.indices;
-    A.indices = 0;
-}
-
 void index_list::interchange(index_list& A){
-    Integer h;
-    Integer* pt;
-    h = reserved_memory;
-    reserved_memory = A.reserved_memory;
-    A.reserved_memory = h;
-    h = size;
-    size = A.size;
-    A.size = h;
-    pt = indices;
-    indices = A.indices;
-    A.indices = pt;
+    std::swap(indices, A.indices);
+    std::swap(size, A.size);
 }
 
 std::ostream& operator << (std::ostream& os, const index_list& x){
@@ -14650,7 +14479,7 @@ bool index_list::check_if_permutation() const {
 }
 
 Real index_list::memory() const{
-    return (Real)((reserved_memory+1)*sizeof(Integer));
+    return (Real)((indices.capacity()+1)*sizeof(Integer));
 }
 
 Integer index_list::equality(const index_list& v) const {
