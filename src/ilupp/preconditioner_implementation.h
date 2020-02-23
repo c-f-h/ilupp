@@ -2763,36 +2763,6 @@ template <class T, class matrix_type, class vector_type>
 }
 
 template <class T, class matrix_type, class vector_type>
-  ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, const ILUC_precond_parameter& p){
-  try {
-      clock_t time_begin, time_end;
-      time_begin = clock();
-      if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUC2(A,this->Precond_right,p.get_fill_in(),p.get_threshold());      // preconditioner of A.
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-      } else {
-          this->preconditioner_exists = this->Precond_right.ILUC2(A,this->Precond_left,p.get_fill_in(),p.get_threshold());      // preconditioner of A.
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-          //this->Precond_left.transpose_in_place();
-          //this->Precond_right.transpose_in_place();
-      }
-      time_end = clock();
-      this->setup_time = ((Real) time_end -(Real) time_begin)/(Real) CLOCKS_PER_SEC;
-      this->pre_image_size=this->Precond_left.rows();
-      this->image_size=this->Precond_right.columns();
-      this->intermediate_size=this->Precond_left.columns();
-      this->memory_allocated_to_create=0.0;
-      this->memory_used_to_create=0.0;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"ILUCPreconditioner::ILUCPreconditioner: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
- }
-
-template <class T, class matrix_type, class vector_type>
   ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const ILUCPreconditioner &A){
   try {
       this->pre_image_size=A.pre_image_size;
@@ -2858,18 +2828,6 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  void ILUCPreconditioner<T,matrix_type,vector_type>::write_binary(std::string directory, const ILUC_precond_parameter& p) const {
-       if(exists()){
-           this->Precond_left.write_binary(directory+p.convert_to_string()+"-L.isp");
-           this->Precond_right.write_binary(directory+p.convert_to_string()+"-R.isp");
-       } else {
-       matrix_type N;
-       N.write_binary(directory+p.convert_to_string()+"-L.isp");
-       N.write_binary(directory+p.convert_to_string()+"-R.isp");
-       }
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUCPreconditioner<T,matrix_type,vector_type>::read_binary(std::string filename){
       this->Precond_left.read_binary(filename+"-L.isp");
       this->Precond_right.read_binary(filename+"-R.isp");
@@ -2902,32 +2860,6 @@ template <class T, class matrix_type, class vector_type>
           this->right_form=UPPER_TRIANGULAR;
       } else {
           this->preconditioner_exists = this->Precond_right.ILUT(A,this->Precond_left,max_fill_in,threshold,this->setup_time);      // preconditioner of A.
-          this->Precond_left.transpose_in_place();
-          this->Precond_right.transpose_in_place();
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-      }
-      this->pre_image_size=this->Precond_left.rows();
-      this->image_size=this->Precond_right.columns();
-      this->intermediate_size=this->Precond_left.columns();
-      this->memory_allocated_to_create=0.0;
-      this->memory_used_to_create=0.0;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"ILUTPreconditioner::ILUTPreconditioner: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, const ILUT_precond_parameter& p){
-  try {
-      if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUT(A,this->Precond_right,p.get_fill_in(),p.get_threshold(),this->setup_time);      // preconditioner of A.
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-      } else {
-          this->preconditioner_exists = this->Precond_right.ILUT(A,this->Precond_left,p.get_fill_in(),p.get_threshold(),this->setup_time);      // preconditioner of A.
           this->Precond_left.transpose_in_place();
           this->Precond_right.transpose_in_place();
           this->left_form=LOWER_TRIANGULAR;
@@ -3016,18 +2948,6 @@ template <class T, class matrix_type, class vector_type>
           matrix_type N;
           N.write_binary(filename+"-L.isp");
           N.write_binary(filename+"-R.isp");
-      }
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void ILUTPreconditioner<T,matrix_type,vector_type>::write_binary(std::string directory, const ILUT_precond_parameter& p) const {
-      if(exists()){
-          this->Precond_left.write_binary(directory+p.convert_to_string()+"-L.isp");
-          this->Precond_right.write_binary(directory+p.convert_to_string()+"-R.isp");
-      } else {
-          matrix_type N;
-          N.write_binary(directory+p.convert_to_string()+"-L.isp");
-          N.write_binary(directory+p.convert_to_string()+"-R.isp");
       }
   }
 

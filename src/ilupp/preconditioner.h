@@ -491,9 +491,6 @@ template <class T, class matrix_type, class vector_type>
   };
 
 
-
-
-
 //***********************************************************************************************************************//
 //                                                                                                                       //
 //         The class: ILUC Preconditioner (Saad):                                                                         //
@@ -507,19 +504,13 @@ template <class T, class matrix_type, class vector_type>
        public:
           ILUCPreconditioner();
           ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold);  // default threshold=-1.0
-          ILUCPreconditioner(const matrix_type &A, const ILUC_precond_parameter& p);
           ILUCPreconditioner(const ILUCPreconditioner &A);
           ILUCPreconditioner& operator = (const ILUCPreconditioner<T, matrix_type, vector_type> &A);
           virtual bool exists() const;
           virtual void print_existence();
           virtual void write_binary(std::string filename) const;
-          virtual void write_binary(std::string directory, const ILUC_precond_parameter& p) const;
           virtual void read_binary(std::string filename);
   };
-
-
-
-
 
 
 template <class T, class matrix_type, class vector_type>
@@ -528,14 +519,12 @@ template <class T, class matrix_type, class vector_type>
        public:
           ILUTPreconditioner();
           ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold); // default threshold=1000
-          ILUTPreconditioner(const matrix_type &A, const ILUT_precond_parameter& p);
           ILUTPreconditioner(const ILUTPreconditioner &A);
           ILUTPreconditioner& operator = (const ILUTPreconditioner<T,matrix_type, vector_type> &A);
           virtual bool exists() const;
           virtual std::string special_info() const;
           virtual void print_existence();
           virtual void write_binary(std::string filename) const;
-          virtual void write_binary(std::string directory, const ILUT_precond_parameter& p) const;
           virtual void read_binary(std::string filename);
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;

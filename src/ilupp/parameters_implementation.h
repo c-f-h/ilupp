@@ -2502,55 +2502,9 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: ILUC Preconditioner (Saad):                                                                         //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-         ILUC_precond_parameter::ILUC_precond_parameter() : fill_in(0), threshold(1000.0) {}
-         ILUC_precond_parameter::ILUC_precond_parameter(Integer fi, Real th) : fill_in(fi), threshold(th) {}
-         ILUC_precond_parameter::ILUC_precond_parameter(const ILUC_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold;}
-         ILUC_precond_parameter& ILUC_precond_parameter::operator =(const ILUC_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; return *this;}
-         Integer ILUC_precond_parameter::get_fill_in() const {return fill_in;}
-         Real ILUC_precond_parameter::get_threshold() const {return threshold;}
-         std::string ILUC_precond_parameter::convert_to_string() const {
-             std::ostringstream _fill_in;
-             std::ostringstream _threshold;
-             _threshold.precision(2);
-             if(threshold < 500) _threshold<<threshold;
-             else _threshold<<"N";
-             _fill_in<<fill_in;
-             return _fill_in.str()+"-"+_threshold.str();
-         }
-         void ILUC_precond_parameter::set(Integer fi, Real th){fill_in=fi; threshold=th;}
-         void ILUC_precond_parameter::set_threshold(Real th){threshold=th;}
-
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: ILUT Preconditioner (Saad):                                                                        //
 //                                                                                                                       //
 //***********************************************************************************************************************//
-
-         ILUT_precond_parameter::ILUT_precond_parameter() : fill_in(0), threshold(1000.0) {}
-         ILUT_precond_parameter::ILUT_precond_parameter(Integer fi, Real th) : fill_in(fi), threshold(th) {}
-         ILUT_precond_parameter::ILUT_precond_parameter(const ILUT_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold;}
-         ILUT_precond_parameter& ILUT_precond_parameter::operator =(const ILUT_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; return *this;}
-         Integer ILUT_precond_parameter::get_fill_in() const {return fill_in;}
-         Real ILUT_precond_parameter::get_threshold() const {return threshold;}
-         std::string ILUT_precond_parameter::convert_to_string() const {
-             std::ostringstream _fill_in;
-             std::ostringstream _threshold;
-             _threshold.precision(2);
-             if(threshold<500.0)
-                 _threshold<<threshold;
-             else
-                 _threshold<<"N";
-             _fill_in<<fill_in;
-             return _fill_in.str()+"-"+_threshold.str();
-         }
-         void ILUT_precond_parameter::set(Integer fi, Real th){fill_in=fi; threshold=th;}
-         void ILUT_precond_parameter::set_threshold(Real th){threshold=th;}
 
          ILUTP_precond_parameter::ILUTP_precond_parameter() : fill_in(0), threshold(1000.0), perm_tol(0.0), row_pos(0) {}
          ILUTP_precond_parameter::ILUTP_precond_parameter(Integer fi, Real th, Real pt, Integer rp) : fill_in(fi), threshold(th), perm_tol(pt), row_pos(rp) {}

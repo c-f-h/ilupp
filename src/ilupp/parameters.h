@@ -25,61 +25,13 @@
 
 namespace iluplusplus {
 
-
-class precond_parameter
-  {
-       public:
-          virtual ~precond_parameter(){};
-          virtual std::string convert_to_string() const = 0;
-  };
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
-//         The class: ILUC Preconditioner (Saad):                                                                         //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-class ILUC_precond_parameter : public precond_parameter
-  {
-      private:
-         Integer fill_in;
-         Real threshold;
-      public:
-         ILUC_precond_parameter();
-         ILUC_precond_parameter(Integer fi, Real th);
-         ILUC_precond_parameter(const ILUC_precond_parameter& p);
-         ILUC_precond_parameter& operator =(const ILUC_precond_parameter& p);
-         Integer get_fill_in() const;
-         Real get_threshold() const;
-         virtual std::string convert_to_string() const;
-         void set(Integer fi, Real th);
-         void set_threshold(Real th);
-  };
-
 //***********************************************************************************************************************//
 //                                                                                                                       //
 //         The class: ILUT Preconditioner (Saad):                                                                        //
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-class ILUT_precond_parameter : public precond_parameter
-  {
-      protected:
-         Integer fill_in;
-         Real threshold;
-      public:
-         ILUT_precond_parameter();
-         ILUT_precond_parameter(Integer fi, Real th);
-         ILUT_precond_parameter(const ILUT_precond_parameter& p);
-         ILUT_precond_parameter& operator =(const ILUT_precond_parameter& p);
-         Integer get_fill_in() const;
-         Real get_threshold() const;
-         virtual std::string convert_to_string() const;
-         void set(Integer fi, Real th);
-         void set_threshold(Real th);
-  };
-
-class ILUTP_precond_parameter : public precond_parameter
+class ILUTP_precond_parameter
   {
       protected:
          Integer fill_in;
@@ -95,7 +47,7 @@ class ILUTP_precond_parameter : public precond_parameter
          Integer get_row_pos() const;
          Real get_threshold() const;
          Real get_perm_tol() const;
-         virtual std::string convert_to_string() const;
+         std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt, Integer rp);
          void set_threshold(Real th);
   };
@@ -107,7 +59,7 @@ class ILUTP_precond_parameter : public precond_parameter
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-class ILUCP_precond_parameter : public precond_parameter
+class ILUCP_precond_parameter
   {
       protected:
          Integer fill_in;
@@ -123,7 +75,7 @@ class ILUCP_precond_parameter : public precond_parameter
          Real get_threshold() const;
          Real get_perm_tol() const;
          Integer get_row_pos() const;
-         virtual std::string convert_to_string() const;
+         std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt, Integer rp);
          void set_row_pos(Integer rp);
          void set_threshold(Real th);
@@ -138,7 +90,7 @@ class ILUCP_precond_parameter : public precond_parameter
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-class ILUCDP_precond_parameter : public precond_parameter
+class ILUCDP_precond_parameter
   {
       protected:
          Integer fill_in;
@@ -154,7 +106,7 @@ class ILUCDP_precond_parameter : public precond_parameter
          Real get_threshold() const;
          Real get_perm_tol() const;
          Integer get_begin_perm_row() const;
-         virtual std::string convert_to_string() const;
+         std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt, Integer bpr);  // default bpr = 1
          void set_threshold(Real th);
          void set_perm_tol(Real pt);
@@ -167,7 +119,7 @@ class ILUCDP_precond_parameter : public precond_parameter
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-class ILUTPD_precond_parameter : public precond_parameter
+class ILUTPD_precond_parameter
   {
       private:
          Integer working_fill_in;
@@ -183,7 +135,7 @@ class ILUTPD_precond_parameter : public precond_parameter
          Real get_working_threshold() const;
          Integer get_fill_in() const;
          Real get_threshold() const;
-         virtual std::string convert_to_string() const;
+         std::string convert_to_string() const;
          void set(Integer wfi, Real wth, Integer fi, Real th);
   };
 
@@ -194,7 +146,7 @@ class ILUTPD_precond_parameter : public precond_parameter
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-class iluplusplus_precond_parameter : public precond_parameter
+class iluplusplus_precond_parameter
   {
       protected:
          Integer                  fill_in;
@@ -316,7 +268,7 @@ class iluplusplus_precond_parameter : public precond_parameter
          iluplusplus_precond_parameter& operator =(const iluplusplus_precond_parameter& p);
          void default_parameters();                      // sets default parameters
          void make_table();                              // sets up table of dropping weights
-         virtual std::string convert_to_string() const;
+         std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt);
          void print() const;
          Real combine(Real x, Real y) const; // routine for combining weights

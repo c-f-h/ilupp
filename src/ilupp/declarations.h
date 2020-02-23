@@ -162,17 +162,9 @@ template<class T> class matrix_dense;
 template<class T> class matrix_oriented;
 class index_list;
 
-// specific instances templates
-typedef vector_dense<Coeff_Field> Vector;
-typedef matrix_sparse<Coeff_Field> Matrix;
-typedef matrix_dense<Coeff_Field> Matrix_Dense;
-typedef index_list Index_List;
-
 // classes for parameters.h
 
 class precond_parameter;
-class ILUC_precond_parameter;
-class ILUT_precond_parameter;
 class ILUTP_precond_parameter;
 class ILUCP_precond_parameter;
 class ILUCDP_precond_parameter;
@@ -200,9 +192,6 @@ template <class T, class matrix_type, class vector_type> class ILUCPPrecondition
 template <class T, class matrix_type, class vector_type> class ILUCDPPreconditioner;
 template <class T, class matrix_type, class vector_type> class multilevelILUCDPPreconditioner;
 template <class T, class matrix_type, class vector_type> class DualLayerMultilevelILUCDPPreconditioner;
-
-typedef preconditioner<Real,Matrix,Vector> Preconditioner;
-typedef multilevelILUCDPPreconditioner<Real,Vector,Matrix> ML_Preconditioner;
 
 // classes for function_class.h
 
