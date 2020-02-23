@@ -291,7 +291,7 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
           virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const ;
-          virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &w) const;
+          virtual void apply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
           virtual void unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;

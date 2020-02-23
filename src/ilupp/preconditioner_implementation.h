@@ -1682,7 +1682,7 @@ template <class T, class matrix_type, class vector_type>
 }
 
 template <class T, class matrix_type, class vector_type>
-  void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, const vector_type &w) const {
+  void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, vector_type &w) const {
   try {
       Precond_right.triangular_solve(right_form,use,w);
   }
