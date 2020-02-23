@@ -3063,7 +3063,7 @@ template <class T, class matrix_type, class vector_type>
   ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;this->left_matrix_usage = NOPERM;this->right_matrix_usage = PERM1;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real pt, Integer rp=0){
+  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real pt, Integer rp){
   try {
       if(A.orient()==ROW){
           this->preconditioner_exists = this->Precond_left.ILUTP2(A,this->Precond_right,this->permutation,max_fill_in,threshold,pt,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
