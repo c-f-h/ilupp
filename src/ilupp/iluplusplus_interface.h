@@ -26,49 +26,8 @@
 
 namespace iluplusplus {
 
-class vector;
-class matrix;
-class multilevel_preconditioner;
-
-class vector : public vector_dense<Coeff_Field>
-{
-    public:
-        vector();
-        vector(Integer m);
-        vector(Integer m, Coeff_Field d);
-        ~vector();
-        vector(const vector& x);
-        vector& operator =(const vector& x);
-        Coeff_Field  get(Integer j) const;
-        Coeff_Field  read(Integer j) const;  // read_data
-        Coeff_Field& set(Integer j);
-        Integer dim() const;
-        void resize(Integer newsize, Coeff_Field d);
-        void resize_without_initialization(Integer newsize);
-        void set_all(Coeff_Field t);
-        void interchange(Coeff_Field*& vdata, Integer& dim);
-};
-
-class matrix : public matrix_sparse<Coeff_Field>
-{
-    public:
-        matrix();
-        ~matrix();
-        matrix(const matrix& x);
-        matrix& operator = (const matrix& x);
-        void interchange(matrix& x);
-        vector operator * (const vector& x);
-        void multiply(vector &v) const;
-        void multiply(const vector& v, vector &w) const;
-        void interchange(Coeff_Field*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, Integer& Annz, orientation_type& Aorientation);
-        Integer rows() const;
-        Integer columns() const;
-        Integer non_zeroes() const;        // returns the number of non-zeroes of *this. i.e. the reserved memory.
-        Integer actual_non_zeroes() const; // returns the actual number of non-zeroes, i.e. the used memory.
-        void print_info() const;
-        void print_all() const;
-};
-
+typedef vector_dense<Coeff_Field> vector;
+typedef matrix_sparse<Coeff_Field> matrix;
 
 class multilevel_preconditioner : public multilevelILUCDPPreconditioner<Coeff_Field,matrix_sparse<Coeff_Field>,vector_dense<Coeff_Field> >
 {
@@ -93,10 +52,6 @@ class multilevel_preconditioner : public multilevelILUCDPPreconditioner<Coeff_Fi
         void print_info() const;
         Integer dim() const;
 };
-
-
-std::ostream& operator << (std::ostream& os, const vector& x);
-std::ostream& operator << (std::ostream& os, const matrix& x);
 
 
 bool BiCGstab(const multilevel_preconditioner& P, const matrix& A, const vector& b, vector& x, Integer min_iter,
