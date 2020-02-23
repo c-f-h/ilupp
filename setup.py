@@ -126,4 +126,7 @@ setup(
     setup_requires = ['pybind11>=2.4'],
     cmdclass = {'build_ext': BuildExt},
     zip_safe = False,
+
+    tests_require = ['nose', 'numpy', 'scipy'],
+    test_suite = 'nose.collector'
 )
