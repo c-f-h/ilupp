@@ -974,7 +974,7 @@ template<class T> void vector_dense<T>::insert(const vector_dense<T>& b, Integer
 template<class T> void vector_dense<T>::permute(const vector_dense<T>& x, const index_list& perm){
     try {
         #ifdef DEBUG
-            if(non_fatal_error((x.size!= perm.dim()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+            if(non_fatal_error((x.size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         #endif
         erase_resize_data_field(x.size);
         for(Integer k=0;k<size;k++) set(k) = x.get(perm.get(k));
@@ -989,7 +989,7 @@ template<class T> void vector_dense<T>::permute(const index_list& perm){
     vector_dense<T> H;
     try {
         #ifdef DEBUG
-            if(non_fatal_error((size!= perm.dim()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+            if(non_fatal_error((size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         #endif
         H.permute(*this,perm);
         interchange(H);
@@ -1002,14 +1002,14 @@ template<class T> void vector_dense<T>::permute(const index_list& perm){
 
 template<class T> void vector_dense<T>::permute_at_end(const vector_dense<T>& x, const index_list& perm){
     Integer k;
-    Integer offset = x.size - perm.dim();
+    Integer offset = x.size - perm.dimension();
     try {
         #ifdef DEBUG
-            if(non_fatal_error((x.size < perm.dim()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+            if(non_fatal_error((x.size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         #endif
         erase_resize_data_field(x.size);
         for(k=0;k<offset;k++) set(k) = x.get(k); 
-        for(k=0;k<perm.dim();k++) set(k+offset) = x.get(perm.get(k)+offset);
+        for(k=0;k<perm.dimension();k++) set(k+offset) = x.get(perm.get(k)+offset);
     }
     catch(iluplusplus_error ippe){
         std::cerr<<"vector_dense<T>::permute_at_end: "<<ippe.error_message()<<std::endl;
@@ -1022,7 +1022,7 @@ template<class T> void vector_dense<T>::permute_at_end(const index_list& perm){
     vector_dense<T> H;
     try {
         #ifdef DEBUG
-            if(non_fatal_error((size < perm.dim()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+            if(non_fatal_error((size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         #endif
         H.permute_at_end(*this,perm);
         interchange(H);
@@ -6260,7 +6260,7 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix(sp
 template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_first(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const{
   try {
     #ifdef DEBUG
-        if(non_fatal_error(perm.dim() != rows(),"matrix_sparse::triangular_solve_with_smaller_matrix_permute_first: permutation must have same dimension as number of rows of matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+        if(non_fatal_error(perm.dimension() != rows(),"matrix_sparse::triangular_solve_with_smaller_matrix_permute_first: permutation must have same dimension as number of rows of matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     #endif
     vector_dense<T> w;
     Integer i;
@@ -14112,40 +14112,37 @@ template<class T>  Real matrix_dense<T>::memory() const{
 //***********************************************************************************************************************
 
 index_list::index_list(){
-    size = 0;
 }
 
 index_list::index_list(Integer _size){
-    size = 0;
     resize(_size, _size);
 }
 
 index_list::index_list(Integer _size, Integer _reserved){
-     size = 0;
      resize(_size, _reserved);
 }
 
 void index_list::init(){
-    for(Integer i=0;i<size;i++)
+    for(Integer i=0;i<dimension();i++)
         indices[i]=i;
 }
 
 void index_list::init_offset(Integer begin) {
-    for(Integer i=0;i<size;i++)
+    for(Integer i=0;i<dimension();i++)
         indices[i]=i+begin;
 }
 
 void index_list::init(Integer n) {
 #ifdef DEBUG
-    non_fatal_error(size<n,"index_list::init(Integer): index list cannot be initialized for integers larger than its size.");
+    non_fatal_error(dimension()<n,"index_list::init(Integer): index list cannot be initialized for integers larger than its size.");
 #endif
-    for(Integer i=0;i<std::min(n,size);i++)
+    for(Integer i=0;i<std::min(n,dimension());i++)
         indices[i]=i;
 }
 
 void index_list::init(Integer n, Integer begin){
 #ifdef DEBUG
-    non_fatal_error(n>size,"index_list::init(Integer, Integer): index list cannot be initialized for integers larger than its size.");
+    non_fatal_error(n>dimension(),"index_list::init(Integer, Integer): index list cannot be initialized for integers larger than its size.");
 #endif
     for(Integer i=0;i<n;i++)
         indices[i]=i+begin;
@@ -14153,13 +14150,11 @@ void index_list::init(Integer n, Integer begin){
 
 void index_list::resize_without_initialization(Integer newsize){
     indices.resize(newsize);
-    size = newsize;
 }
 
 void index_list::resize_without_initialization(Integer newsize, Integer new_memory){
     indices.resize(newsize);
     indices.reserve(new_memory);
-    size = newsize;
 }
 
 void index_list::resize(Integer newsize){
@@ -14184,8 +14179,8 @@ void index_list::resize_with_constant_value(Integer newsize, Integer d){
 
 void index_list::switch_index(Integer i, Integer j){
 #ifdef DEBUG
-    if((i>=size)||(j>=size)|| (i<0) || (j<0)){
-        std::cerr << "index_list::switch_index: out of domain error: size of list "<<size<<" indices to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
+    if((i>=dimension())||(j>=dimension())|| (i<0) || (j<0)){
+        std::cerr << "index_list::switch_index: out of domain error: size of list "<<dimension()<<" indices to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
 #endif
@@ -14194,9 +14189,9 @@ void index_list::switch_index(Integer i, Integer j){
 
 Integer& index_list::operator[](Integer j){
 #ifdef DEBUG
-    if (j >= size || j<0 ){
+    if (j >= dimension() || j<0 ){
         std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
-        std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
+        std::cerr<<"index_list has size "<<dimension()<<" and requested index is "<<j<<std::endl;
         std::cerr<<"complete list"<<std::endl;
         std::cerr<<*this;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -14207,9 +14202,9 @@ Integer& index_list::operator[](Integer j){
 
 const Integer& index_list::operator[](Integer j) const {
 #ifdef DEBUG
-    if (j >= size || j<0 ){
+    if (j >= dimension() || j<0 ){
         std::cerr<<"index_list::operator[]: given index is out of domain"<<std::endl;
-        std::cerr<<"index_list has size "<<size<<" and requested index is "<<j<<std::endl;
+        std::cerr<<"index_list has size "<<dimension()<<" and requested index is "<<j<<std::endl;
         std::cerr<<"complete list"<<std::endl;
         std::cerr<<*this;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -14235,20 +14230,12 @@ Integer& index_list::set(Integer j) {
 }
 
 void index_list::print_info() const {
-    std::cout<<"An index list of dimension "<<size<<std::endl;
+    std::cout<<"An index list of dimension "<<dimension()<<std::endl;
   }
 
 Integer index_list::find(Integer k) const {
-    for(Integer i=0; i<size; i++) if (indices[i]==k) return i;
+    for(Integer i=0; i<dimension(); i++) if (indices[i]==k) return i;
     return -1;
-  }
-
-Integer index_list::dim() const {
-    return size;
-  }
-
-Integer index_list::dimension() const {
-    return size;
   }
 
 Integer index_list::memory_used() const {
@@ -14257,7 +14244,7 @@ Integer index_list::memory_used() const {
 
 void index_list::quicksort(Integer left, Integer right){
      #ifdef DEBUG
-         if(left<0 || right >= size){
+         if(left<0 || right >= dimension()){
              std::cerr<<"index_list::quicksort: arguments out of range. Not sorting."<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
@@ -14284,7 +14271,7 @@ void index_list::quicksort(Integer left, Integer right){
 
 void index_list::quicksort_with_inverse(index_list& invperm, Integer left, Integer right){
      #ifdef DEBUG
-         if(left<0 || right >= size){
+         if(left<0 || right >= dimension()){
              std::cerr<<"index_list::quicksort_with_inverse: arguments out of range. Not sorting."<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
@@ -14312,7 +14299,7 @@ void index_list::quicksort_with_inverse(index_list& invperm, Integer left, Integ
 
 void index_list::quicksort(index_list& list, Integer left, Integer right){
      #ifdef DEBUG
-         if(left<0 || right >= size){
+         if(left<0 || right >= dimension()){
              std::cerr<<"index_list::quicksort: arguments out of range. Not sorting."<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
@@ -14341,10 +14328,10 @@ void index_list::quicksort(index_list& list, Integer left, Integer right){
 void index_list::permute(const index_list& x, const index_list& perm){
   try {
     #ifdef DEBUG
-        if(non_fatal_error((x.dim()!= perm.dim()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+        if(non_fatal_error((x.dimension()!= perm.dimension()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     #endif
-    resize_without_initialization(x.size);
-    for(Integer k=0;k<dim();k++) set(k) = x.get(perm.get(k));
+    resize_without_initialization(x.dimension());
+    for(Integer k=0;k<dimension();k++) set(k) = x.get(perm.get(k));
   }
   catch(iluplusplus_error ippe){
      std::cerr<<"index_list::permute: "<<ippe.error_message()<<std::endl;
@@ -14355,7 +14342,7 @@ void index_list::permute(const index_list& x, const index_list& perm){
  index_list index_list::permute(const index_list& perm){
   try {
     #ifdef DEBUG
-        if(non_fatal_error((dim()!= perm.dim()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+        if(non_fatal_error((dimension()!= perm.dimension()), "index_list::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     #endif
     index_list x;
     x.permute(*this,perm);
@@ -14369,8 +14356,8 @@ void index_list::permute(const index_list& x, const index_list& perm){
 
 void index_list::invert(const index_list& perm){
   try {
-    resize_without_initialization(perm.dim());
-    for(Integer i=0; i<size; i++) set(perm.get(i)) = i;
+    resize_without_initialization(perm.dimension());
+    for(Integer i=0; i<dimension(); i++) set(perm.get(i)) = i;
   }
   catch(iluplusplus_error ippe){
      std::cerr<<"index_list::invert: "<<ippe.error_message()<<std::endl;
@@ -14381,8 +14368,8 @@ void index_list::invert(const index_list& perm){
 
 void index_list::reflect(const index_list& perm){
   try {
-    resize_without_initialization(perm.dim());
-    for(Integer i=0; i<size; i++) set(i) = size - 1 - perm.get(i);
+    resize_without_initialization(perm.dimension());
+    for(Integer i=0; i<dimension(); i++) set(i) = dimension() - 1 - perm.get(i);
   }
   catch(iluplusplus_error ippe){
      std::cerr<<"index_list::reflect: "<<ippe.error_message()<<std::endl;
@@ -14393,7 +14380,6 @@ void index_list::reflect(const index_list& perm){
 
 void index_list::interchange(index_list& A){
     std::swap(indices, A.indices);
-    std::swap(size, A.size);
 }
 
 std::ostream& operator << (std::ostream& os, const index_list& x){
@@ -14404,10 +14390,10 @@ std::ostream& operator << (std::ostream& os, const index_list& x){
 
 void index_list::compose(const index_list& P, const index_list& Q){
   try {
-    if(non_fatal_error(P.dim() != Q.dim(), "index_list::compose: Arguments must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    resize_without_initialization(P.dim());
+    if(non_fatal_error(P.dimension() != Q.dimension(), "index_list::compose: Arguments must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    resize_without_initialization(P.dimension());
     Integer i;
-    for (i=0; i<P.dim(); i++) set(i)=P.get(Q.get(i));
+    for (i=0; i<P.dimension(); i++) set(i)=P.get(Q.get(i));
   }
   catch(iluplusplus_error ippe){
      std::cerr<<"index_list::compose: "<<ippe.error_message()<<std::endl;
@@ -14455,21 +14441,21 @@ void index_list::compose_left(const index_list& P){
 
 
 bool index_list::ID_check() const {
-    bool val = true;
-    for(Integer i=0; i<dim(); i++) val &= (get(i)==i);
-    return val;
+    for(Integer i=0; i<dimension(); i++)
+        if ((*this)[i] != i)
+            return false;
+    return true;
 }
 
 bool index_list::check_if_permutation() const {
   try {
     Integer i;
-    index_list list;
-    list.resize_with_constant_value(dim(),-1);
-    for(i=0;i<dim();i++){
-        if (list.get(get(i))==-1) list.set(get(i)) = i;
+    std::vector<Integer> list(dimension(), -1);
+    for(i=0;i<dimension();i++){
+        if (list[get(i)]==-1) list[get(i)] = i;
         else return false;
     }
-    for(i=0;i<dim();i++) if (list.get(i) ==- 1) return false;
+    for(i=0;i<dimension();i++) if (list[i] == -1) return false;
     return true;
   }
   catch(iluplusplus_error ippe){
@@ -14484,24 +14470,24 @@ Real index_list::memory() const{
 
 Integer index_list::equality(const index_list& v) const {
      #ifdef DEBUG
-         if(size != v.size){
+         if(dimension() != v.dimension()){
              std::cerr<<"index_list::relative_equality: the lists have incompatible dimensions."<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
      #endif
      Integer counter = 0;
      Integer i;
-     for(i=0;i<size;i++) if(indices[i] == v.indices[i]) counter++;
+     for(i=0;i<dimension();i++) if(indices[i] == v.indices[i]) counter++;
      return counter;
 }
 
 Integer index_list::equality(const index_list& v, Integer from, Integer to) const {
      #ifdef DEBUG
-         if(size != v.size){
+         if(dimension() != v.dimension()){
              std::cerr<<"index_list::equality: the lists have incompatible dimensions."<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
-         if(from < 0 || to > size){
+         if(from < 0 || to > dimension()){
              std::cerr<<"index_list::equality: range exceeds indices. Returning -1."<<std::endl;
              return (Integer) -1;
          }
@@ -14515,7 +14501,7 @@ Integer index_list::equality(const index_list& v, Integer from, Integer to) cons
 
 Real index_list::relative_equality(const index_list& v) const {
     try {
-        return (Real) equality(v) / (Real) size;
+        return (Real) equality(v) / (Real) dimension();
     }
     catch(iluplusplus_error ippe){
         std::cerr<<"index_list::relative_equality: "<<ippe.error_message()<<std::endl;

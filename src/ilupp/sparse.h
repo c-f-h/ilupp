@@ -749,14 +749,12 @@ template<class T> class matrix_dense
 class index_list
   {
        private:
-           Integer size;
            std::vector<Integer> indices;
        public:
            index_list();
            index_list(Integer _size);
            index_list(Integer _size, Integer _reserved);
-           Integer dim() const;
-           Integer dimension() const;
+           Integer dimension() const    { return indices.size(); }
            Integer memory_used() const;
            Integer find(Integer k) const; // returns -1 if k is not found in list, else the position of k.
            void resize(Integer newsize);
