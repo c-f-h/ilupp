@@ -148,8 +148,13 @@ template<class T> vector_dense<T>::vector_dense(const vector_dense& x) {
   }
  }
 
+template<class T> vector_dense<T>::vector_dense(Integer m, T* _data, bool _non_owning)
+    : size(m), data(_data), non_owning(_non_owning)
+{
+}
+
 template<class T> vector_dense<T>::~vector_dense() {
-    if (data != 0) delete [] data;
+    if (!non_owning && data != 0) delete [] data;
     data = 0;
  }
 
@@ -4749,10 +4754,12 @@ template<class T> matrix_sparse<T>::matrix_sparse(const matrix_sparse& X){
 
 
 template<class T> matrix_sparse<T>::~matrix_sparse() { // std::cout<<"matrixdestruktor"<<std::endl;
-     if (data    != 0) delete [] data; data=0;
-     if (indices != 0) delete [] indices; indices=0;
-     if (pointer != 0) delete [] pointer; pointer=0;
-  }
+    if (!non_owning) {
+        if (data    != 0) delete [] data; data=0;
+        if (indices != 0) delete [] indices; indices=0;
+        if (pointer != 0) delete [] pointer; pointer=0;
+    }
+}
 
 //***********************************************************************************************************************
 // Class matrix_sparse: Basic functions                                                                                 *

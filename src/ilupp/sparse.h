@@ -57,6 +57,7 @@ template<class T> class vector_dense
        private:
            Integer size;
            T* data;
+           bool non_owning = false;
            // NOTE: The following routines are somewhat dangerous to use as they circumvent the private data of this class. They should be used with great care.
            // uses the pointers indicated to setup a matrix. No memory is allocated.
            // These routines have not been tested.
@@ -73,6 +74,7 @@ template<class T> class vector_dense
            vector_dense(Integer m);
            vector_dense(Integer m, T t);
            vector_dense(const vector_dense& x);
+           vector_dense(Integer m, T* _data, bool _non_owning=false);
            virtual ~vector_dense();
        // Basic functions
            void scale(T d);    // (*this)=d*(*this)

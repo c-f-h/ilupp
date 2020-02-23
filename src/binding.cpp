@@ -39,9 +39,7 @@ void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
         throw std::runtime_error("Expected contiguous array for " + name + "!");
 }
 
-std::tuple<py::array_t<Real>, Integer, Real, Real>
-solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
-        py::buffer rhs, double rtol, double atol, int max_iter, iluplusplus_precond_parameter param)
+std::unique_ptr<const matrix> make_matrix(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr)
 {
     py::buffer_info A_data_info = A_data.request();
     check_is_1D_contiguous_array<Real>(A_data_info, "A_data");
@@ -49,8 +47,6 @@ solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
     check_is_1D_contiguous_array<Integer>(A_indices_info, "A_indices");
     py::buffer_info A_indptr_info = A_indptr.request();
     check_is_1D_contiguous_array<Integer>(A_indptr_info, "A_indptr");
-    py::buffer_info rhs_info = rhs.request();
-    check_is_1D_contiguous_array<Real>(rhs_info, "rhs");
 
     Integer nnz = A_indices_info.shape[0];
     Integer n = A_indptr_info.shape[0] - 1;
@@ -59,57 +55,46 @@ solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
         throw std::runtime_error("matrix has size 0!");
     if (nnz != A_data_info.shape[0])
         throw std::runtime_error("indices and data should have the same size!");
-    if (n != rhs_info.shape[0])
+
+    return std::unique_ptr<matrix>(new matrix(
+            static_cast<Real*>(A_data_info.ptr),
+            static_cast<Integer*>(A_indices_info.ptr),
+            static_cast<Integer*>(A_indptr_info.ptr),
+            n, n, is_csr ? ROW : COLUMN, true));
+}
+
+std::unique_ptr<const vector> make_vector(py::buffer b)
+{
+    py::buffer_info b_info = b.request();
+    check_is_1D_contiguous_array<Real>(b_info, "b");
+
+    return std::unique_ptr<vector>(new vector(b_info.shape[0], static_cast<Real*>(b_info.ptr), true));
+}
+
+std::tuple<py::array_t<Real>, Integer, Real, Real>
+solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
+        py::buffer rhs, double rtol, double atol, int max_iter, iluplusplus_precond_parameter param)
+{
+    auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+    auto b = make_vector(rhs);
+
+    if (A->columns() != b->dim())
         throw std::runtime_error("right-hand side has wrong size!");
+    const Integer n = b->dim();
 
     Real rel_tol   = -std::log10(rtol);  // actual tolerance is 10^{-rel_tol}
     Real abs_tol   = -std::log10(atol);  // actual tolerance is 10^{-abs_tol}
     Real abs_error = 0;
 
-    Real* pdata = (Real*)A_data_info.ptr;
-    Integer* pindices = (Integer*)A_indices_info.ptr;
-    Integer* pindptr = (Integer*)A_indptr_info.ptr;
-    Real* prhs = (Real*)rhs_info.ptr;
+    vector x_exact; // unknown exact solution
 
     py::array_t<Real> result(n);
     py::buffer_info result_info = result.request();
+    vector x(n, static_cast<Real*>(result_info.ptr), true);
 
-    Integer n_x = n;
-    Real* presult = (Real*)result_info.ptr;
-
-    // only if exact solution is known
-    Integer n_x_exact = 0;
-    Real* p_xexact = 0;
-
-    // call solver; parameters are:
-    //          dimension n of matrix,
-    //          nnz matrix,
-    //          matrix orientation,
-    //          matrix data (length nnz)
-    //          matrix indices (length nnz)
-    //          matrix row index pointers (length n+1)
-    //          rhs (length n)
-    //          n_x_exact (dimension n of x_exact),
-    //          x_exact (input: exact solution, if known; otherwise vector of dimension 0 is exact solution is not known),
-    //          n_x (dimension n of x),
-    //          x (input: meaningless, output: solution),
-    //          exact solution known (boolean),
-    //          rel_tol   (input: stopping criterion (rel. reduction of residual required) output: relative reduction obtained),
-    //          abs_tol   (input: stopping criterion (norm of residual required. output: residual obtained),
-    //          max_iter  (input: max. iterations allowed. output: number of iterations needed)
-    //          abs_error (output: error of solution, if exact solution known),
-    //          working directory,
-    //          matrix name,
-    //          parameters for preprocessing and preconditioning
-    // Note:  solve_with_multilevel_preconditioner returns -log10(rel_tol), -log10(abs_tol) achieved. As no exact solution is known, abs_error = nan
-
-    const bool success = solve_with_multilevel_preconditioner(
-            n, nnz, is_csr ? ROW : COLUMN,
-            pdata, pindices, pindptr, prhs,
-            n_x_exact, p_xexact,
-            n_x, presult, false,
-            rel_tol, abs_tol, max_iter, abs_error,
-            "", "", param);
+    const bool success = solve_with_multilevel_preconditioner(*A, *b, x_exact, x, false,
+          rel_tol, abs_tol, max_iter, abs_error,
+          "", "", param);
 
     if (success) {
         return std::make_tuple(result, max_iter, std::pow(10.0, -rel_tol), std::pow(10.0, -abs_tol));
@@ -130,23 +115,8 @@ PYBIND11_MODULE(_ilupp, m)
         .def("setup",
             [](multilevel_preconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, iluplusplus_precond_parameter param)
             {
-                py::buffer_info A_data_info = A_data.request();
-                check_is_1D_contiguous_array<Real>(A_data_info, "A_data");
-                py::buffer_info A_indices_info = A_indices.request();
-                check_is_1D_contiguous_array<Integer>(A_indices_info, "A_indices");
-                py::buffer_info A_indptr_info = A_indptr.request();
-                check_is_1D_contiguous_array<Integer>(A_indptr_info, "A_indptr");
-
-                Integer nnz = A_indices_info.shape[0];
-                Integer n = A_indptr_info.shape[0] - 1;
-
-                if (A_indptr_info.shape[0] <= 1)
-                    throw std::runtime_error("matrix has size 0!");
-                if (nnz != A_data_info.shape[0])
-                    throw std::runtime_error("indices and data should have the same size!");
-
-                pr.setup((Real*)A_data_info.ptr, (Integer*)A_indices_info.ptr, (Integer*)A_indptr_info.ptr,
-                    n, nnz, is_csr ? ROW : COLUMN, param);
+                auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+                pr.setup(*A, param);
             }
         )
         .def("apply",
