@@ -41,3 +41,17 @@ def test_precond():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
+
+def test_ILUT():
+    n = 20
+    A = laplace_matrix(n)
+    b = np.ones(n)
+    P = ilupp.ILUTPreconditioner(A, threshold=0.0)
+    x = P.dot(b)
+    print(b)
+    print(x)
+    X = np.linspace(0, 1, n+2)[1:-1]
+    assert np.allclose(x, X*(1-X)/2)
+    # each L/u factor has a diagonal and an off-diagonal,
+    # but ILU++ reports by n less for unknown reasons
+    assert P.total_nnz <= 2 * (n + (n-1))

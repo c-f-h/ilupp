@@ -7018,74 +7018,76 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
 
 template<class T> bool matrix_sparse<T>::ILUT(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real& time_self){
   try {
-      if (threshold > 500) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      if(threshold > 500) threshold = 0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
+      const clock_t time_begin=clock();
       // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
-      if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUT: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+      if (non_fatal_error(!A.square_check(), "matrix_sparse::ILUT: argument matrix must be square."))
+          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
       Real norm=0.0;
-      Real norm_w;
-      Integer m = A.rows();
-      Integer n = A.columns();
-      Integer k,i,j;
+      const Integer m = A.rows(), n = A.columns();
+
       vector_sparse_dynamic<T> w;
-      index_list list_L;
-      index_list list_U;
-      //vector_dense<T> diag_U(n);
-      //vector_dense<T> diag_A(n);
+      index_list list_L, list_U;
+
       if(max_fill_in<1) max_fill_in = 1;
       if(max_fill_in>n) max_fill_in = n;
+
       Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (n-max_fill_in)*max_fill_in;
       w.resize(m);
       U.reformat(m,m,reserved_memory,ROW);
       reformat(m,m,reserved_memory,ROW);
       U.pointer[0]=0;
       pointer[0]=0;
-      // (1.) begin for i
-      for(i=0;i<n;i++){
+
+      // (1.) begin for i -- loop over rows
+      for (Integer i = 0; i < n; ++i) {
           // (2.) initialize w
-          for(k=A.pointer[i];k<A.pointer[i+1];k++){
+          for (Integer k = A.pointer[i]; k < A.pointer[i+1]; ++k) {
               w[A.indices[k]] = A.data[k];
               //if(A.indices[k]==i) diag_A[i]=A.data[k];
           }     // end for k
           // (3.) begin for k
-          norm_w=w.norm2();
-          for(k=0;k<i;k++){
-              if (w.non_zero_check(k)){
-              //if (w[k] != 0.0){
-              // (4.) w[k]= w[k] / U[k,k]
-                  w[k] /= U.data[U.pointer[k]]; // old: w[k] /= diag_U[k];
-              // (5.) Apply dropping to w.
-              // (6./7./8.) w = w -w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
-              // no need to check if w[k] != 0; this has already been done.
-             // for(j=U.pointer[k]; j<U.pointer[k+1]; j++) if(U.indices[j]>k) w[U.indices[j]] -= w[k]*U.data[j];
-                  if(abs(w[k])<threshold*norm_w) w.zero_set(k);
-                  else for(j=U.pointer[k]+1; j<U.pointer[k+1]; j++) w[U.indices[j]] -= w[k]*U.data[j];
+          const Real norm_w = w.norm2();
+          for (Integer k = 0; k < i; ++k) {        // TODO: iterate only over nonzeros
+              if (w.non_zero_check(k)) {
+                  // (4.) w[k]= w[k] / U[k,k]
+                  // NB: the first entry of the k-th row of U is the diagonal entry
+                  const T U_kk = U.data[U.pointer[k]];
+                  w[k] /= U_kk;
+                  // (5.) Apply dropping to w.
+                  // (6./7./8.) w = w -w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
+                  // no need to check if w[k] != 0; this has already been done.
+                  if (std::abs(w[k]) < threshold*norm_w) {
+                      w.zero_set(k);
+                  } else {
+                      for (Integer j = U.pointer[k] + 1; j < U.pointer[k+1]; j++)
+                          w[U.indices[j]] -= w[k]*U.data[j];
+                  }
               } // end if
           }  // (9.) end for k
+
           // (10.) Do dropping in w. (Needs to be implemented)
-          w.take_largest_elements_by_abs_value_with_threshold(norm,list_L,max_fill_in-1,threshold,0,i);      // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
-          w.take_largest_elements_by_abs_value_with_threshold(norm,list_U,max_fill_in-1,threshold,i+1,n);    // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
+          // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
+          w.take_largest_elements_by_abs_value_with_threshold(norm,list_L,max_fill_in-1,threshold,0,i);
+          // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
+          w.take_largest_elements_by_abs_value_with_threshold(norm,list_U,max_fill_in-1,threshold,i+1,n);
+
           // (11.) Copy values to L:
-          for(j=0;j<list_L.dimension();j++){
+          for (Integer j = 0; j < list_L.dimension(); ++j) {
               data[pointer[i]+j] = w[list_L[j]];
               indices[pointer[i]+j] = list_L[j];
-          } // end for j
+          }
           data[pointer[i]+list_L.dimension()]=1.0;
           indices[pointer[i]+list_L.dimension()]=i;
           pointer[i+1]=pointer[i]+list_L.dimension()+1;
           // (12.) Copy values to U:
           U.data[U.pointer[i]]=w[i]; // diagonal element
           U.indices[U.pointer[i]]=i; // diagonal element
-          for(j=0;j<list_U.dimension();j++){
+          for (Integer j = 0; j < list_U.dimension(); ++j) {
               U.data[U.pointer[i]+j+1]=w[list_U[j]];
               U.indices[U.pointer[i]+j+1] = list_U[j];
           }  // end j
-          U.pointer[i+1]=U.pointer[i]+list_U.dimension()+1;
-          if(U.data[U.pointer[i]]==0) {
+          U.pointer[i+1] = U.pointer[i]+list_U.dimension()+1;
+          if (U.data[U.pointer[i]] == 0) {
               #ifdef VERBOSE
                   std::cerr<<"matrix_sparse::ILUT: encountered zero pivot in row "<<k<<std::endl;
               #endif
@@ -7098,8 +7100,7 @@ template<class T> bool matrix_sparse<T>::ILUT(const matrix_sparse<T>& A, matrix_
       }  // (14.) end for i
       compress();
       U.compress();
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+      time_self = ((Real)clock() - (Real)time_begin) / (Real)CLOCKS_PER_SEC;
       return true;
   }  // end try (code not indented)
   catch(iluplusplus_error ippe){

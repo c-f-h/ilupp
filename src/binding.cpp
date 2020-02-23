@@ -26,6 +26,8 @@ namespace py = pybind11;
 
 using namespace iluplusplus;
 
+typedef ILUTPreconditioner<Real, matrix, vector> _ILUTPreconditioner;
+
 template <class T>
 void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
 {
@@ -63,7 +65,7 @@ std::unique_ptr<const matrix> make_matrix(py::buffer A_data, py::buffer A_indice
             n, n, is_csr ? ROW : COLUMN, true));
 }
 
-std::unique_ptr<const vector> make_vector(py::buffer b)
+std::unique_ptr<vector> make_vector(py::buffer b)
 {
     py::buffer_info b_info = b.request();
     check_is_1D_contiguous_array<Real>(b_info, "b");
@@ -137,6 +139,27 @@ PYBIND11_MODULE(_ilupp, m)
         .def_property_readonly("total_nnz", &multilevel_preconditioner::total_nnz)
         .def("print_info", &multilevel_preconditioner::print_info)
         .def_property_readonly("dim", &multilevel_preconditioner::dim)
+    ;
+
+    py::class_<_ILUTPreconditioner>(m, "ILUTPreconditioner")
+        .def("__init__",
+            [](_ILUTPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
+                auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+                new (&inst) _ILUTPreconditioner(*A, max_fill_in, threshold);
+                if (!inst.exists())
+                    throw std::runtime_error("ILUT factorization failed");
+            }
+        )
+        .def("apply",
+            [](const _ILUTPreconditioner& pr, py::buffer x)
+            {
+                auto y = make_vector(x);
+                if (y->dim() != pr.pre_image_dimension())
+                    throw std::runtime_error("vector has wrong size for preconditioner!");
+                pr.apply_preconditioner_only(ID, *y);
+            }
+        )
+        .def_property_readonly("total_nnz", &_ILUTPreconditioner::total_nnz)
     ;
 
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
