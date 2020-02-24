@@ -215,127 +215,76 @@ template <class T, class matrix_type, class vector_type>
 }
 
 template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_rhs(
+        preconditioner_application1_type PA1, const matrix_type &A, const vector_type &b, vector_type &c) const
 {
-    switch(PA1){
+    switch(PA1) {
         case NONE:
             c=b;
             break;
         case LEFT:
-            if(use == ID){
-                apply_preconditioner_left(ID,b,c);
-                apply_preconditioner_right(ID,c);
-            } else {     // should never occur
-                A.matrix_vector_multiplication(TRANSPOSE,b,c);
-                apply_preconditioner_right(TRANSPOSE,c);
-                apply_preconditioner_left(TRANSPOSE,c);
-            }
+            apply_preconditioner_left(ID,b,c);
+            apply_preconditioner_right(ID,c);
             break;
         case RIGHT:
-            if(use == ID){
-                c=b;
-            } else {
-                A.matrix_vector_multiplication(TRANSPOSE,b,c);
-                apply_preconditioner_right(TRANSPOSE,c);
-                apply_preconditioner_left(TRANSPOSE,c);
-            }
+            c=b;
             break;
         case SPLIT:
-            if(use == ID){
-                apply_preconditioner_left(ID,b,c);
-            } else {
-                apply_preconditioner_left(TRANSPOSE,b,c);
-                A.matrix_vector_multiplication(TRANSPOSE,c);
-                apply_preconditioner_right(TRANSPOSE,c);
-            }
+            apply_preconditioner_left(ID,b,c);
             break;
         default:
             std::cerr <<"split_preconditioner::apply_preconditioner_rhs: only NONE, LEFT, RIGHT, SPLIT as usage possible."<<std::endl;
             throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
     }
 }
 
 
 template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_solution(
+        preconditioner_application1_type PA1, const matrix_type &A, const vector_type &y, vector_type &x) const
 {
-    switch(PA1){
+    switch(PA1) {
         case NONE:
             x=y;
             break;
         case LEFT:
-            if(use == ID){
-                x=y;
-            } else {
-                apply_preconditioner_right(TRANSPOSE,y,x);
-                apply_preconditioner_left(TRANSPOSE,x);
-                A.matrix_vector_multiplication(TRANSPOSE,x);
-            }
+            x=y;
             break;
         case RIGHT:
-            if(use == ID){
-                apply_preconditioner_left(ID,y,x);
-                apply_preconditioner_right(ID,x);
-            } else {
-                A.matrix_vector_multiplication(TRANSPOSE,y,x);
-                apply_preconditioner_right(TRANSPOSE,x);
-                apply_preconditioner_left(TRANSPOSE,x);
-            }
+            apply_preconditioner_left(ID,y,x);
+            apply_preconditioner_right(ID,x);
             break;
         case SPLIT:
-            if(use == ID){
-                apply_preconditioner_right(ID,y,x);
-            } else {
-                apply_preconditioner_left(TRANSPOSE,y,x);
-                A.matrix_vector_multiplication(TRANSPOSE,x);
-                apply_preconditioner_right(TRANSPOSE,x);
-            }
+            apply_preconditioner_right(ID,y,x);
             break;
         default:
             std::cerr <<"split_preconditioner::apply_preconditioner_solution: only NONE, LEFT, RIGHT, SPLIT as usage possible."<<std::endl;
             throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
     }
 }
 
 
 template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_starting_value(
+        preconditioner_application1_type PA1, const matrix_type &A, const vector_type &x, vector_type &y) const
 {
-    switch(PA1){
+    switch(PA1) {
         case NONE:
             y=x;
             break;
         case LEFT:
-            if(use == ID){
-                y=x;
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
+            y=x;
             break;
         case RIGHT:
-            if(use == ID){
-                unapply_preconditioner_right(ID,x,y);
-                unapply_preconditioner_left(ID,y);
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
+            unapply_preconditioner_right(ID,x,y);
+            unapply_preconditioner_left(ID,y);
             break;
         case SPLIT:
-            if(use == ID){
-                unapply_preconditioner_right(ID,x,y);
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
+            unapply_preconditioner_right(ID,x,y);
             break;
         default:
             std::cerr <<"split_preconditioner::apply_preconditioner_starting_value: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
             throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
     }
 }
 

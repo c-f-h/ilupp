@@ -57,9 +57,9 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           bool preconditioner_exists;
           virtual void apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const = 0;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const = 0;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const = 0;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const = 0;
-          virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const = 0;
+          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &b, vector_type &c) const = 0;
+          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &y, vector_type &x) const = 0;
+          virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &x, vector_type &y) const = 0;
        public:
           preconditioner() : pre_image_size(0), image_size(0) {}
 
@@ -76,17 +76,17 @@ template <class T, class matrix_type, class vector_type> class preconditioner
 
         // appropriate modification of rhs based on preconditioning technique chosen
           virtual void preconditioned_rhs(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &b, vector_type &c) const {
-              apply_preconditioner_rhs(PA1,ID,A,b,c);
+              apply_preconditioner_rhs(PA1, A, b, c);
           }
 
         // appropriate adaption of solution based on preconditioning technique choses
           virtual void adapt_solution(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &y, vector_type &x) const {
-              apply_preconditioner_solution(PA1,ID,A,y,x);
+              apply_preconditioner_solution(PA1, A, y, x);
           }
 
         // appropriate starting value for iteration y based on initial guess of solution x (inverse of adapt_solution).
           virtual void preconditioned_starting_value(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &x, vector_type &y) const {
-              apply_preconditioner_starting_value(PA1,ID,A,x,y);
+              apply_preconditioner_starting_value(PA1, A, x, y);
           }
 
         // appropriate residual: r= L*(b-A*x), L being the left part of the preconditioner.
@@ -148,9 +148,9 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const = 0;
           virtual void apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
-          virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
+          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &b, vector_type &c) const;
+          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &y, vector_type &x) const;
+          virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &x, vector_type &y) const;
        public:
           virtual Integer left_nnz() const = 0;
           virtual Integer right_nnz() const = 0;
