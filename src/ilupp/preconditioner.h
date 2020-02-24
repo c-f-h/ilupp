@@ -185,13 +185,12 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
        public:
-          virtual matrix_type extract_left_matrix() const;
-          virtual matrix_type extract_right_matrix() const;
+          const matrix_type& left_matrix() const    { return Precond_left; }
+          const matrix_type& right_matrix() const    { return Precond_right; }
+
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;
           virtual Integer total_nnz() const;
-          virtual matrix_type& left_preconditioning_matrix();
-          virtual matrix_type& right_preconditioning_matrix();
           virtual void print_info() const;
   };
 
@@ -230,19 +229,22 @@ template <class T, class matrix_type, class vector_type>
        public:
           virtual void clear();  // resize everything to 0
           virtual void init(Integer memory_max_level);
-          virtual matrix_type extract_left_matrix(Integer k) const;
-          virtual matrix_type extract_right_matrix(Integer k) const;
-          virtual vector_type extract_middle_matrix(Integer k) const;
-          virtual index_list extract_permutation_rows(Integer k) const;
-          virtual index_list extract_permutation_columns(Integer k) const;
-          virtual index_list extract_inverse_permutation_rows(Integer k) const;
-          virtual index_list extract_inverse_permutation_columns(Integer k) const;
-          virtual vector_dense<T> extract_left_scaling(Integer k) const;
-          virtual vector_dense<T> extract_right_scaling(Integer k) const;
-          virtual Integer levels() const;
-          virtual Integer left_nnz(Integer k) const;
-          virtual Integer right_nnz(Integer k) const;
-          virtual Integer total_nnz(Integer k) const;
+
+          const matrix_type& extract_left_matrix(Integer k) const                  { return Precond_left[k]; }
+          const matrix_type& extract_right_matrix(Integer k) const                 { return Precond_right[k]; }
+          const vector_type& extract_middle_matrix(Integer k) const                { return Precond_middle[k]; }
+          const index_list& extract_permutation_rows(Integer k) const              { return permutation_rows[k]; }
+          const index_list& extract_permutation_columns(Integer k) const           { return permutation_columns[k]; }
+          const index_list& extract_inverse_permutation_rows(Integer k) const      { return inverse_permutation_rows[k]; }
+          const index_list& extract_inverse_permutation_columns(Integer k) const   { return inverse_permutation_columns[k]; }
+          const vector_dense<T>& extract_left_scaling(Integer k) const             { return D_l[k]; }
+          const vector_dense<T>& extract_right_scaling(Integer k) const            { return D_r[k]; }
+
+          Integer levels() const                        { return number_levels; }
+          virtual Integer left_nnz(Integer k) const     { return Precond_left[k].actual_non_zeroes(); }
+          virtual Integer right_nnz(Integer k) const    { return Precond_right[k].actual_non_zeroes(); }
+          virtual Integer total_nnz(Integer k) const    { return Precond_left[k].actual_non_zeroes()+Precond_right[k].actual_non_zeroes();}
+
           virtual Real memory() const;
           virtual Real memory(Integer k) const;
           virtual Integer dim(Integer k) const;
@@ -287,13 +289,12 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use,vector_type &w) const;
        public:
-          virtual matrix_type extract_left_matrix() const;
-          virtual matrix_type extract_right_matrix() const ;
+          const matrix_type& left_matrix() const    { return Precond_left; }
+          const matrix_type& right_matrix() const   { return Precond_right; }
+
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;
           virtual Integer total_nnz() const;
-          virtual matrix_type& left_preconditioning_matrix();
-          virtual matrix_type& right_preconditioning_matrix();
           virtual void print_info() const;
           virtual index_list extract_permutation() const;
           virtual index_list extract_permutation2() const;

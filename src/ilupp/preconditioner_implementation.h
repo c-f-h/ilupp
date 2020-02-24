@@ -422,12 +422,6 @@ void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::unappl
 }
 
 template <class T, class matrix_type, class vector_type>
-  matrix_type indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::extract_left_matrix() const {return Precond_left;}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::extract_right_matrix() const {return Precond_right;}
-
-template <class T, class matrix_type, class vector_type>
    Integer indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::left_nnz() const {return Precond_left.actual_non_zeroes();}
 
 template <class T, class matrix_type, class vector_type>
@@ -435,12 +429,6 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
   Integer indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::total_nnz() const {return Precond_left.actual_non_zeroes()+Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type& indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::left_preconditioning_matrix() {return Precond_left; }
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type& indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::right_preconditioning_matrix(){return Precond_right;}
 
 template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::print_info() const {
@@ -551,57 +539,6 @@ void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
     D_l.destroy_resize_data_field(memory_max_level);  // scaling
     D_r.destroy_resize_data_field(memory_max_level);  // scaling
 }
-
-template <class T, class matrix_type, class vector_type>
-matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_left_matrix(Integer k) const {return Precond_left.get(k);}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_right_matrix(Integer k) const {return Precond_right.get(k);}
-
-template <class T, class matrix_type, class vector_type>
-vector_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_middle_matrix(Integer k) const {return Precond_middle.get(k);}
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_permutation_rows(Integer k) const {
-    return  permutation_rows[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_permutation_columns(Integer k) const {
-    return  permutation_columns[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_inverse_permutation_rows(Integer k) const {
-    return  inverse_permutation_rows[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_inverse_permutation_columns(Integer k) const {
-    return  inverse_permutation_columns[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-vector_dense<T> indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_left_scaling(Integer k) const {
-    return  D_l[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-vector_dense<T> indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::extract_right_scaling(Integer k) const {
-    return  D_r[k];
-}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::levels() const {return number_levels;}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::left_nnz(Integer k) const {return Precond_left.get(k).actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::right_nnz(Integer k) const {return Precond_right.get(k).actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::total_nnz(Integer k) const {return Precond_left.get(k).actual_non_zeroes()+Precond_right.get(k).actual_non_zeroes();}
 
 template <class T, class matrix_type, class vector_type>
   Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::dim(Integer k) const {
@@ -886,16 +823,6 @@ template <class T, class matrix_type, class vector_type>
     }
 
 template <class T, class matrix_type, class vector_type>
-matrix_type indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::extract_left_matrix() const {
-    return Precond_left;
-}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::extract_right_matrix() const {
-    return Precond_right;
-}
-
-template <class T, class matrix_type, class vector_type>
           Integer indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::left_nnz() const {return Precond_left.actual_non_zeroes();}
 
 template <class T, class matrix_type, class vector_type>
@@ -903,16 +830,6 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
   Integer indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::total_nnz() const {return Precond_left.actual_non_zeroes()+Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type& indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::left_preconditioning_matrix() {
-    return Precond_left;
-}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type& indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::right_preconditioning_matrix(){
-    return Precond_right;
-}
 
 template <class T, class matrix_type, class vector_type>
   void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::print_info() const {
