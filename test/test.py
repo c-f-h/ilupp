@@ -7,7 +7,15 @@ def laplace_matrix(n):
     d = np.ones(n) / (h**2)
     return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).tocsr()
 
-def test_solve():
+def random_example(n):
+    A = scipy.sparse.random(n, n, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(n)
+    x_exact = np.ones(n)
+    b = A.dot(x_exact)
+    return A, b, x_exact
+
+########################################
+
+def test_ml_solve_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
@@ -15,15 +23,14 @@ def test_solve():
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
     print('Convergence info:', info)
-    ##
-    A = scipy.sparse.random(50, 50, density=0.1, format='csc') + 10*scipy.sparse.eye(50)
-    x_exact = np.ones(50)
-    b = A.dot(x_exact)
+
+def test_ml_solve_random():
+    A, b, x_exact = random_example(50)
     x = ilupp.solve(A, b, atol=1e-8)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
 
-def test_precond():
+def test_ml_precond_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
@@ -32,17 +39,16 @@ def test_precond():
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
     nnz, mem = P.total_nnz, P.memory
-    ##
-    A = scipy.sparse.random(50, 50, density=0.1, format='csc') + 10*scipy.sparse.eye(50)
+
+def test_ml_precond_random():
+    A, b, x_exact = random_example(50)
     P = ilupp.ILUppPreconditioner(A, threshold=1000)
-    x_exact = np.ones(50)
-    b = A.dot(x_exact)
     x = b.copy()
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
 
-def test_ILUT():
+def test_ILUT_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
@@ -55,17 +61,16 @@ def test_ILUT():
     # each L/u factor has a diagonal and an off-diagonal,
     # but ILU++ reports by n less for unknown reasons
     assert P.total_nnz <= 2 * (n + (n-1))
-    ##
-    A = scipy.sparse.random(50, 50, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(50)
+
+def test_ILUT_random():
+    A, b, x_exact = random_example(50)
     P = ilupp.ILUTPreconditioner(A, fill_in=1000, threshold=0.0)
-    x_exact = np.ones(50)
-    b = A.dot(x_exact)
     x = b.copy()
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
 
-def test_ILUC():
+def test_ILUC_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
@@ -78,11 +83,10 @@ def test_ILUC():
     # each L/u factor has a diagonal and an off-diagonal,
     # but ILU++ reports by n less for unknown reasons
     assert P.total_nnz <= 2 * (n + (n-1))
-    ##
-    A = scipy.sparse.random(50, 50, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(50)
+
+def test_ILUC_random():
+    A, b, x_exact = random_example(50)
     P = ilupp.ILUCPreconditioner(A, fill_in=1000, threshold=0.0)
-    x_exact = np.ones(50)
-    b = A.dot(x_exact)
     x = b.copy()
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
