@@ -118,28 +118,6 @@ void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(
 }
 
 template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_only_left(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-    this->apply_preconditioner_left(use,v,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_only_left(matrix_usage_type use,  vector_type &w) const {
-    this->apply_preconditioner_left(use,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_only_right(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-    this->apply_preconditioner_right(use,v,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_only_right(matrix_usage_type use,  vector_type &w) const {
-    this->apply_preconditioner_right(use,w);
-}
-
-
-
-template <class T, class matrix_type, class vector_type>
     void split_preconditioner<T,matrix_type,vector_type>::
     apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const
 {
