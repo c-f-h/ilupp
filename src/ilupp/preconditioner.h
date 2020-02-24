@@ -61,9 +61,7 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const = 0;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const = 0;
        public:
-          preconditioner();   // standard constructor
-          virtual ~preconditioner();                                  // destructor
-          preconditioner(const preconditioner &A);                     // copy-constructor
+          preconditioner() : pre_image_size(0), image_size(0) {}
 
         // essentials
         // preconditioned multiplication with prescribed usage: from left, from right or split preconditioning used as simple, QTQ or QQT preconditioning
@@ -98,7 +96,9 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           virtual void apply_preconditioner_only(matrix_usage_type use, T* data, Integer dim) const;
           virtual void apply_preconditioner_only(matrix_usage_type use, std::vector<T>& data) const;
 
-          virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const = 0;
+          virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const {
+              return (compatibility_check(PA1,A,b) && (A.columns()!=x.dimension()));
+          }
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const = 0;
 
           Integer pre_image_dimension() const   { return pre_image_size; }
@@ -135,26 +135,19 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner(matrix_usage_type use, vector_type &w) const = 0;
           virtual void unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const = 0;
           virtual void unapply_preconditioner(matrix_usage_type use, vector_type &w) const = 0;
+
+          // members inherited from preconditioner
           virtual void apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const;
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
        public:
-          single_preconditioner();   // standard constructor
-          virtual ~single_preconditioner();                                  // destructor
-          single_preconditioner(const single_preconditioner &A);             // copy-constructor
-          virtual void print_info() const = 0;
-          virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
-          virtual Integer total_nnz() const = 0; 
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
           using preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only;
           virtual void apply_preconditioner_only(matrix_usage_type use,const vector_type &x, vector_type &y) const;
           virtual void apply_preconditioner_only(matrix_usage_type use, vector_type &y) const;
    };
-
 
 
 //***********************************************************************************************************************//
@@ -190,17 +183,10 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
        public:
-          split_preconditioner();   // standard constructor
-          virtual ~split_preconditioner();                               // destructor
           virtual Integer left_nnz() const = 0;
           virtual Integer right_nnz() const = 0;
           virtual Integer total_nnz() const;
-          split_preconditioner(const split_preconditioner &A);                     // copy-constructor
-          virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
-          virtual void print_info() const = 0;
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
           using preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only;
           virtual void apply_preconditioner_only(matrix_usage_type use, const vector_type &x, vector_type &y) const;
           virtual void apply_preconditioner_only(matrix_usage_type use,vector_type &y) const;
@@ -211,35 +197,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_only_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void apply_only_right(matrix_usage_type use,  vector_type &w) const;
    };
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
-//         The class: direct_single_preconditioner                                                                       //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-template <class T, class matrix_type, class vector_type>
-  class direct_single_preconditioner : public single_preconditioner <T, matrix_type, vector_type>
-  {
-      protected:
-          matrix_type Precond;    // the preconditioning matrix
-          virtual void apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner(matrix_usage_type use, vector_type &w) const;
-          virtual void unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void unapply_preconditioner(matrix_usage_type use,vector_type &w) const;
-       public:
-          direct_single_preconditioner();
-          direct_single_preconditioner(const direct_single_preconditioner &A );
-          direct_single_preconditioner& operator =(const direct_single_preconditioner &A);
-          virtual ~direct_single_preconditioner();
-          virtual void read_binary(std::string filename);
-          virtual void write_binary(std::string filename) const;
-          virtual void print_info() const;
-          virtual matrix_type extract();
-          virtual matrix_type& preconditioning_matrix();
-          virtual Integer total_nnz() const;
-  };
 
 
 //***********************************************************************************************************************//
@@ -257,11 +214,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner(matrix_usage_type use, vector_type &w) const;
           virtual void unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner(matrix_usage_type use, vector_type &w) const;
-       public:
-          indirect_single_triangular_preconditioner();
-          virtual~indirect_single_triangular_preconditioner();
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
   };
 
 
@@ -288,8 +240,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
        public:
-          indirect_split_triangular_preconditioner();
-          virtual ~indirect_split_triangular_preconditioner();
           virtual matrix_type extract_left_matrix() const;
           virtual matrix_type extract_right_matrix() const;
           virtual Integer left_nnz() const;
@@ -298,8 +248,6 @@ template <class T, class matrix_type, class vector_type>
           virtual matrix_type& left_preconditioning_matrix();
           virtual matrix_type& right_preconditioning_matrix();
           virtual void print_info() const;
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
   };
 
 
@@ -335,8 +283,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
        public:
-          indirect_split_triangular_multilevel_preconditioner();
-          virtual ~indirect_split_triangular_multilevel_preconditioner();
           virtual void clear();  // resize everything to 0
           virtual void init(Integer memory_max_level);
           virtual matrix_type extract_left_matrix(Integer k) const;
@@ -369,8 +315,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void print_info(Integer k) const;
           virtual void print_info() const;
           virtual void print() const;
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
   };
 
 
@@ -398,8 +342,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use,vector_type &w) const;
        public:
-          indirect_split_pseudo_triangular_preconditioner();
-          virtual ~indirect_split_pseudo_triangular_preconditioner();
           virtual matrix_type extract_left_matrix() const;
           virtual matrix_type extract_right_matrix() const ;
           virtual Integer left_nnz() const;
@@ -411,8 +353,6 @@ template <class T, class matrix_type, class vector_type>
           virtual index_list extract_permutation() const;
           virtual index_list extract_permutation2() const;
           virtual void eliminate_permutations(matrix_type& A, vector_type &b);
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
   };
 
 
@@ -436,7 +376,6 @@ template <class T, class matrix_type, class vector_type>
        public:
           NullPreconditioner();
           NullPreconditioner(Integer m, Integer n);
-          virtual ~NullPreconditioner();
           virtual void read_binary(std::string filename);
           virtual void write_binary(std::string filename) const;
           virtual void print_info() const;
@@ -455,12 +394,7 @@ template <class T, class matrix_type, class vector_type>
   class ILUCPreconditioner : public indirect_split_triangular_preconditioner <T,matrix_type, vector_type>
   {
        public:
-          ILUCPreconditioner();
           ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold);  // default threshold=-1.0
-          ILUCPreconditioner(const ILUCPreconditioner &A);
-          ILUCPreconditioner& operator = (const ILUCPreconditioner<T, matrix_type, vector_type> &A);
-          virtual bool exists() const;
-          virtual void print_existence();
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
   };
@@ -470,13 +404,8 @@ template <class T, class matrix_type, class vector_type>
   class ILUTPreconditioner : public indirect_split_triangular_preconditioner <T,matrix_type, vector_type>
   {
        public:
-          ILUTPreconditioner();
           ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold); // default threshold=1000
-          ILUTPreconditioner(const ILUTPreconditioner &A);
-          ILUTPreconditioner& operator = (const ILUTPreconditioner<T,matrix_type, vector_type> &A);
-          virtual bool exists() const;
           virtual std::string special_info() const;
-          virtual void print_existence();
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
           virtual Integer left_nnz() const;
@@ -498,14 +427,9 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUTPPreconditioner();
           ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor); // default threshold=-1.0, pt = 0.0,  rp=0
-          ILUTPPreconditioner(const ILUTPPreconditioner &A);
-          ILUTPPreconditioner& operator = (const ILUTPPreconditioner<T,matrix_type, vector_type> &A);
-          virtual bool exists() const;
           virtual Integer zero_pivots_encountered();
           virtual std::string special_info() const;
-          virtual void print_existence();
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
           virtual Integer left_nnz() const;
@@ -527,15 +451,10 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUCPPreconditioner();
           ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp); // default threshold=-1.0, perm_tol=0.0, rp = -1
           ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p);
-          ILUCPPreconditioner(const ILUCPPreconditioner &A);
-          ILUCPPreconditioner& operator = (const ILUCPPreconditioner<T,matrix_type, vector_type> &A);
-          virtual bool exists() const;
           virtual Integer zero_pivots_encountered();
           virtual std::string special_info() const;
-          virtual void print_existence();
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
   };
@@ -554,16 +473,11 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUCDPPreconditioner();
           ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr); // default: threshold=1000.0, perm_tol=1000.0, bpr = -1
           ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real perm_tol, Integer); // default: threshold=1000.0, perm_tol=1000.0, bpr = -1
           ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p);
-          ILUCDPPreconditioner(const ILUCDPPreconditioner &A);
-          ILUCDPPreconditioner& operator = (const ILUCDPPreconditioner<T,matrix_type, vector_type> &A);
-          virtual bool exists() const;
           virtual Integer zero_pivots_encountered();
           virtual std::string special_info() const;
-          virtual void print_existence();
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
   };
@@ -585,17 +499,12 @@ template <class T, class matrix_type, class vector_type>
           Integer dim_zero_matrix_factored;
        public:
           multilevelILUCDPPreconditioner();
-          virtual ~multilevelILUCDPPreconditioner();
-          multilevelILUCDPPreconditioner(const multilevelILUCDPPreconditioner &A);
-          multilevelILUCDPPreconditioner& operator = (const multilevelILUCDPPreconditioner<T,matrix_type, vector_type> &A);
           virtual void init(Integer mem_levels);
-          virtual bool exists() const;
           virtual iluplusplus_precond_parameter extract_parameters() const;
           virtual Integer dimension_zero_matrix_factored() const;
           virtual Integer zero_pivots_encountered(Integer k) const;
           virtual Integer zero_pivots_encountered() const;
           virtual std::string special_info() const;
-          virtual void print_existence() const;
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
           virtual void make_preprocessed_multilevelILUCDP(const matrix_type &A, const iluplusplus_precond_parameter& IP);
@@ -604,12 +513,8 @@ template <class T, class matrix_type, class vector_type>
           // only for testing purposes.
           virtual void make_single_level_of_preprocessed_multilevelILUCDP(const matrix_type &Arow, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_type& Acoarse, Real threshold);
           virtual void make_single_level_of_preprocessed_multilevelILUCDP(const matrix_type &Arow, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_type& Acoarse); 
-
   };
 
-
-
 } // end namespace iluplusplus
-
 
 #endif

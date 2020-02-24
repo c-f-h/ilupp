@@ -52,19 +52,6 @@ namespace iluplusplus {
 
 
 template <class T, class matrix_type, class vector_type>
-preconditioner<T,matrix_type,vector_type>::preconditioner() {
-    pre_image_size = 0; image_size=0;
-}
-
-template <class T, class matrix_type, class vector_type>
-preconditioner<T,matrix_type,vector_type>::~preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-preconditioner<T,matrix_type,vector_type>::preconditioner(const preconditioner &A){
-    pre_image_size=A.pre_image_size; image_size=A.image_size;
-}
-
-template <class T, class matrix_type, class vector_type>
 void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, T* data, Integer dim) const {
     vector_type y;
     y.interchange(data,dim);
@@ -99,24 +86,6 @@ void preconditioner<T,matrix_type,vector_type>::preconditioned_residual(precondi
 //                i.e. one operating from only one side on a matrix, either directly or indirectly                       //
 //                                                                                                                       //
 //***********************************************************************************************************************//
-
-template <class T, class matrix_type, class vector_type>
-  single_preconditioner<T,matrix_type,vector_type>::single_preconditioner(){
-    this->pre_image_size=0; this->image_size=0; this->preconditioner_exists = true; this->setup_time=0.0; this->memory_allocated_to_create=0.0;this->memory_used_to_create=0.0;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  single_preconditioner<T,matrix_type,vector_type>::~single_preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-  single_preconditioner<T,matrix_type,vector_type>::single_preconditioner(const single_preconditioner &A){
-      this->pre_image_size=A.pre_image_size;
-      this->image_size=A.image_size;
-      this->preconditioner_exists=A.preconditioner_exists;
-      this->setup_time =A.setup_time;
-      this->memory_allocated_to_create=A.memory_allocated_to_create;
-      this->memory_used_to_create=A.memory_used_to_create;
-  }
 
 template <class T, class matrix_type, class vector_type>
 void single_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use,const vector_type &x, vector_type &y) const {
@@ -288,12 +257,6 @@ template <class T, class matrix_type, class vector_type>
 }
 
 template <class T, class matrix_type, class vector_type>
-    bool single_preconditioner<T,matrix_type,vector_type>::compatibility_check(preconditioner_application1_type PA1,const matrix_type& A, const vector_type& b, const vector_type& x) const
-    {
-             return (compatibility_check(PA1,A,b) && (A.columns()!=x.dimension()));
-    }
-
-template <class T, class matrix_type, class vector_type>
     bool single_preconditioner<T,matrix_type,vector_type>::compatibility_check(preconditioner_application1_type PA1,const matrix_type& A, const vector_type& b) const
     {
       bool system_check = ( (A.rows()!=b.dimension()));
@@ -327,18 +290,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-  split_preconditioner<T,matrix_type,vector_type>::split_preconditioner(){this->pre_image_size=0; this->image_size=0;}
-
-template <class T, class matrix_type, class vector_type>
-  split_preconditioner<T,matrix_type,vector_type>::~split_preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-  split_preconditioner<T,matrix_type,vector_type>::split_preconditioner(const split_preconditioner &A){
-              this->pre_image_size=A.pre_image_size;
-              this->image_size=A.image_size;
-          }
-
-template <class T, class matrix_type, class vector_type>
 void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, const vector_type &x, vector_type &y) const {
     if(use==ID){
         apply_preconditioner_left(use,x,y);
@@ -349,6 +300,34 @@ void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(
     }
 }
 
+template <class T, class matrix_type, class vector_type>
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use,vector_type &y) const {
+    if(use==ID){
+        apply_preconditioner_left(use,y);
+        apply_preconditioner_right(use,y); 
+    } else { // TRANSPOSE
+        apply_preconditioner_right(use,y); 
+        apply_preconditioner_left(use,y);
+    }
+}
+
+template <class T, class matrix_type, class vector_type>
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, const vector_type &x, vector_type &y) const {
+    switch(PA1){
+        case LEFT:
+        case RIGHT: apply_preconditioner_only(use,x,y);  break;
+        default:    std::cerr<<"split_preconditioner::apply_preconditioner_only: only LEFT or RIGHT is possible as usage"<<std::endl; y=x;
+    }
+}
+
+template <class T, class matrix_type, class vector_type>
+void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, vector_type &y) const {
+    switch(PA1){
+        case LEFT:
+        case RIGHT: apply_preconditioner_only(use,y);  break;
+        default:    std::cerr<<"split_preconditioner::apply_preconditioner_only: only LEFT or RIGHT is possible as usage"<<std::endl;
+    }
+}
 
 template <class T, class matrix_type, class vector_type>
 void split_preconditioner<T,matrix_type,vector_type>::apply_only_left(matrix_usage_type use, const vector_type &v, vector_type &w) const {
@@ -371,35 +350,6 @@ void split_preconditioner<T,matrix_type,vector_type>::apply_only_right(matrix_us
 }
 
 
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use,vector_type &y) const {
-    if(use==ID){
-        apply_preconditioner_left(use,y);
-        apply_preconditioner_right(use,y); 
-    } else { // TRANSPOSE
-        apply_preconditioner_right(use,y); 
-        apply_preconditioner_left(use,y);
-    }
-}
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, const vector_type &x, vector_type &y) const {
-    switch(PA1){
-        case LEFT:  apply_preconditioner_only(use,x,y);  break;
-        case RIGHT: apply_preconditioner_only(use,x,y);  break;
-        default:    std::cerr<<"split_preconditioner::apply_preconditioner_only: only LEFT or RIGHT is possible as usage"<<std::endl; y=x;
-    }
-}
-
-template <class T, class matrix_type, class vector_type>
-void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, vector_type &y) const {
-    switch(PA1){
-        case LEFT:  apply_preconditioner_only(use,y);  break;
-        case RIGHT: apply_preconditioner_only(use,y);  break;
-        default:    std::cerr<<"split_preconditioner::apply_preconditioner_only: only LEFT or RIGHT is possible as usage"<<std::endl;
-    }
-}
 
 template <class T, class matrix_type, class vector_type>
     void split_preconditioner<T,matrix_type,vector_type>::
@@ -631,12 +581,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-    bool split_preconditioner<T,matrix_type,vector_type>::compatibility_check(preconditioner_application1_type PA1,const matrix_type& A, const vector_type& b, const vector_type& x) const
-    {
-             return (compatibility_check(PA1,A,b) && (A.columns()!=x.dimension()));
-    }
-
-template <class T, class matrix_type, class vector_type>
     bool split_preconditioner<T,matrix_type,vector_type>::compatibility_check(preconditioner_application1_type PA1,const matrix_type& A, const vector_type& b) const
     {
       bool system_check = ( A.rows()!=b.dimension());
@@ -659,83 +603,6 @@ template <class T, class matrix_type, class vector_type>
       return false; // this never happens, but some compilers complain if there is no return.
     }
 
-//***********************************************************************************************************************//
-//                                                                                                                       //
-//         The class: direct_single_preconditioner                                                                       //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-    this->Precond.matrix_vector_multiplication(use,v,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::apply_preconditioner(matrix_usage_type use, vector_type &w) const {
-    this->Precond.matrix_vector_multiplication(use,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const{
-    std::cerr<<"direct_single_preconditioner::unapply_preconditioner: undoing this preconditioner is not possible."<<std::endl;
-    throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner(matrix_usage_type use,vector_type &w) const{
-    std::cerr<<"direct_single_preconditioner::unapply_preconditioner: undoing this preconditioner is not possible."<<std::endl;
-    throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-}
-
-template <class T, class matrix_type, class vector_type> direct_single_preconditioner<T,matrix_type,vector_type>::direct_single_preconditioner()
-{
-    this->pre_image_size=0;
-    this->image_size=0;
-}
-/*
-template <class T, class matrix_type, class vector_type>
-  direct_single_preconditioner<T,matrix_type,vector_type>::direct_single_preconditioner(const direct_single_preconditioner &A ) : Precond(A.Precond) {this->pre_image_size = A.pre_image_size; this->image_size=A.image_size;}
-*/
-
-template <class T, class matrix_type, class vector_type>
-direct_single_preconditioner<T,matrix_type,vector_type>::direct_single_preconditioner(const direct_single_preconditioner &A )
-{
-    this->Precond=A.Precond;
-    this->pre_image_size = A.pre_image_size;
-    this->image_size=A.image_size;
-}
-
-template <class T, class matrix_type, class vector_type>
-direct_single_preconditioner<T,matrix_type,vector_type>::~direct_single_preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::read_binary(std::string filename) {std::cerr<<"direct_single_preconditioner::read_binary not yet implemented."<<std::endl;}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {std::cerr<<"direct_single_preconditioner::write_binary not yet implemented."<<std::endl;}
-
-template <class T, class matrix_type, class vector_type>
-void direct_single_preconditioner<T,matrix_type,vector_type>::print_info() const {Precond.print_info();}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type direct_single_preconditioner<T,matrix_type,vector_type>::extract(){return Precond;}
-
-template <class T, class matrix_type, class vector_type>
-matrix_type& direct_single_preconditioner<T,matrix_type,vector_type>::preconditioning_matrix(){return Precond;}
-
-template <class T, class matrix_type, class vector_type>
-Integer direct_single_preconditioner<T,matrix_type,vector_type>::total_nnz() const {return Precond.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-direct_single_preconditioner<T,matrix_type,vector_type>& direct_single_preconditioner<T,matrix_type,vector_type>::operator =(const direct_single_preconditioner &A ) {
-    if (this == &A) return *this;
-    this->Precond=A.Precond;
-    this->pre_image_size = A.pre_image_size;
-    this->image_size=A.image_size;
-    return *this;
-}
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
@@ -766,23 +633,12 @@ void indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::unapp
     throw iluplusplus_error(OTHER_ERROR);
 }
 
-template <class T, class matrix_type, class vector_type>
-indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::indirect_single_triangular_preconditioner(){
-    this->pre_image_size=0;
-    this->image_size=0;
-}
-
-template <class T, class matrix_type, class vector_type>
-indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::~indirect_single_triangular_preconditioner(){}
-
-
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
 //         The class: indirect_split_triangular_preconditioner                                                                      //
 //                                                                                                                       //
 //***********************************************************************************************************************//
-
 
 
 template <class T, class matrix_type, class vector_type>
@@ -857,17 +713,6 @@ void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::print_
     std::cout<<"The right matrix of the preconditioner:"<<std::endl;
     Precond_right.print_info();
 }
-
-template <class T, class matrix_type, class vector_type>
-indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::indirect_split_triangular_preconditioner()
-{
-    this->pre_image_size=0;
-    this->image_size=0;
-    this->intermediate_size=0;
-}
-
-template <class T, class matrix_type, class vector_type>
-  indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::~indirect_split_triangular_preconditioner(){}
 
 
 //***********************************************************************************************************************//
@@ -1161,18 +1006,6 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::indirect_split_triangular_multilevel_preconditioner()
-              {
-                    this->pre_image_size=0;
-                    this->image_size=0;
-                    this->intermediate_size=0;
-              }
-
-template <class T, class matrix_type, class vector_type>
-indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::~indirect_split_triangular_multilevel_preconditioner(){}
-
-
-template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::clear(){
     this->pre_image_size=0;
     this->image_size=0;
@@ -1315,16 +1148,6 @@ template <class T, class matrix_type, class vector_type>
       std::cerr<<"indirect_split_pseudo_triangular_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
       throw iluplusplus_error(OTHER_ERROR);
     }
-
-template <class T, class matrix_type, class vector_type>
-  indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::indirect_split_pseudo_triangular_preconditioner(){
-      this->pre_image_size=0;
-      this->image_size=0;
-      this->intermediate_size=0;
-  }
-
-template <class T, class matrix_type, class vector_type>
-          indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::~indirect_split_pseudo_triangular_preconditioner(){}
 
 template <class T, class matrix_type, class vector_type>
 matrix_type indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::extract_left_matrix() const {
@@ -1502,9 +1325,6 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  NullPreconditioner<T,matrix_type,vector_type>::~NullPreconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
   void NullPreconditioner<T,matrix_type,vector_type>::read_binary(std::string filename) {}
 
 template <class T, class matrix_type, class vector_type>
@@ -1530,9 +1350,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-  ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(){this->pre_image_size=0; this->image_size=0; this->intermediate_size=0;this->preconditioner_exists=true;}
-
-template <class T, class matrix_type, class vector_type>
 ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
     const clock_t time_begin = clock();
     if (A.orient() == ROW) {
@@ -1555,49 +1372,8 @@ ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_t
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const ILUCPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-ILUCPreconditioner<T,matrix_type,vector_type>& ILUCPreconditioner<T,matrix_type,vector_type>::operator = (const ILUCPreconditioner<T,matrix_type,vector_type> &A){
-    if(this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
-  bool ILUCPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
-
-template <class T, class matrix_type, class vector_type>
-  void ILUCPreconditioner<T,matrix_type,vector_type>::print_existence(){
-      if (this->preconditioner_exists) std::cout<<"ILUC exists."<<std::endl;
-      else std::cout<<"ILUC does not exist."<<std::endl;
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUCPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {
-      if(exists()){
+      if(this->exists()){
           this->Precond_left.write_binary(filename+"-L.isp");
           this->Precond_right.write_binary(filename+"-R.isp");
       } else {
@@ -1628,9 +1404,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(){this->pre_image_size=0; this->image_size=0; this->intermediate_size=0;this->preconditioner_exists=true;}
-
-template <class T, class matrix_type, class vector_type>
 ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
     if(A.orient()==ROW){
         // NOTE: ILUT2 does not yet work.
@@ -1652,43 +1425,6 @@ ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_t
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const ILUTPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->zero_pivots=A.zero_pivots;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-ILUTPreconditioner<T,matrix_type,vector_type>& ILUTPreconditioner<T,matrix_type,vector_type>::operator = (const ILUTPreconditioner<T,matrix_type, vector_type> &A){
-    if(this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
-  bool ILUTPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
-
-template <class T, class matrix_type, class vector_type>
   std::string ILUTPreconditioner<T,matrix_type,vector_type>::special_info() const {
       std::ostringstream info;
       info<<"";
@@ -1696,14 +1432,8 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  void ILUTPreconditioner<T,matrix_type,vector_type>::print_existence(){
-      if (this->preconditioner_exists) std::cout<<"ILUT exists."<<std::endl;
-      else std::cout<<"ILUT does not exist."<<std::endl;
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUTPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {
-      if(exists()){
+      if(this->exists()){
           this->Precond_left.write_binary(filename+"-L.isp");
           this->Precond_right.write_binary(filename+"-R.isp");
       } else {
@@ -1742,9 +1472,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;this->left_matrix_usage = NOPERM;this->right_matrix_usage = PERM1;}
-
-template <class T, class matrix_type, class vector_type>
 ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor)
 {
     if(A.orient()==ROW){
@@ -1777,51 +1504,6 @@ ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const ILUTPPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-ILUTPPreconditioner<T,matrix_type,vector_type>& ILUTPPreconditioner<T,matrix_type,vector_type>::operator = (const ILUTPPreconditioner<T,matrix_type, vector_type> &A){
-    if (this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
-  bool ILUTPPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
-
-template <class T, class matrix_type, class vector_type>
   Integer ILUTPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
 
 template <class T, class matrix_type, class vector_type>
@@ -1833,14 +1515,8 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  void ILUTPPreconditioner<T,matrix_type,vector_type>::print_existence(){
-      if (this->preconditioner_exists) std::cout<<"ILUTP exists."<<std::endl;
-      else std::cout<<"ILUTP does not exist."<<std::endl;
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUTPPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {
-      if(exists()){
+      if(this->exists()){
           this->Precond_left.write_binary(filename+"-L.isp");
           this->Precond_right.write_binary(filename+"-R.isp");
       } else {
@@ -1876,9 +1552,6 @@ template <class T, class matrix_type, class vector_type>
 //         The class: ILUCP Preconditioner:                                                                              //
 //                                                                                                                       //
 //***********************************************************************************************************************//
-
-template <class T, class matrix_type, class vector_type>
-ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;}
 
 template <class T, class matrix_type, class vector_type>
 ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp){
@@ -1929,51 +1602,6 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const ILUCPPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-ILUCPPreconditioner<T,matrix_type,vector_type>& ILUCPPreconditioner<T,matrix_type,vector_type>::operator = (const ILUCPPreconditioner<T,matrix_type, vector_type> &A){
-    if(this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
-  bool ILUCPPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
-
-template <class T, class matrix_type, class vector_type>
   Integer ILUCPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
 
 template <class T, class matrix_type, class vector_type>
@@ -1985,14 +1613,8 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  void ILUCPPreconditioner<T,matrix_type,vector_type>::print_existence(){
-      if (this->preconditioner_exists) std::cout<<"ILUCP exists."<<std::endl;
-      else std::cout<<"ILUCP does not exist."<<std::endl;
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUCPPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {
-      if(exists()){
+      if(this->exists()){
           this->Precond_left.write_binary(filename+"-L.isp");
           this->Precond_right.write_binary(filename+"-R.isp");
       } else {
@@ -2019,9 +1641,6 @@ template <class T, class matrix_type, class vector_type>
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-
-template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;}
 
 template <class T, class matrix_type, class vector_type>
 ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr){
@@ -2085,51 +1704,6 @@ ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matr
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const ILUCDPPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>& ILUCDPPreconditioner<T,matrix_type,vector_type>::operator = (const ILUCDPPreconditioner<T,matrix_type, vector_type> &A){
-    if(this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    this->permutation=A.permutation;
-    this->permutation2=A.permutation2;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->Precond_left=A.Precond_left;
-    this->Precond_right=A.Precond_right;
-    this->setup_time=A.setup_time;
-    this->zero_pivots=A.zero_pivots;
-    this->left_matrix_usage = A.left_matrix_usage;
-    this->right_matrix_usage = A.right_matrix_usage;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
-  bool ILUCDPPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
-
-template <class T, class matrix_type, class vector_type>
   Integer ILUCDPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
 
 template <class T, class matrix_type, class vector_type>
@@ -2141,14 +1715,8 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-  void ILUCDPPreconditioner<T,matrix_type,vector_type>::print_existence(){
-      if (this->preconditioner_exists) std::cout<<"ILUCDP exists."<<std::endl;
-      else std::cout<<"ILUCDP does not exist."<<std::endl;
-  }
-
-template <class T, class matrix_type, class vector_type>
   void ILUCDPPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {
-      if(exists()){
+      if(this->exists()){
           this->Precond_left.write_binary(filename+"-L.isp");
           this->Precond_right.write_binary(filename+"-R.isp");
       } else {
@@ -2189,68 +1757,12 @@ template <class T, class matrix_type, class vector_type>
 }
 
 template <class T, class matrix_type, class vector_type>
-multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::~multilevelILUCDPPreconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::multilevelILUCDPPreconditioner(const multilevelILUCDPPreconditioner &A){
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    for(Integer k=0; k<this->number_levels;k++){
-        this->permutation_rows[k]=A.permutation_rows.read(k);
-        this->permutation_columns[k]=A.permutation_columns.read(k);
-        this->inverse_permutation_rows[k]=A.inverse_permutation_rows.read(k);
-        this->inverse_permutation_columns[k]=A.inverse_permutation_columns.read(k);
-        this->Precond_left[k]=A.Precond_left.read(k);
-        this->Precond_right[k]=A.Precond_right.read(k);
-        this->zero_pivots[k]=A.zero_pivots.read(k);
-    }
-    this->dim_zero_matrix_factored = A.dim_zero_matrix_factored;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->setup_time=A.setup_time;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->param = A.param;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-}
-
-template <class T, class matrix_type, class vector_type>
-multilevelILUCDPPreconditioner<T,matrix_type,vector_type>& multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::operator = (const multilevelILUCDPPreconditioner<T,matrix_type, vector_type> &A){
-    if(this == &A) return *this;
-    this->pre_image_size=A.pre_image_size;
-    this->intermediate_size=A.intermediate_size;
-    this->image_size=A.image_size;
-    for(Integer k=0; k<this->number_levels;k++){
-        this->permutation_rows[k]=A.permutation_rows.read(k);
-        this->permutation_columns[k]=A.permutation_columns.read(k);
-        this->inverse_permutation_rows[k]=A.inverse_permutation_rows.read(k);
-        this->inverse_permutation_columns[k]=A.inverse_permutation_columns.read(k);
-        this->Precond_left[k]=A.Precond_left.read(k);
-        this->Precond_right[k]=A.Precond_right.read(k);
-        this->zero_pivots[k]=A.zero_pivots.read(k);
-    }
-    this->dim_zero_matrix_factored = A.dim_zero_matrix_factored;
-    this->left_form=A.left_form;
-    this->right_form=A.right_form;
-    this->setup_time=A.setup_time;
-    this->preconditioner_exists = A.preconditioner_exists;
-    this->param = A.param;
-    this->memory_allocated_to_create=A.memory_allocated_to_create;
-    this->memory_used_to_create=A.memory_used_to_create;
-    return *this;
-}
-
-template <class T, class matrix_type, class vector_type>
 void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::init(Integer mem_levels){
     indirect_split_triangular_multilevel_preconditioner<T,matrix_type, vector_type>::init(mem_levels);
     zero_pivots.resize(mem_levels);
     this->memory_allocated_to_create = 0.0;
     this->memory_used_to_create=0.0;
 }
-
-template <class T, class matrix_type, class vector_type>
-bool multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::exists() const {return this->preconditioner_exists;}
 
 template <class T, class matrix_type, class vector_type>
 iluplusplus_precond_parameter multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::extract_parameters() const {
@@ -2288,12 +1800,6 @@ template <class T, class matrix_type, class vector_type>
       else info<<"-"<<this->number_levels<<"*";
       if(dim_zero_matrix_factored>0) info << "#"<<this->dim_zero_matrix_factored;
       return info.str();
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::print_existence() const {
-      if (this->preconditioner_exists) std::cout<<"multilevelILUCDP exists."<<std::endl;
-      else std::cout<<"multilevelILUCDP does not exist."<<std::endl;
   }
 
 template <class T, class matrix_type, class vector_type>
@@ -2716,9 +2222,6 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
     make_single_level_of_preprocessed_multilevelILUCDP(Arow,IP,force_finish,Acoarse,IP.get_threshold());
 }
 
-
-
 } // end namespace iluplusplus
-
 
 #endif

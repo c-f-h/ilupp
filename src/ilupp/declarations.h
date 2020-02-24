@@ -79,7 +79,6 @@ enum matrix_usage_type {ID, TRANSPOSE};                 // determines if a given
 enum special_matrix_type{UNSTRUCTURED, LOWER_TRIANGULAR, UPPER_TRIANGULAR, PERMUTED_LOWER_TRIANGULAR, PERMUTED_UPPER_TRIANGULAR, DIAGONAL};
 
 // types for preconditioners
-enum preconditioner_matrix_type {DIRECT, INDIRECT};
 enum preconditioner_application1_type {NONE, LEFT, RIGHT, SPLIT};    // the manner in which a preconditioner is to be applied to a system to yield an approximate inverse Q
 enum perm_usage_type {NOPERM, PERM1, PERM2};                         // which permutation will be used if needed
 
@@ -175,7 +174,6 @@ class iluplusplus_precond_parameter;
 template <class T, class matrix_type, class vector_type> class preconditioner;
 template <class T, class matrix_type, class vector_type> class single_preconditioner;
 template <class T, class matrix_type, class vector_type> class split_preconditioner;
-template <class T, class matrix_type, class vector_type> class direct_single_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_single_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_multilevel_preconditioner;
