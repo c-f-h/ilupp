@@ -199,40 +199,6 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
     void single_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &w) const
-{
-    switch(PA1){
-        case NONE:
-            A.matrix_vector_multiplication(use,w);
-            break;
-        case LEFT:
-            if(use == ID){
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner(ID,w);
-            } else {
-                apply_preconditioner(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-            }
-            break;
-        case RIGHT:
-            if(use == ID){
-                apply_preconditioner(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-            } else {
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner(TRANSPOSE,w);
-            }
-            break;
-        default:
-            std::cerr <<"single_preconditioner::apply_preconditioner_and_matrix: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
-    }
-}
-
-
-template <class T, class matrix_type, class vector_type>
-    void single_preconditioner<T,matrix_type,vector_type>::
     apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const
 {
     switch(PA1){
@@ -264,39 +230,6 @@ template <class T, class matrix_type, class vector_type>
     }
 }
 
-
-template <class T, class matrix_type, class vector_type>
-    void single_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &w) const
-{
-    switch(PA1){
-        case NONE:
-            A.matrix_vector_multiplication(other_usage(use),w);
-            break;
-        case RIGHT:
-            if(use == ID){
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner(TRANSPOSE,w);
-            } else {
-                apply_preconditioner(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-            }
-            break;
-        case LEFT:
-            if(use == ID){
-                apply_preconditioner(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-            } else {
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner(ID,w);
-            }
-            break;
-        default:
-            std::cerr <<"single_preconditioner::apply_preconditioner_and_matrix_transposed: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
-    }
-}
 
 template <class T, class matrix_type, class vector_type>
     void single_preconditioner<T,matrix_type,vector_type>::
@@ -386,33 +319,6 @@ template <class T, class matrix_type, class vector_type>
         default:
             std::cerr <<"single_preconditioner::apply_preconditioner_starting_value: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
             throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-    }
-}
-
- template <class T, class matrix_type, class vector_type>
-    void single_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &y) const
-{
-    switch(PA1){
-        case NONE:
-            break;
-        case LEFT:
-            if(use == ID){
-            } else {
-                std::cerr <<"single_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
-            break;
-        case RIGHT:
-            if(use == ID){
-                unapply_preconditioner(ID,y);
-            } else {
-                std::cerr <<"single_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
-            break;
-        default:
-            std::cerr <<"single_preconditioner::apply_preconditioner_starting_value: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
     }
 }
 
@@ -581,56 +487,6 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
     void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &w) const
-{
-    switch(PA1){
-        case NONE:
-            A.matrix_vector_multiplication(use,w);
-            break;
-        case LEFT:
-            if(use == ID){
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner_left(ID,w);
-                apply_preconditioner_right(ID,w);
-            } else {
-                apply_preconditioner_right(TRANSPOSE,w);
-                apply_preconditioner_left(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-            }
-            break;
-        case RIGHT:
-            if(use == ID){
-                apply_preconditioner_left(ID,w);
-                apply_preconditioner_right(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-            } else {
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner_right(TRANSPOSE,w);
-                apply_preconditioner_left(TRANSPOSE,w);
-            }
-            break;
-        case SPLIT:
-            if(use == ID){
-                apply_preconditioner_right(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner_left(ID,w);
-            } else {
-                apply_preconditioner_left(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner_right(TRANSPOSE,w);
-            }
-            break;
-        default:
-            std::cerr <<"split_preconditioner::apply_preconditioner_and_matrix: only NONE, LEFT, RIGHT, SPLIT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
-    }
-}
-
-
-
-template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
     apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const
 {
     switch(PA1){
@@ -676,55 +532,6 @@ template <class T, class matrix_type, class vector_type>
             break;
     }
 }
-
-template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &w) const
-{
-    switch(PA1){
-        case NONE:
-            A.matrix_vector_multiplication(other_usage(use),w);
-            break;
-        case RIGHT:
-            if(use == ID){
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner_left(TRANSPOSE,w);
-                apply_preconditioner_right(TRANSPOSE,w);
-            } else {
-                apply_preconditioner_right(ID,w);
-                apply_preconditioner_left(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-            }
-            break;
-        case LEFT:
-            if(use == ID){
-                apply_preconditioner_left(TRANSPOSE,w);
-                apply_preconditioner_right(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-            } else {
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner_right(ID,w);
-                apply_preconditioner_left(ID,w);
-            }
-            break;
-        case SPLIT:
-            if(use == ID){
-                apply_preconditioner_left(TRANSPOSE,w);
-                A.matrix_vector_multiplication(TRANSPOSE,w);
-                apply_preconditioner_right(TRANSPOSE,w);
-            } else {
-                apply_preconditioner_right(ID,w);
-                A.matrix_vector_multiplication(ID,w);
-                apply_preconditioner_left(ID,w);
-            }
-            break;
-        default:
-            std::cerr <<"split_preconditioner::apply_preconditioner_and_matrix_transposed: only NONE, LEFT, RIGHT, SPLIT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
-    }
-}
-
 
 template <class T, class matrix_type, class vector_type>
     void split_preconditioner<T,matrix_type,vector_type>::
@@ -851,41 +658,6 @@ template <class T, class matrix_type, class vector_type>
     }
 }
 
-
- template <class T, class matrix_type, class vector_type>
-    void split_preconditioner<T,matrix_type,vector_type>::
-    apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &y) const
-{
-    switch(PA1){
-        case NONE:
-            break;
-        case LEFT:
-            if(use == ID){
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
-            break;
-        case RIGHT:
-            if(use == ID){
-                unapply_preconditioner_right(ID,y);
-                unapply_preconditioner_left(ID,y);
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
-            break;
-        case SPLIT:
-            if(use == ID){
-                unapply_preconditioner_right(ID,y);
-            } else {
-                std::cerr <<"split_preconditioner::apply_preconditioner_starting value: this usage is not permitted, as it would require solving a system with the coefficient matrix transposed."<<std::endl;
-            }
-            break;
-        default:
-            std::cerr <<"split_preconditioner::apply_preconditioner_starting_value: only NONE, LEFT, RIGHT as usage possible."<<std::endl;
-            throw iluplusplus_error(ARGUMENT_NOT_ALLOWED);
-            break;
-    }
-}
 
 template <class T, class matrix_type, class vector_type>
     Integer split_preconditioner<T,matrix_type,vector_type>::total_nnz() const {
