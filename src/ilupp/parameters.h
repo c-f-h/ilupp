@@ -248,75 +248,75 @@ class iluplusplus_precond_parameter
          std::string short_string() const;
          std::string filename(std::string matrix_name) const;
          // inline functions
-         Integer                  get_fill_in() const;
-         Real                     get_threshold() const;
-         Real                     get_perm_tol() const;
-         std::string              get_GLOBAL_COMMENT() const;
-         Integer                  get_PRECON_PARAMETER() const;
-         preprocessing_sequence   get_PREPROCESSING() const;
-         Real                     get_PQ_THRESHOLD() const;
-         Integer                  get_PQ_ALGORITHM() const;
-         Integer                  get_MAX_LEVELS() const;
-         bool                     get_MAX_FILLIN_IS_INF() const;
-         Integer                  get_MEMORY_MAX_LEVELS() const;
-         bool                     get_BEGIN_TOTAL_PIV() const;
-         Integer                  get_TOTAL_PIV() const;
-         Integer                  get_MIN_ML_SIZE() const;
-         bool                     get_USE_FINAL_THRESHOLD() const;
-         Real                     get_FINAL_THRESHOLD() const;
-         Real                     get_VARY_THRESHOLD_FACTOR() const;
-         Real                     get_THRESHOLD_SHIFT_SCHUR() const;
-         Integer                  get_PERMUTE_ROWS() const;
-         bool                     get_EXTERNAL_FINAL_ROW() const;
-         Real                     get_MIN_ELIM_FACTOR() const;
-         Real                     get_EXT_MIN_ELIM_FACTOR() const;
-         bool                     get_REQUIRE_ZERO_SCHUR() const;
-         Integer                  get_REQ_ZERO_SCHUR_SIZE() const;
-         Integer                  get_FINAL_ROW_CRIT() const;
-         bool                     get_SMALL_PIVOT_TERMINATES() const;
-         Real                     get_MIN_PIVOT() const;
-         bool                     get_USE_THRES_ZERO_SCHUR() const;
-         Real                     get_THRESHOLD_ZERO_SCHUR() const;
-         Integer                  get_MIN_SIZE_ZERO_SCHUR() const;
-         Real                     get_ROW_U_MAX() const;
-         Real                     get_MOVE_LEVEL_FACTOR() const;
-         Real                     get_MOVE_LEVEL_THRESHOLD() const;
-         bool                     get_USE_MAX_AS_MOVE() const;
-         Real                     get_MEM_FACTOR() const;
-         Integer                  get_VARIABLE_MEM() const;
-         bool                     get_USE_STANDARD_DROPPING() const;
-         bool                     get_USE_STANDARD_DROPPING2() const;
-         bool                     get_USE_INVERSE_DROPPING() const;
-         bool                     get_USE_WEIGHTED_DROPPING() const;
-         bool                     get_USE_WEIGHTED_DROPPING2() const;
-         bool                     get_USE_ERR_PROP_DROPPING() const;
-         bool                     get_USE_ERR_PROP_DROPPING2() const;
-         bool                     get_USE_PIVOT_DROPPING() const;
-         Real                     get_INIT_WEIGHTS_LU() const;
-         Integer                  get_DROP_TYPE_L() const;
-         Integer                  get_DROP_TYPE_U() const;
-         Real                     get_BANDWIDTH_MULTIPLIER() const;
-         Integer                  get_BANDWIDTH_OFFSET() const;
-         Integer                  get_SIZE_TABLE_POS_WEIGHTS() const;
-         Real                     get_TABLE_POSITIONAL_WEIGHTS(Integer k) const;
-         Integer                  get_WEIGHT_TABLE_TYPE() const;
-         bool                     get_SCALE_WEIGHT_INVDIAG() const;
-         bool                     get_SCALE_WGT_MAXINVDIAG() const;
-         Real                     get_WEIGHT_STANDARD_DROP() const;
-         Real                     get_WEIGHT_STANDARD_DROP2() const;
-         Real                     get_WEIGHT_INVERSE_DROP() const;
-         Real                     get_WEIGHT_WEIGHTED_DROP() const;
-         Real                     get_WEIGHT_ERR_PROP_DROP() const;
-         Real                     get_WEIGHT_ERR_PROP_DROP2() const;
-         Real                     get_WEIGHT_PIVOT_DROP() const;
-         Integer                  get_COMBINE_FACTOR() const;
-         Real                     get_NEUTRAL_ELEMENT() const;
-         Real                     get_MIN_WEIGHT() const;
-         bool                     get_WEIGHTED_DROPPING() const;
-         bool                     get_SUM_DROPPING() const;
-         bool                     get_USE_POS_COMPRESS() const;
-         Real                     get_POST_FACT_THRESHOLD() const; 
-         Integer                  get_SCHUR_COMPLEMENT() const;
+         Integer                  get_fill_in() const                   {return fill_in;}
+         Real                     get_threshold() const                 {return threshold;}
+         Real                     get_perm_tol() const                  {return perm_tol;}
+         std::string              get_GLOBAL_COMMENT() const            {return GLOBAL_COMMENT;}
+         Integer                  get_PRECON_PARAMETER() const          {return PRECON_PARAMETER;}
+         preprocessing_sequence   get_PREPROCESSING() const             {return PREPRPOCESSING;}
+         Real                     get_PQ_THRESHOLD() const              {return PQ_THRESHOLD;}
+         Integer                  get_PQ_ALGORITHM() const              {return PQ_ALGORITHM;}
+         Integer                  get_MAX_LEVELS() const                {return MAX_LEVELS;}
+         bool                     get_MAX_FILLIN_IS_INF() const         {return MAX_FILLIN_IS_INF;}
+         Integer                  get_MEMORY_MAX_LEVELS() const         {return MEMORY_MAX_LEVELS;}
+         bool                     get_BEGIN_TOTAL_PIV() const           {return BEGIN_TOTAL_PIV;}
+         Integer                  get_TOTAL_PIV() const                 {return TOTAL_PIV;}
+         Integer                  get_MIN_ML_SIZE() const               {return MIN_ML_SIZE;}
+         bool                     get_USE_FINAL_THRESHOLD() const       {return USE_FINAL_THRESHOLD;}
+         Real                     get_FINAL_THRESHOLD() const           {return FINAL_THRESHOLD;}
+         Real                     get_VARY_THRESHOLD_FACTOR() const     {return VARY_THRESHOLD_FACTOR;}
+         Real                     get_THRESHOLD_SHIFT_SCHUR() const     {return THRESHOLD_SHIFT_SCHUR;}
+         Integer                  get_PERMUTE_ROWS() const              {return PERMUTE_ROWS;}
+         bool                     get_EXTERNAL_FINAL_ROW() const        {return EXTERNAL_FINAL_ROW;}
+         Real                     get_MIN_ELIM_FACTOR() const           {return MIN_ELIM_FACTOR;}
+         Real                     get_EXT_MIN_ELIM_FACTOR() const       {return EXT_MIN_ELIM_FACTOR;}
+         bool                     get_REQUIRE_ZERO_SCHUR() const        {return REQUIRE_ZERO_SCHUR;}
+         Integer                  get_REQ_ZERO_SCHUR_SIZE() const       {return REQ_ZERO_SCHUR_SIZE;}
+         Integer                  get_FINAL_ROW_CRIT() const            {return FINAL_ROW_CRIT;}
+         bool                     get_SMALL_PIVOT_TERMINATES() const    {return SMALL_PIVOT_TERMINATES;}
+         Real                     get_MIN_PIVOT() const                 {return MIN_PIVOT;}
+         bool                     get_USE_THRES_ZERO_SCHUR() const      {return USE_THRES_ZERO_SCHUR;}
+         Real                     get_THRESHOLD_ZERO_SCHUR() const      {return THRESHOLD_ZERO_SCHUR;}
+         Integer                  get_MIN_SIZE_ZERO_SCHUR() const       {return MIN_SIZE_ZERO_SCHUR;}
+         Real                     get_ROW_U_MAX() const                 {return ROW_U_MAX;}
+         Real                     get_MOVE_LEVEL_FACTOR() const         {return MOVE_LEVEL_FACTOR;}
+         Real                     get_MOVE_LEVEL_THRESHOLD() const      {return MOVE_LEVEL_THRESHOLD;}
+         bool                     get_USE_MAX_AS_MOVE() const           {return USE_MAX_AS_MOVE;}
+         Real                     get_MEM_FACTOR() const                {return MEM_FACTOR;}
+         Integer                  get_VARIABLE_MEM() const              {return VARIABLE_MEM;}
+         bool                     get_USE_STANDARD_DROPPING() const     {return USE_STANDARD_DROPPING;}
+         bool                     get_USE_STANDARD_DROPPING2() const    {return USE_STANDARD_DROPPING2;}
+         bool                     get_USE_INVERSE_DROPPING() const      {return USE_INVERSE_DROPPING;}
+         bool                     get_USE_WEIGHTED_DROPPING() const     {return USE_WEIGHTED_DROPPING;}
+         bool                     get_USE_WEIGHTED_DROPPING2() const    {return USE_WEIGHTED_DROPPING2;}
+         bool                     get_USE_ERR_PROP_DROPPING() const     {return USE_ERR_PROP_DROPPING;}
+         bool                     get_USE_ERR_PROP_DROPPING2() const    {return USE_ERR_PROP_DROPPING2;}
+         bool                     get_USE_PIVOT_DROPPING() const        {return USE_PIVOT_DROPPING;}
+         Real                     get_INIT_WEIGHTS_LU() const           {return INIT_WEIGHTS_LU;}
+         Integer                  get_DROP_TYPE_L() const               {return DROP_TYPE_L;}
+         Integer                  get_DROP_TYPE_U() const               {return DROP_TYPE_U;}
+         Real                     get_BANDWIDTH_MULTIPLIER() const      {return BANDWIDTH_MULTIPLIER;}
+         Integer                  get_BANDWIDTH_OFFSET() const          {return BANDWIDTH_OFFSET;}
+         Integer                  get_SIZE_TABLE_POS_WEIGHTS() const    {return SIZE_TABLE_POS_WEIGHTS;}
+         Real                     get_TABLE_POSITIONAL_WEIGHTS(Integer k) const {return TABLE_POSITIONAL_WEIGHTS.get(k);}
+         Integer                  get_WEIGHT_TABLE_TYPE() const         {return WEIGHT_TABLE_TYPE;}
+         bool                     get_SCALE_WEIGHT_INVDIAG() const      {return SCALE_WEIGHT_INVDIAG;}
+         bool                     get_SCALE_WGT_MAXINVDIAG() const      {return SCALE_WGT_MAXINVDIAG;}
+         Real                     get_WEIGHT_STANDARD_DROP() const      {return WEIGHT_STANDARD_DROP;}
+         Real                     get_WEIGHT_STANDARD_DROP2() const     {return WEIGHT_STANDARD_DROP2;}
+         Real                     get_WEIGHT_INVERSE_DROP() const       {return WEIGHT_INVERSE_DROP;}
+         Real                     get_WEIGHT_WEIGHTED_DROP() const      {return WEIGHT_WEIGHTED_DROP;}
+         Real                     get_WEIGHT_ERR_PROP_DROP() const      {return WEIGHT_ERR_PROP_DROP;}
+         Real                     get_WEIGHT_ERR_PROP_DROP2() const     {return WEIGHT_ERR_PROP_DROP2;}
+         Real                     get_WEIGHT_PIVOT_DROP() const         {return WEIGHT_PIVOT_DROP;}
+         Integer                  get_COMBINE_FACTOR() const            {return COMBINE_FACTOR;}
+         Real                     get_NEUTRAL_ELEMENT() const           {return NEUTRAL_ELEMENT;}
+         Real                     get_MIN_WEIGHT() const                {return MIN_WEIGHT;}
+         bool                     get_WEIGHTED_DROPPING() const         {return WEIGHTED_DROPPING;}
+         bool                     get_SUM_DROPPING() const              {return SUM_DROPPING;}
+         bool                     get_USE_POS_COMPRESS() const          {return USE_POS_COMPRESS;}
+         Real                     get_POST_FACT_THRESHOLD() const       {return POST_FACT_THRESHOLD;}
+         Integer                  get_SCHUR_COMPLEMENT() const          {return SCHUR_COMPLEMENT;}
          //## new parameter demands change here
          void                     set_fill_in(Integer x);
          void                     set_threshold(Real x);
