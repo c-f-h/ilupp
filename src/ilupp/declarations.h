@@ -138,7 +138,6 @@ class iluplusplus_error;
 // classes arrays.h
 
 template<class T> class array;
-typedef array<Real> Real_Array;
 class sorted_vector;
 
 // classes for orderings.h

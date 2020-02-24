@@ -213,7 +213,7 @@ class iluplusplus_precond_parameter
          Real                     BANDWIDTH_MULTIPLIER;   // see below
          Integer                  BANDWIDTH_OFFSET;       // maximal bandwidth = BANDWIDTH_OFFSET + BANDWIDTH_MULTIPLIER*n
          Integer                  SIZE_TABLE_POS_WEIGHTS; // size of table used -1
-         Real_Array               TABLE_POSITIONAL_WEIGHTS;
+         array<Real>              TABLE_POSITIONAL_WEIGHTS;
          Integer                  WEIGHT_TABLE_TYPE;      // type of table used.
          bool                     SCALE_WEIGHT_INVDIAG;   // indicates if dropping threshold is scaled by inverse of diagonal element, i.e. final weight is scaled by 1/|d(i,i)|.
          bool                     SCALE_WGT_MAXINVDIAG;   // indicates if dropping threshold is scaled by maximal inverse of diagonal element, i.e. final weight is scaled by msx 1/|d(i,i)|.
