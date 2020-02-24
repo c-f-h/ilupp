@@ -810,18 +810,20 @@ class index_list
 // Declarations for ILUC-type preconditioners
 /*********************************************************************/
 
-void initialize_triangular_fields(Integer n, Integer *list);
-void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, Integer *list, Integer *first);
-void insert(Integer *list,Integer *head, Integer i, Integer j);
-void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, Integer *list, Integer *head, Integer *first);
-void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, Integer *list, Integer *head, Integer *first);
+template <class IntArr>
+void initialize_triangular_fields(Integer n, IntArr& list);
 
-void initialize_triangular_fields(Integer n, array<Integer>& list);
-void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& first);
-void insert(array<Integer>& list,array<Integer>& head, Integer i, Integer j);
-void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& head, array<Integer>& first);
-void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& head, array<Integer>& first);
+template <class IntArr>
+void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& first);
 
+template <class IntArr>
+void insert(IntArr& list, IntArr& head, Integer i, Integer j);
+
+template <class IntArr>
+void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first);
+
+template <class IntArr>
+void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first);
 
 /*********************************************************************/
 // Other Declarations

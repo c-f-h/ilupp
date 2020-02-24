@@ -6736,128 +6736,120 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix
 //***********************************************************************************************************************
 
 template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor){
-  try {
-      Integer m = A.rows();
-      Integer n = A.columns();
-      Integer k,j,h;
-      vector_sparse_dynamic<T> z,w;
-      Real norm_w=0.0;
-      Real norm_z=0.0;
-      index_list listw;
-      index_list listz;
-        // the following field will store the index of the first element in the i-th row having a column index >= k (i=0...m-1).
-      Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
-      array<Integer> firstU, firstL, firstA, listA, headA, listU, listL;
-      firstU.erase_resize_data_field(m);
-      firstL.erase_resize_data_field(m);
-      firstA.erase_resize_data_field(m);
-      listA.erase_resize_data_field(m);
-      headA.erase_resize_data_field(m);
-       // the following field will the information needed to retrieve a column of U.
-      listU.erase_resize_data_field(m);
-       // same as above for L, but orientation reversed:
-      listL.erase_resize_data_field(m);
-      reformat(m,m,reserved_memory,other_orientation(A.orientation));
-      U.reformat(m,n,reserved_memory,A.orientation);
-      z.resize(n);
-      w.resize(m);
-      if (max_fill_in<1) max_fill_in = 1;
-        // calculate maximal size needed for L and U:
-        // reformat L (*this) and U and initialize the pointers:
-      //initialize fields.
-      initialize_sparse_matrix_fields(m,A.pointer,A.indices,listA,headA,firstA);
-      initialize_triangular_fields(m,listL);
-      initialize_triangular_fields(m,listU);
-      // Iterate over the rows of A or U respectively.
-      for(k=0;k<min(m,n);k++){  // (1.) in algorithm of Saad.
-          // initialize z - (2.) in algorithm of Saad.
-          z.zero_reset(); // new
+    Integer m = A.rows();
+    Integer n = A.columns();
+    Integer k,j,h;
+    vector_sparse_dynamic<T> z,w;
+    Real norm_w=0.0, norm_z=0.0;
+    index_list listw, listz;
+    // calculate maximal size needed for L and U:
+    Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
 
-          for(j=firstA[k];j<A.pointer[k+1];j++) z[A.indices[j]] = A.data[j];
-           // subtract multiples of the various rows of U from z, the new row of U
-           // (3.) in the algorithm of Saad.
-          h=listL[k];
-          while(h!=-1){
-              // h is current column index of k-th row of L
-             for(j=firstU[h];j<U.pointer[h+1];j++){
+    // the following field will store the index of the first element in the i-th row having a column index >= k (i=0...m-1).
+    // listU field will contain the information needed to retrieve a column of U.
+    // listL: same as above for L, but orientation reversed:
+    std::vector<Integer> firstU(m), firstL(m), listA(m), headA(m), firstA(m), listU(m), listL(m);
+
+    // reformat L (*this) and U and initialize the pointers:
+    reformat(m, m, reserved_memory, other_orientation(A.orientation));
+    U.reformat(m, n, reserved_memory, A.orientation);
+    z.resize(n);
+    w.resize(m);
+    if (max_fill_in<1) max_fill_in = 1;
+
+    //initialize fields.
+    initialize_sparse_matrix_fields(m, A.pointer, A.indices, listA, headA, firstA);
+    initialize_triangular_fields(m, listL);
+    initialize_triangular_fields(m, listU);
+
+    // Iterate over the rows of A or U respectively.
+    for(k=0; k<min(m,n); k++){  // (1.) in algorithm of Saad.
+        // initialize z to upper part of row k - (2.) in algorithm of Saad.
+        z.zero_reset();
+        for(j=firstA[k]; j<A.pointer[k+1]; ++j)
+            z[A.indices[j]] = A.data[j];
+
+        // subtract multiples of the various rows of U from z, the new row of U
+        // (3.) in the algorithm of Saad.
+        for (h = listL[k]; h != -1; h = listL[h]) {
+            // h is current column index of k-th row of L
+            const T L_kh = data[firstL[h]];
+            for (j=firstU[h]; j<U.pointer[h+1]; ++j) {
                 // (4.) in the algorithm of Saad.
-                 z[U.indices[j]] -= data[firstL[h]]*U.data[j];
-             }  // end for j
-             h=listL[h];
-          } // end while (5.) in algorithm of Saad.
-            // initialize w -  (6.) in algorithm of Saad.
-          w.zero_reset(); //new, old used to be else branch
-          h=headA[k];
-          while(h!=-1){
-              if(h>k) w[h]=A.data[firstA[h]];
-              h=listA[h];
-          }
-          // end while
+                z[U.indices[j]] -= L_kh * U.data[j];
+            }  // end for j
+        } // end while (5.) in algorithm of Saad.
 
-          // (7.) in the algorithm of Saad.
-          h=listU[k];
-          while(h!=-1){
-              // h is current row index of k-th column of U
-             for(j=firstL[h];j<pointer[h+1];j++){
+        // initialize w to lower part of column k - (6.) in algorithm of Saad.
+        w.zero_reset();
+        for (h = headA[k]; h != -1; h = listA[h]) {
+            if(h > k)
+                w[h] = A.data[firstA[h]];
+        }
+
+        // (7.) in the algorithm of Saad.
+        for (h = listU[k]; h != -1; h = listU[h]) {
+            // h is current row index of k-th column of U
+            const T U_hk = U.data[firstU[h]];
+            for (j=firstL[h]; j<pointer[h+1]; ++j) {
                 // (8.) in the algorithm of Saad.
-                 w[indices[j]] -= U.data[firstU[h]]*data[j];
-             }  // end for j
-             h=listU[h];
-          } // end while (9.) in algorithm of Saad.
+                w[indices[j]] -= U_hk * data[j];
+            }  // end for j
+        } // end while (9.) in algorithm of Saad.
 
-          if (z.zero_check(k)){
-              reformat(0,0,0,other_orientation(A.orientation));
-              U.reformat(0,0,0,A.orientation);
-              return false;
-          }
-            // apply dropping to w - (10.) in the algorithm of Saad.
-          w.take_largest_elements_by_abs_value_with_threshold(norm_w,listw,max_fill_in-1,threshold,k+1,m);
-            // apply dropping to z - (11.) in the algorithm of Saad.
-            // copy z to U - (12.) in the algorithm of Saad.
-          z.take_largest_elements_by_abs_value_with_threshold(norm_z,listz,max_fill_in-1,threshold,k+1,n);
+        if (z.zero_check(k)) {
+            reformat(0,0,0,other_orientation(A.orientation));
+            U.reformat(0,0,0,A.orientation);
+            return false;
+        }
 
-          U.indices[U.pointer[k]]=k;
-          U.data[U.pointer[k]]=z[k];
-          if(U.pointer[k]+listz.dimension()>reserved_memory || pointer[k]+listw.dimension()+1>reserved_memory){
-              std::cerr<<"matrix_sparse::ILUC2: memory reserved was insufficient. Returning 0x0 matrix."<<std::endl;
-              reformat(0,0,0,other_orientation(A.orientation));
-              U.reformat(0,0,0,A.orientation);
-              return false;
-          }
-          for(j=0;j<listz.dimension();j++){
-              U.data[U.pointer[k]+j+1]=z.read(listz[j]);
-              U.indices[U.pointer[k]+j+1]=listz[j];
-          }
-          U.pointer[k+1]=U.pointer[k]+listz.dimension()+1;
-          // copy w to L - (13.) in the algorithm of Saad.
-          indices[pointer[k]]=k;
-          data[pointer[k]]=1.0;
-          for(j=0;j<listw.dimension();j++){
-              data[pointer[k]+j+1]=w.read(listw[j])/U.data[U.pointer[k]];
-              indices[pointer[k]+j+1]=listw[j];
-          }
-          pointer[k+1]=pointer[k]+listw.dimension()+1;
+        // apply dropping to w - (10.) in the algorithm of Saad.
+        w.take_largest_elements_by_abs_value_with_threshold(norm_w, listw, max_fill_in-1, threshold, k+1, m);
 
-          update_sparse_matrix_fields(k, A.pointer,A.indices,listA,headA,firstA);
-          update_triangular_fields(k, pointer,indices,listL,firstL);
-          update_triangular_fields(k, U.pointer,U.indices,listU,firstU);
-      }  // end for k - (14.) in the algorithm of Saad.
-      for(k=n+1;k<=m;k++){
-          U.pointer[k]=U.pointer[n];
-          indices[pointer[k-1]]=k-1;
-          data[pointer[k-1]]=1.0;
-          pointer[k]=pointer[k-1]+1;
-      }
-      compress(-1.0);
-      U.compress(-1.0);
-      return true;
-  }  // end try (code in try block not indented)
-  catch(iluplusplus_error ippe){
-      std::cerr<<"sparse_matrix::ILUC: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-      reformat(0,0,0,other_orientation(A.orientation));
-      U.reformat(0,0,0,A.orientation);
-      return false;
-  }
+        // apply dropping to z - (11.) in the algorithm of Saad.
+        z.take_largest_elements_by_abs_value_with_threshold(norm_z, listz, max_fill_in-1, threshold, k+1, n);
+
+        // copy z to U - (12.) in the algorithm of Saad.
+        U.indices[U.pointer[k]] = k;
+        U.data[U.pointer[k]] = z[k];
+        if (U.pointer[k]+listz.dimension() > reserved_memory
+                || pointer[k]+listw.dimension()+1 > reserved_memory) {
+            std::cerr<<"matrix_sparse::ILUC2: memory reserved was insufficient. Returning 0x0 matrix."<<std::endl;
+            reformat(0,0,0,other_orientation(A.orientation));
+            U.reformat(0,0,0,A.orientation);
+            return false;
+        }
+        for(j=0; j<listz.dimension(); ++j) {
+            U.data[U.pointer[k]+j+1] = z[listz[j]];
+            U.indices[U.pointer[k]+j+1] = listz[j];
+        }
+        U.pointer[k+1] = U.pointer[k]+listz.dimension()+1;
+
+        // copy w to L - (13.) in the algorithm of Saad.
+        indices[pointer[k]] = k;
+        data[pointer[k]] = 1.0;
+        const T U_kk = U.data[U.pointer[k]];  // diagonal entry of U
+        for(j=0; j<listw.dimension(); ++j) {
+            data[pointer[k]+j+1] = w[listw[j]] / U_kk;
+            indices[pointer[k]+j+1] = listw[j];
+        }
+        pointer[k+1] = pointer[k]+listw.dimension()+1;
+
+        update_sparse_matrix_fields(k, A.pointer, A.indices, listA, headA, firstA);
+        update_triangular_fields(k, pointer, indices, listL, firstL);
+        update_triangular_fields(k, U.pointer, U.indices, listU, firstU);
+    }  // end for k - (14.) in the algorithm of Saad.
+
+    // fill out remaining rows, if any (only for tall matrices)
+    for(k=n+1; k<=m; ++k) {
+        U.pointer[k] = U.pointer[n];
+        indices[pointer[k-1]] = k - 1;
+        data[pointer[k-1]] = 1.0;
+        pointer[k] = pointer[k-1] + 1;
+    }
+    compress(-1.0);
+    U.compress(-1.0);
+    return true;
 }
 
 
@@ -14479,25 +14471,20 @@ template<class T> T scalar_prod(const matrix_sparse<T> &A, Integer m, const matr
 //             functions for ILUC-type factorizations
 /**************************************************************************************************************************************/
 
-
-void initialize_triangular_fields(Integer n, Integer *list){
-    for(int k=0;k<n;k++) list[k]=-1;
+template <class IntArr>
+void initialize_triangular_fields(Integer n, IntArr& list){
+    for (int k=0;k<n;k++)
+        list[k]=-1;
 }
 
-void initialize_triangular_fields(Integer n, array<Integer>& list){
-    for(int k=0;k<n;k++) list[k]=-1;
-}
-
-
-
-void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, Integer *list, Integer *first){
+template <class IntArr>
+void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& first){
     Integer h,i,j;
+
     // update first:
-    h=list[k];
-    while(h!=-1){
+    for (h = list[k]; h != -1; h = list[h])
         first[h] += 1;
-        h=list[h];
-    }
+
     first[k]=pointer[k]+1; // can grow too large, i.e. move erroneously to the next row.
     // update list; insert k  at appropriate position
     h=list[k];
@@ -14518,122 +14505,43 @@ void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, Int
     }
 }
 
-void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& first){
-    try {
-        Integer h,i,j;
-        // update first:
-        h=list[k];
-        while(h!=-1){
-            first[h] += 1;
-            h=list[h];
-        }
-        first[k]=pointer[k]+1; // can grow too large, i.e. move erroneously to the next row.
-        // update list; insert k  at appropriate position
-        h=list[k];
-        if(pointer[k]+1<pointer[k+1]){
-            j=indices[pointer[k]+1];
-            list[k]=list[j];
-            list[j]=k;
-        }
-        // distribute P_k
-        while(h!=-1){
-            i=h;
-           h=list[i];
-            if(first[i]<pointer[i+1]){
-                j=indices[first[i]];
-               list[i]=list[j];
-           list[j]=i;
-            }
-        }
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"update_triangular_fields: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
 // insert i in P_j for the functions below
 
-void insert(array<Integer>& list,array<Integer>& head, Integer i, Integer j){
-    try {
-        list[i]=head[j];
-        head[j]=i;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"insert(array<Integer>& list,array<Integer>& head, Integer i, Integer j): "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
-void insert(Integer *list,Integer *head, Integer i, Integer j){
+template <class IntArr>
+void insert(IntArr& list, IntArr& head, Integer i, Integer j) {
     list[i]=head[j];
     head[j]=i;
 }
 
-void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, Integer *list, Integer *head, Integer *first){
-    int k;
-    for(k=0;k<n;k++) head[k]=-1;
-    for(k=0;k<n;k++){
-        first[k]=pointer[k];
-        if(pointer[k]<pointer[k+1]) insert(list,head,k,indices[pointer[k]]); // inserting k into P_indices[pointer[k]]
+template <class IntArr>
+void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first) {
+    for(int k=0; k<n; k++)
+        head[k] = -1;
+
+    for(int k=0; k<n; k++) {
+        first[k] = pointer[k];
+        if (pointer[k] < pointer[k+1])
+            insert(list, head, k, indices[pointer[k]]); // inserting k into P_indices[pointer[k]]
     }
 }
 
-void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& head, array<Integer>& first){
-    try {
-        int k;
-        for(k=0;k<n;k++) head[k]=-1;
-        for(k=0;k<n;k++){
-            first[k]=pointer[k];
-            if(pointer[k]<pointer[k+1]) insert(list,head,k,indices[pointer[k]]); // inserting k into P_indices[pointer[k]]
-        }
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"initialize_sparse_matrix_fields: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
-
-void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, Integer *list, Integer *head, Integer *first){
+template <class IntArr>
+void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first) {
     Integer h,i;
+
     // update first:
-    h=head[k];
-    while(h!=-1){
+    for (h = head[k]; h != -1; h = list[h])
         first[h] += 1; // can grow too large, i.e. move erroneously to the next row.
-        h=list[h];
-    }
+
     // update list, distribute P_k
     h=head[k];
-    while(h!=-1){
+    while (h != -1) {
         i=h;
         h=list[i];
-        if(first[i]<pointer[i+1]) insert(list,head,i,indices[first[i]]);
+        if(first[i] < pointer[i+1])
+            insert(list, head, i, indices[first[i]]);
     }
 }
-
-void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, array<Integer>& list, array<Integer>& head, array<Integer>& first){
-    try {
-        Integer h,i;
-        // update first:
-        h=head[k];
-        while(h!=-1){
-            first[h] += 1; // can grow too large, i.e. move erroneously to the next row.
-            h=list[h];
-        }
-        // update list, distribute P_k
-        h=head[k];
-        while(h!=-1){
-            i=h;
-            h=list[i];
-            if(first[i]<pointer[i+1]) insert(list,head,i,indices[first[i]]);
-        }
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"update_sparse_matrix_fields: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
-}
-
 
 } // end namespace iluplusplus
 
