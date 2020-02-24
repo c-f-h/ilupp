@@ -159,8 +159,6 @@ template <class T, class matrix_type, class vector_type>
           using preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only;
           virtual void apply_preconditioner_only(matrix_usage_type use, const vector_type &x, vector_type &y) const;
           virtual void apply_preconditioner_only(matrix_usage_type use,vector_type &y) const;
-          virtual void apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, const vector_type &x, vector_type &y) const;
-          virtual void apply_preconditioner_only(preconditioner_application1_type PA1, matrix_usage_type use, vector_type &y) const;
           virtual void apply_only_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void apply_only_left(matrix_usage_type use,  vector_type &w) const;
           virtual void apply_only_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
