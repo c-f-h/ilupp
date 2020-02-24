@@ -7066,7 +7066,7 @@ template<class T> bool matrix_sparse<T>::ILUT2(const matrix_sparse<T>& A, matrix
           norm_w=w.norm2();
           while(w.current_sorting_index()<i && !w.at_end()){
               w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
-              if(abs(w.current_element())<threshold*norm_w){
+              if(std::abs(w.current_element())<threshold*norm_w){
                    w.current_zero_set();
                    // taking a step forward is not necessary, because the iterator jumps automatically ahead if current element is erased.
               } else {
