@@ -60,40 +60,57 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const = 0;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &w) const = 0;
           virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const = 0;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &c) const = 0;
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const = 0;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &x) const = 0;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const = 0;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &y) const = 0;
        public:
           preconditioner();   // standard constructor
           virtual ~preconditioner();                                  // destructor
           preconditioner(const preconditioner &A);                     // copy-constructor
+
         // essentials
-           // preconditioner operator = (const preconditioner<T, matrix_type, vector_type> &A){pre_image_size=A.pre_image_size; image_size=A.image_size;};
         // preconditioned multiplication with prescribed usage: from left, from right or split preconditioning used as simple, QTQ or QQT preconditioning
-          virtual void preconditioned_matrix_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, const vector_type &v, vector_type &w) const;
-          virtual void preconditioned_matrix_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, vector_type &w) const;
+          virtual void preconditioned_matrix_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, const vector_type &v, vector_type &w) const {
+              apply_preconditioner_and_matrix(PA1,ID,A,v,w);
+          }
+          virtual void preconditioned_matrix_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, vector_type &w) const {
+              apply_preconditioner_and_matrix(PA1,ID,A,w);
+          }
+
         // preconditioned multiplication with prescribed usage: from left, from right or split preconditioning
-          virtual void preconditioned_matrix_transposed_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, const vector_type &v, vector_type &w) const;
-          virtual void preconditioned_matrix_transposed_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, vector_type &w) const;
+          virtual void preconditioned_matrix_transposed_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, const vector_type &v, vector_type &w) const {
+              apply_preconditioner_and_matrix_transposed(PA1,ID,A,v,w);
+          }
+          virtual void preconditioned_matrix_transposed_vector_multiplication(preconditioner_application1_type PA1, const matrix_type &A, vector_type &w) const {
+              apply_preconditioner_and_matrix_transposed(PA1,ID,A,w);
+          }
+
+
         // appropriate modification of rhs based on preconditioning technique chosen
-          virtual void preconditioned_rhs(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &b, vector_type &c) const;
-          virtual void preconditioned_rhs(preconditioner_application1_type PA1, const matrix_type& A, vector_type &c) const;
+          virtual void preconditioned_rhs(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &b, vector_type &c) const {
+              apply_preconditioner_rhs(PA1,ID,A,b,c);
+          }
+
         // appropriate adaption of solution based on preconditioning technique choses
-          virtual void adapt_solution(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &y, vector_type &x) const;
-          virtual void adapt_solution(preconditioner_application1_type PA1,  const matrix_type& A, vector_type &x) const;
+          virtual void adapt_solution(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &y, vector_type &x) const {
+              apply_preconditioner_solution(PA1,ID,A,y,x);
+          }
+
         // appropriate starting value for iteration y based on initial guess of solution x (inverse of adapt_solution).
-          virtual void preconditioned_starting_value(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &x, vector_type &y) const;
-          virtual void preconditioned_starting_value(preconditioner_application1_type PA1, const matrix_type& A, vector_type &y) const;
+          virtual void preconditioned_starting_value(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &x, vector_type &y) const {
+              apply_preconditioner_starting_value(PA1,ID,A,x,y);
+          }
+          virtual void preconditioned_starting_value(preconditioner_application1_type PA1, const matrix_type& A, vector_type &y) const {
+              apply_preconditioner_starting_value(PA1,ID,A,y);
+          }
+
         // appropriate residual: r= L*(b-A*x), L being the left part of the preconditioner.
           virtual void preconditioned_residual(preconditioner_application1_type PA1, const matrix_type& A, const vector_type &b, const vector_type &x, vector_type &r) const;
           virtual void apply_preconditioner_only(matrix_usage_type use, const vector_type &x, vector_type &y) const = 0;
           virtual void apply_preconditioner_only(matrix_usage_type use, vector_type &y) const = 0;
           virtual void apply_preconditioner_only(matrix_usage_type use, T* data, Integer dim) const;
           virtual void apply_preconditioner_only(matrix_usage_type use, std::vector<T>& data) const;
-          virtual Integer dimension_of_argument_of_multiplication(preconditioner_application1_type PA1, const matrix_type& A) const = 0;
-          virtual Integer dimension_of_result_of_multiplication(preconditioner_application1_type PA1, const matrix_type& A) const = 0;
+
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const = 0;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const = 0;
           virtual Integer pre_image_dimension() const;
@@ -109,8 +126,6 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           virtual void read_binary(std::string filename) = 0;
           virtual void write_binary(std::string filename) const = 0;
           virtual Real time() const;
-          virtual void setup_approximate_inverse(matrix_usage_type mu, matrix_dense<T>& inv) const;
-          virtual void setup_preconditioned_matrix(matrix_usage_type mu, preconditioner_application1_type PA, const matrix_type& A, matrix_dense<T>& inv) const;
   };
 
 
@@ -135,9 +150,7 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &w) const;
           virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &c) const;
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &x) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &y) const;
        public:
@@ -145,8 +158,6 @@ template <class T, class matrix_type, class vector_type>
           virtual ~single_preconditioner();                                  // destructor
           single_preconditioner(const single_preconditioner &A);             // copy-constructor
           virtual void print_info() const = 0;
-          virtual Integer dimension_of_argument_of_multiplication(preconditioner_application1_type PA1, const matrix_type& A) const;
-          virtual Integer dimension_of_result_of_multiplication(preconditioner_application1_type PA1, const matrix_type& A) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
           virtual Integer total_nnz() const = 0; 
@@ -191,9 +202,7 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &w) const;
           virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,vector_type &c) const;
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &x) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A, vector_type &y) const;
        public:
@@ -203,8 +212,6 @@ template <class T, class matrix_type, class vector_type>
           virtual Integer right_nnz() const = 0;
           virtual Integer total_nnz() const;
           split_preconditioner(const split_preconditioner &A);                     // copy-constructor
-          virtual Integer dimension_of_argument_of_multiplication(preconditioner_application1_type PA1,const matrix_type& A) const;
-          virtual Integer dimension_of_result_of_multiplication(preconditioner_application1_type PA1, const matrix_type& A) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
           virtual void print_info() const = 0;
@@ -384,6 +391,8 @@ template <class T, class matrix_type, class vector_type>
 
 
 
+// The class: indirect_split_pseudo_triangular_preconditioner
+// (if permutation is applied to the columns Precond_right, a upper-triangular matrix results)
 template <class T, class matrix_type, class vector_type>
   class indirect_split_pseudo_triangular_preconditioner : public split_preconditioner <T,matrix_type, vector_type>
   {
