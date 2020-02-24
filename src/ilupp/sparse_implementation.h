@@ -11954,11 +11954,6 @@ void index_list::init(){
         indices[i]=i;
 }
 
-void index_list::init_offset(Integer begin) {
-    for(Integer i=0;i<dimension();i++)
-        indices[i]=i+begin;
-}
-
 void index_list::init(Integer n) {
 #ifdef DEBUG
     non_fatal_error(dimension()<n,"index_list::init(Integer): index list cannot be initialized for integers larger than its size.");
@@ -11992,11 +11987,6 @@ void index_list::resize(Integer newsize){
 void index_list::resize(Integer newsize, Integer new_memory){
     resize_without_initialization(newsize, new_memory);
     init();
-}
-
-void index_list::resize_init(Integer newsize, Integer begin){
-    resize_without_initialization(newsize);
-    init_offset(begin);
 }
 
 void index_list::resize_with_constant_value(Integer newsize, Integer d){

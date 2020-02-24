@@ -744,7 +744,6 @@ class index_list
            Integer find(Integer k) const; // returns -1 if k is not found in list, else the position of k.
            void resize(Integer newsize);
            void resize(Integer newsize, Integer new_memory);
-           void resize_init(Integer newsize, Integer begin);
            void resize_without_initialization(Integer newsize);
            void resize_without_initialization(Integer newsize, Integer new_memory);
            void resize_with_constant_value(Integer newsize, Integer d);
@@ -754,7 +753,6 @@ class index_list
            void interchange(index_list& A);
            void print_info() const;
            void init(); // initializes list with 0,..,size-1
-           void init_offset(Integer begin); // initializes with begin,...begin+size-1
            void init(Integer n);   // initializes first n elements only.
            void init(Integer n, Integer begin); // initializes first n elements from begin,...begin+n-1.
            void quicksort(Integer left, Integer right); // sorts list from index left to right.
