@@ -9623,7 +9623,9 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner(index_lis
     w.quicksort(P,0,n-1);
 }
 
-template<class T> Integer matrix_sparse<T>::preprocess(const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
+template<class T> Integer matrix_sparse<T>::preprocess(
+        const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q,
+        index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
     Integer k;
     vector_dense<T> D1,D2;
     index_list p1,p2,ip1,ip2;
@@ -10100,7 +10102,9 @@ template<class T> Integer matrix_sparse<T>::preprocess(const matrix_sparse<T>& A
     return preprocessing_bad_at;
 }
 
-template<class T> Integer matrix_sparse<T>::preprocess(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
+template<class T> Integer matrix_sparse<T>::preprocess(
+        const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q,
+        index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
     Integer k;
     vector_dense<T> D1,D2;
     index_list p1,p2,ip1,ip2;
