@@ -1812,7 +1812,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     } else {
         complete_list.quicksort(0,number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
 }
 
@@ -1857,7 +1857,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
         if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
 }
 
@@ -1903,7 +1903,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             }
             if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     } else {    // don't pivot
         if(read(pivot_position)==0){
@@ -1927,7 +1927,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         } else {
             //complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau+1);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             list[number_elements_larger_tau]=pivot_position;
         }
     }  // end if "to pivot or not to pivot"
@@ -1977,7 +1977,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         }
         if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
 }
 
@@ -2025,7 +2025,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
             }
             if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     } else {    // don't pivot
         if(read(pivot_position)==0){
@@ -2050,7 +2050,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
         } else {
             //complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau+1);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             list[number_elements_larger_tau]=pivot_position;
         }
     }  // end if "to pivot or not to pivot"
@@ -2115,7 +2115,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
                 }
                 if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
                 list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             }
         } else {    // don't pivot
             if(read(pivot_position)==0.0){
@@ -2147,7 +2147,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
             } else {
                 //complete_list.quicksort(0,number_elements_larger_tau-1);
                 list.resize_without_initialization(number_elements_larger_tau+1);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
                 list[number_elements_larger_tau]=pivot_position;
             }
         }  // end if "to pivot or not to pivot"
@@ -2188,7 +2188,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     } else {
         complete_list.quicksort(0,number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
 }
 
@@ -2229,7 +2229,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     } else {
         complete_list.quicksort(0,number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
   }
 
@@ -2284,7 +2284,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     } // end WEIGHTED_DROPPING
   }
@@ -2354,10 +2354,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             complete_rejected_list.quicksort(0,rejected_number-1);
             rejected_list.resize_without_initialization(rejected_number);
-            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list[i];
         }
     } // end WEIGHTED_DROPPING
   }
@@ -2417,7 +2417,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     } // end WEIGHTED_DROPPING
   }
@@ -2492,10 +2492,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             complete_rejected_list.quicksort(0,rejected_number-1);
             rejected_list.resize_without_initialization(rejected_number);
-            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list[i];
         }
     } // end WEIGHTED_DROPPING
   }
@@ -2564,7 +2564,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     } // end WEIGHTED_DROPPING
 }
@@ -2650,10 +2650,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             complete_rejected_list.quicksort(0,rejected_number-1);
             rejected_list.resize_without_initialization(rejected_number);
-            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list[i];
         }
     } // end WEIGHTED_DROPPING
 }
@@ -2725,7 +2725,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
         }
     }
 }
@@ -2812,10 +2812,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         } else {
             complete_list.quicksort(0,number_elements_larger_tau-1);
             list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
             complete_rejected_list.quicksort(0,rejected_number-1);
             rejected_list.resize_without_initialization(rejected_number);
-            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list[i];
         }
     } // end WEIGHTED_DROPPING
 }
@@ -3359,9 +3359,9 @@ template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data
      Integer j,k;
      for(Integer i=0; i<list.dimension(); i++){
          k=begin_index+i;
-         j=list.read(i);
+         j=list[i];
          indices[k]=j;
-         data[k]=data_vector.read(j);
+         data[k]=data_vector[j];
      }
   }
 
@@ -3371,7 +3371,7 @@ template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data
      for(Integer i=0; i<n; i++){
          index_matrix          = begin_index_matrix+i;              // the index in (*this) that is being updated
          index_list            = begin_index_list+i;                // corresponding to this element in the list;
-         index_data            = list.read_index(index_list);       // the datum in the data_vector has the index/position "index_data"
+         index_data            = list[index_list];                  // the datum in the data_vector has the index/position "index_data"
          indices[index_matrix] = index_data+offset;                        // this position is stored now in (*this).indices
          data[index_matrix]    = data_vector.read_data(index_data); // the datum corresponding to this position is stored in (*this).data.
      }
@@ -11412,7 +11412,7 @@ template<class T> void matrix_dense<T>::permute_columns(const matrix_dense<T>& A
         resize(A.number_rows,A.number_columns);
         for(Integer i=0;i<A.number_rows;i++)
             for(Integer j=0;j<A.number_columns;j++)
-                data[i][j] = A.data[i][perm.read(j)];
+                data[i][j] = A.data[i][perm[j]];
     } else {
         std::cerr << "Dimension error in matrix_dense::permute_columns"<<std::endl;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -11432,7 +11432,7 @@ template<class T> void matrix_dense<T>::permute_rows(const matrix_dense<T>& A, c
         resize(A.number_rows,A.number_columns);
         for(Integer i=0;i<A.number_rows;i++)
             for(Integer j=0;j<A.number_columns;j++)
-                data[i][j] = A.data[perm.read(i)][j];
+                data[i][j] = A.data[perm[i]][j];
     } else {
         std::cerr << "Dimension error in matrix_dense::permute_rows"<<std::endl;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -12039,14 +12039,6 @@ const Integer& index_list::operator[](Integer j) const {
     return indices[j];
 }
 
-Integer index_list::read(Integer j) const {
-    return (*this)[j];
-}
-
-Integer index_list::read_index(Integer j) const {
-    return (*this)[j];
-}
-
 void index_list::print_info() const {
     std::cout<<"An index list of dimension "<<dimension()<<std::endl;
   }
@@ -12171,7 +12163,7 @@ void index_list::interchange(index_list& A){
 }
 
 std::ostream& operator << (std::ostream& os, const index_list& x){
-    for(Integer i=0;i<x.dimension();i++) os << x.read_index(i) << std::endl; std::cout<<std::endl;
+    for(Integer i=0;i<x.dimension();i++) os << x[i] << std::endl; std::cout<<std::endl;
     return os;
 }
 

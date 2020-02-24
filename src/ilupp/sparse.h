@@ -752,8 +752,6 @@ class index_list
            Integer& operator[](Integer j);
            const Integer& operator[](Integer j) const;
            void interchange(index_list& A);
-           Integer  read(Integer j) const;
-           Integer  read_index(Integer j) const;
            void print_info() const;
            void init(); // initializes list with 0,..,size-1
            void init_offset(Integer begin); // initializes with begin,...begin+size-1
