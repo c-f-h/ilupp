@@ -253,7 +253,8 @@ class iluplusplus_precond_parameter
          Real                     get_perm_tol() const                  {return perm_tol;}
          std::string              get_GLOBAL_COMMENT() const            {return GLOBAL_COMMENT;}
          Integer                  get_PRECON_PARAMETER() const          {return PRECON_PARAMETER;}
-         preprocessing_sequence   get_PREPROCESSING() const             {return PREPRPOCESSING;}
+         const preprocessing_sequence&  get_PREPROCESSING() const       {return PREPRPOCESSING;}
+         preprocessing_sequence&  get_PREPROCESSING()                   {return PREPRPOCESSING;}
          Real                     get_PQ_THRESHOLD() const              {return PQ_THRESHOLD;}
          Integer                  get_PQ_ALGORITHM() const              {return PQ_ALGORITHM;}
          Integer                  get_MAX_LEVELS() const                {return MAX_LEVELS;}
