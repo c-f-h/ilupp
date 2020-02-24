@@ -46,7 +46,7 @@ bool ILUTP2(
 
         // (2.) initialize w
         for(k=A.pointer[i];k<A.pointer[i+1];k++){
-            w(A.indices[k],inverse_perm.get(A.indices[k])) = A.data[k];
+            w(A.indices[k],inverse_perm[A.indices[k]]) = A.data[k];
         }     // end for k
 
         norm_w=w.norm2();
@@ -58,7 +58,7 @@ bool ILUTP2(
                 // taking a step forward is not necessary, because the iterator jumps automatically ahead if current element is erased.
             } else {
                 for(j=U.pointer[w.current_sorting_index()]+1; j<U.pointer[w.current_sorting_index()+1]; j++){
-                    w(U.indices[j],inverse_perm.get(U.indices[j])) -= w.current_element()*U.data[j];
+                    w(U.indices[j],inverse_perm[U.indices[j]]) -= w.current_element()*U.data[j];
                 } // end for
                 w.take_step_forward();
             }   // end if
@@ -70,9 +70,9 @@ bool ILUTP2(
             if(threshold>0.0) w.take_largest_elements_by_abs_value_with_threshold(norm_L,norm_U,list_L,list_U,inverse_perm,max_fill_in-1,max_fill_in,threshold,0.0,i); // we need one element less for L, as the diagonal will always be 1.
             if(list_U.dimension()==0){
                 zero_pivots++;
-                w(perm.get(i),i)=1.0;
+                w(perm[i],i)=1.0;
                 list_U.resize(1);
-                list_U[0]=perm.get(i);
+                list_U[0]=perm[i];
             }
         }
 
@@ -82,7 +82,7 @@ bool ILUTP2(
         }
         for(j=0;j<list_L.dimension();j++){
             L.data[L.pointer[i]+j] = w.read(list_L[list_L.dimension()-1-j]);
-            L.indices[L.pointer[i]+j] = inverse_perm.get(list_L[list_L.dimension()-1-j]);
+            L.indices[L.pointer[i]+j] = inverse_perm[list_L[list_L.dimension()-1-j]];
         } // end for j
         L.data[L.pointer[i]+list_L.dimension()]=1.0;
         L.indices[L.pointer[i]+list_L.dimension()]=i;
@@ -96,8 +96,8 @@ bool ILUTP2(
             U.indices[U.pointer[i]+j] = list_U[list_U.dimension()-1-j];
         }  // end j
         U.pointer[i+1]=U.pointer[i]+list_U.dimension();
-        p=inverse_perm.get(U.indices[U.pointer[i]]);
-        inverse_perm.switch_index(perm.get(i),U.indices[U.pointer[i]]);
+        p=inverse_perm[U.indices[U.pointer[i]]];
+        inverse_perm.switch_index(perm[i],U.indices[U.pointer[i]]);
         perm.switch_index(i,p);
         if(U.data[U.pointer[i]]==0) {
             throw std::runtime_error("matrix_sparse::ILUTP2: encountered zero pivot in row ");

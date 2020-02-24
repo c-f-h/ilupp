@@ -754,8 +754,6 @@ class index_list
            void interchange(index_list& A);
            Integer  read(Integer j) const;
            Integer  read_index(Integer j) const;
-           Integer get(Integer j) const;
-           Integer& set(Integer j);
            void print_info() const;
            void init(); // initializes list with 0,..,size-1
            void init_offset(Integer begin); // initializes with begin,...begin+size-1
