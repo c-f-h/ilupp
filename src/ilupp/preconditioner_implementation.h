@@ -3016,13 +3016,17 @@ template <class T, class matrix_type, class vector_type>
   ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, const ILUTP_precond_parameter& p){
   try {
       if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUTP2(A,this->Precond_right,this->permutation,p.get_fill_in(),p.get_threshold(),p.get_perm_tol(),p.get_row_pos(),this->zero_pivots,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = this->Precond_left.ILUTP2(
+                  A, this->Precond_right, this->permutation, p.get_fill_in(), p.get_threshold(),
+                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
           this->left_form=LOWER_TRIANGULAR;
           this->right_form=PERMUTED_UPPER_TRIANGULAR;
           this->left_matrix_usage = NOPERM;
           this->right_matrix_usage = PERM1;
       } else {
-          this->preconditioner_exists = this->Precond_right.ILUTP2(A,this->Precond_left,this->permutation,p.get_fill_in(),p.get_threshold(),p.get_perm_tol(),p.get_row_pos(),this->zero_pivots,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = this->Precond_right.ILUTP2(
+                  A, this->Precond_left, this->permutation, p.get_fill_in(), p.get_threshold(),
+                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
           this->Precond_left.transpose_in_place();
           this->Precond_right.transpose_in_place();
           this->left_form=PERMUTED_LOWER_TRIANGULAR;
@@ -3190,13 +3194,17 @@ template <class T, class matrix_type, class vector_type>
   ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p){
   try {
       if(Acol.orient()==COLUMN){
-          this->preconditioner_exists = this->Precond_left.ILUCP4(Acol,this->Precond_right,this->permutation,p.get_fill_in(),p.get_threshold(),p.get_perm_tol(),p.get_row_pos(),this->zero_pivots,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = this->Precond_left.ILUCP4(
+                  Acol, this->Precond_right, this->permutation, p.get_fill_in(), p.get_threshold(),
+                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
           this->left_form=LOWER_TRIANGULAR;
           this->right_form=PERMUTED_UPPER_TRIANGULAR;
           this->left_matrix_usage = NOPERM;
           this->right_matrix_usage = PERM1;
       } else {
-          this->preconditioner_exists = this->Precond_right.ILUCP4(Acol,this->Precond_left,this->permutation,p.get_fill_in(),p.get_threshold(),p.get_perm_tol(),p.get_row_pos(),this->zero_pivots,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = this->Precond_right.ILUCP4(
+                  Acol, this->Precond_left, this->permutation, p.get_fill_in(), p.get_threshold(),
+                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
           this->left_form=PERMUTED_LOWER_TRIANGULAR;
           this->right_form=UPPER_TRIANGULAR;
           this->left_matrix_usage = PERM1;
@@ -3378,7 +3386,9 @@ template <class T, class matrix_type, class vector_type>
   ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p){
   try {
       if(Acol.orient()==COLUMN && Arow.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUCDP(Arow,Acol,this->Precond_right,this->permutation,this->permutation2,p.get_fill_in(),p.get_threshold(),p.get_perm_tol(),p.get_begin_perm_row(),this->zero_pivots,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = this->Precond_left.ILUCDP(
+                  Arow, Acol, this->Precond_right, this->permutation, this->permutation2, p.get_fill_in(), p.get_threshold(),
+                  p.get_perm_tol(), p.get_begin_perm_row(), this->zero_pivots, this->setup_time);      // preconditioner of A.
           this->left_form=PERMUTED_LOWER_TRIANGULAR;
           this->right_form=PERMUTED_UPPER_TRIANGULAR;
           this->left_matrix_usage = PERM2;
@@ -3684,8 +3694,12 @@ template <class T, class matrix_type, class vector_type>
       param = IP;
       Real tau = IP.get_threshold();
       bool use_ILUC;
-      if ((IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))  && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) ) && IP.get_perm_tol() > 500.0)  use_ILUC = true;
-      else use_ILUC = false;
+      if ((IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))
+              && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) )
+              && IP.get_perm_tol() > 500.0)
+          use_ILUC = true;
+      else
+          use_ILUC = false;
       bool have_zero_matrix = false;
       matrix_type Akrow,Akcol,Akrow_next;
       index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
