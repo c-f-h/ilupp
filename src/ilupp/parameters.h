@@ -235,9 +235,6 @@ class iluplusplus_precond_parameter
          //## new parameter demands change here
       public:
          iluplusplus_precond_parameter();
-         ~iluplusplus_precond_parameter();
-         iluplusplus_precond_parameter(const iluplusplus_precond_parameter& p);
-         iluplusplus_precond_parameter& operator =(const iluplusplus_precond_parameter& p);
          void default_parameters();                      // sets default parameters
          void make_table();                              // sets up table of dropping weights
          std::string convert_to_string() const;
