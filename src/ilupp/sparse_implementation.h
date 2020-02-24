@@ -6737,20 +6737,6 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix
 
 template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor){
   try {
-      if (threshold > 500) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      #ifdef VERBOSE
-          clock_t time_0, time_1, time_2, time_3;
-          clock_t time_1_1,time_1_2,time_1_3,time_1_4,time_1_5,time_1_6,time_1_7,time_1_8,time_1_9;
-          Real time=0.0;
-          Real time_copy=0.0;
-          Real time_sort=0.0;
-          Real time_calc=0.0;
-          Real time_zeroset=0.0;
-          Real time_arrays1=0.0;
-          Real time_arrays2=0.0;
-          time_0 = clock();
-      #endif
       Integer m = A.rows();
       Integer n = A.columns();
       Integer k,j,h;
@@ -6783,25 +6769,10 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
       initialize_triangular_fields(m,listL);
       initialize_triangular_fields(m,listU);
       // Iterate over the rows of A or U respectively.
-      #ifdef VERBOSE
-          time_1 = clock();
-          time = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-          std::cout<<std::endl<<"ILUC initialization time "<<time<<std::endl<<std::flush;
-      #endif
       for(k=0;k<min(m,n);k++){  // (1.) in algorithm of Saad.
-          #ifdef VERBOSE
-             time_1_1=clock();
-          #endif
-          #ifdef VERBOSE
-              time_1_2=clock();
-              time_arrays1 += (Real)(time_1_2-time_1_1)/(Real)CLOCKS_PER_SEC;
-          #endif
           // initialize z - (2.) in algorithm of Saad.
           z.zero_reset(); // new
-          #ifdef VERBOSE
-              time_1_3=clock();
-              time_zeroset += (Real)(time_1_3-time_1_2)/(Real)CLOCKS_PER_SEC;
-          #endif
+
           for(j=firstA[k];j<A.pointer[k+1];j++) z[A.indices[j]] = A.data[j];
            // subtract multiples of the various rows of U from z, the new row of U
            // (3.) in the algorithm of Saad.
@@ -6815,25 +6786,14 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
              h=listL[h];
           } // end while (5.) in algorithm of Saad.
             // initialize w -  (6.) in algorithm of Saad.
-          #ifdef VERBOSE
-              time_1_4=clock();
-              time_copy += (Real)(time_1_4-time_1_3)/(Real)CLOCKS_PER_SEC;
-          #endif
           w.zero_reset(); //new, old used to be else branch
-          #ifdef VERBOSE
-              time_1_5=clock();
-              time_zeroset += (Real)(time_1_5-time_1_4)/(Real)CLOCKS_PER_SEC;
-          #endif
           h=headA[k];
           while(h!=-1){
               if(h>k) w[h]=A.data[firstA[h]];
               h=listA[h];
           }
           // end while
-          #ifdef VERBOSE
-              time_1_6=clock();
-              time_arrays2 += (Real)(time_1_6-time_1_5)/(Real)CLOCKS_PER_SEC;
-          #endif
+
           // (7.) in the algorithm of Saad.
           h=listU[k];
           while(h!=-1){
@@ -6844,10 +6804,7 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
              }  // end for j
              h=listU[h];
           } // end while (9.) in algorithm of Saad.
-          #ifdef VERBOSE
-              time_1_7=clock();
-              time_calc += (Real)(time_1_7-time_1_6)/(Real)CLOCKS_PER_SEC;
-          #endif
+
           if (z.zero_check(k)){
               reformat(0,0,0,other_orientation(A.orientation));
               U.reformat(0,0,0,A.orientation);
@@ -6858,10 +6815,7 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
             // apply dropping to z - (11.) in the algorithm of Saad.
             // copy z to U - (12.) in the algorithm of Saad.
           z.take_largest_elements_by_abs_value_with_threshold(norm_z,listz,max_fill_in-1,threshold,k+1,n);
-          #ifdef VERBOSE
-              time_1_8=clock();
-              time_sort += (Real)(time_1_8-time_1_7)/(Real)CLOCKS_PER_SEC;
-          #endif
+
           U.indices[U.pointer[k]]=k;
           U.data[U.pointer[k]]=z[k];
           if(U.pointer[k]+listz.dimension()>reserved_memory || pointer[k]+listw.dimension()+1>reserved_memory){
@@ -6883,10 +6837,7 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
               indices[pointer[k]+j+1]=listw[j];
           }
           pointer[k+1]=pointer[k]+listw.dimension()+1;
-          #ifdef VERBOSE
-              time_1_9=clock();
-              time_copy += (Real)(time_1_9-time_1_8)/(Real)CLOCKS_PER_SEC;
-          #endif
+
           update_sparse_matrix_fields(k, A.pointer,A.indices,listA,headA,firstA);
           update_triangular_fields(k, pointer,indices,listL,firstL);
           update_triangular_fields(k, U.pointer,U.indices,listU,firstU);
@@ -6897,25 +6848,8 @@ template<class T> bool matrix_sparse<T>::ILUC2(const matrix_sparse<T>& A, matrix
           data[pointer[k-1]]=1.0;
           pointer[k]=pointer[k-1]+1;
       }
-      #ifdef VERBOSE
-          time_2 = clock();
-          time_copy += (Real)(time_2-time_1_9)/(Real)CLOCKS_PER_SEC;
-          time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"ILUC calculation time "<<time<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: copying: "<<time_copy<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: calculating: "<<time_calc<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: sorting: "<<time_sort<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: zero_set: "<<time_zeroset<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: arrays for L,U: "<<time_arrays1<<std::endl<<std::flush;
-          std::cout<<"    ILUC calculation time: arrays for A: "<<time_arrays2<<std::endl<<std::flush;
-      #endif
       compress(-1.0);
       U.compress(-1.0);
-      #ifdef VERBOSE
-          time_3 = clock();
-          time = ((Real)time_3-(Real)time_2)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"ILUC compressing time "<<time<<std::endl<<std::flush;
-      #endif
       return true;
   }  // end try (code in try block not indented)
   catch(iluplusplus_error ippe){
@@ -6978,6 +6912,7 @@ template<class T> bool matrix_sparse<T>::ILUT(const matrix_sparse<T>& A, matrix_
                   // (5.) Apply dropping to w.
                   // (6./7./8.) w = w -w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
                   // no need to check if w[k] != 0; this has already been done.
+                  // BUG: the scaling seems off here since we already divided by the diagonal?
                   if (std::abs(w[k]) < threshold*norm_w) {
                       w.zero_set(k);
                   } else {

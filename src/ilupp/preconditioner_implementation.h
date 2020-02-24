@@ -2734,8 +2734,7 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
   ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
   try {
-      clock_t time_begin, time_end;
-      time_begin = clock();
+      const clock_t time_begin = clock();
       if(A.orient()==ROW){
           this->preconditioner_exists = this->Precond_left.ILUC2(A,this->Precond_right,max_fill_in,threshold);      // preconditioner of A.
           this->left_form=LOWER_TRIANGULAR;
@@ -2748,8 +2747,7 @@ template <class T, class matrix_type, class vector_type>
          //this->Precond_left.transpose_in_place();
          //this->Precond_right.transpose_in_place();
       }
-      time_end = clock();
-      this->setup_time = ((Real) time_end -(Real) time_begin)/(Real) CLOCKS_PER_SEC;
+      this->setup_time = ((Real)clock() - (Real) time_begin) / (Real) CLOCKS_PER_SEC;
       this->pre_image_size=this->Precond_left.rows();
       this->image_size=this->Precond_right.columns();
       this->intermediate_size=this->Precond_left.columns();
