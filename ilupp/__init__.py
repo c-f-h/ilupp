@@ -11,6 +11,20 @@ import scipy.sparse.linalg
 from . import _ilupp
 from ._ilupp import iluplusplus_precond_parameter
 
+def _matrix_fields(A):
+    if isinstance(A, scipy.sparse.csr_matrix):
+        is_csr = True
+    elif isinstance(A, scipy.sparse.csc_matrix):
+        is_csr = False
+    else:
+        raise TypeError("A must be a csr_matrix or a csc_matrix")
+
+    if A.shape[0] != A.shape[1]:
+        raise ValueError("A must be a square matrix!")
+
+    return A.data, A.indices, A.indptr, is_csr
+
+
 def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None, params=None, info=False):
     """Solve the linear system Ax=b using a multilevel ILU++ preconditioner and BiCGStab.
 
@@ -35,20 +49,11 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None,
         if fill_in is not None:
             params.fill_in = fill_in
 
-    if isinstance(A, scipy.sparse.csr_matrix):
-        is_csr = True
-    elif isinstance(A, scipy.sparse.csc_matrix):
-        is_csr = False
-    else:
-        raise TypeError("A must be a csr_matrix or a csc_matrix")
-
-    if A.shape[0] != A.shape[1]:
-        raise ValueError("A must be a square matrix!")
-
+    Ad, Ai, Ap, Ao = _matrix_fields(A)
     b = np.ascontiguousarray(b, dtype=np.float_)
 
     sol, iter, rtol_out, atol_out = _ilupp.solve(
-            A.data, A.indices, A.indptr, is_csr, b, rtol, atol, max_iter, params)
+            Ad, Ai, Ap, Ao, b, rtol, atol, max_iter, params)
 
     if info:
         return sol, (iter, rtol_out, atol_out)
@@ -73,7 +78,6 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
     def total_nnz(self):
         return self.pr.total_nnz
 
-
 class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner. Implements the scipy LinearOperator protocol.
 
@@ -90,18 +94,10 @@ class ILUppPreconditioner(_BaseWrapper):
             if fill_in is not None:
                 params.fill_in = fill_in
 
-        if isinstance(A, scipy.sparse.csr_matrix):
-            is_csr = True
-        elif isinstance(A, scipy.sparse.csc_matrix):
-            is_csr = False
-        else:
-            raise TypeError("A must be a csr_matrix or a csc_matrix")
-
-        if A.shape[0] != A.shape[1]:
-            raise ValueError("A must be a square matrix!")
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
 
         self.pr = _ilupp.multilevel_preconditioner()
-        self.pr.setup(A.data, A.indices, A.indptr, is_csr, params)
+        self.pr.setup(Ad, Ai, Ap, Ao, params)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property
@@ -126,17 +122,8 @@ class ILUTPreconditioner(_BaseWrapper):
         threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
     """
     def __init__(self, A, threshold=1.0, fill_in=10000):
-        if isinstance(A, scipy.sparse.csr_matrix):
-            is_csr = True
-        elif isinstance(A, scipy.sparse.csc_matrix):
-            is_csr = False
-        else:
-            raise TypeError("A must be a csr_matrix or a csc_matrix")
-
-        if A.shape[0] != A.shape[1]:
-            raise ValueError("A must be a square matrix!")
-
-        self.pr = _ilupp.ILUTPreconditioner(A.data, A.indices, A.indptr, is_csr, fill_in, threshold)
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.ILUTPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
 class ILUTPPreconditioner(_BaseWrapper):
@@ -148,17 +135,8 @@ class ILUTPPreconditioner(_BaseWrapper):
         threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
     """
     def __init__(self, A, threshold=1.0, fill_in=10000, perm_tol=0.0, row_pos=-1, mem_factor=20.0):
-        if isinstance(A, scipy.sparse.csr_matrix):
-            is_csr = True
-        elif isinstance(A, scipy.sparse.csc_matrix):
-            is_csr = False
-        else:
-            raise TypeError("A must be a csr_matrix or a csc_matrix")
-
-        if A.shape[0] != A.shape[1]:
-            raise ValueError("A must be a square matrix!")
-
-        self.pr = _ilupp.ILUTPPreconditioner(A.data, A.indices, A.indptr, is_csr,
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.ILUTPPreconditioner(Ad, Ai, Ap, Ao,
                 fill_in, threshold, perm_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -171,15 +149,6 @@ class ILUCPreconditioner(_BaseWrapper):
         threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
     """
     def __init__(self, A, threshold=1.0, fill_in=10000):
-        if isinstance(A, scipy.sparse.csr_matrix):
-            is_csr = True
-        elif isinstance(A, scipy.sparse.csc_matrix):
-            is_csr = False
-        else:
-            raise TypeError("A must be a csr_matrix or a csc_matrix")
-
-        if A.shape[0] != A.shape[1]:
-            raise ValueError("A must be a square matrix!")
-
-        self.pr = _ilupp.ILUCPreconditioner(A.data, A.indices, A.indptr, is_csr, fill_in, threshold)
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.ILUCPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
