@@ -165,7 +165,6 @@ class index_list;
 // classes for parameters.h
 
 class precond_parameter;
-class ILUTP_precond_parameter;
 class ILUCP_precond_parameter;
 class ILUCDP_precond_parameter;
 class iluplusplus_precond_parameter;

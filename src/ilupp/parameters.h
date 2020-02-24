@@ -27,34 +27,6 @@ namespace iluplusplus {
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: ILUT Preconditioner (Saad):                                                                        //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-class ILUTP_precond_parameter
-  {
-      protected:
-         Integer fill_in;
-         Real threshold;
-         Real perm_tol;
-         Integer row_pos;
-      public:
-         ILUTP_precond_parameter();
-         ILUTP_precond_parameter(Integer fi, Real th, Real pt, Integer rp);
-         ILUTP_precond_parameter(const ILUTP_precond_parameter& p);
-         ILUTP_precond_parameter& operator =(const ILUTP_precond_parameter& p);
-         Integer get_fill_in() const;
-         Integer get_row_pos() const;
-         Real get_threshold() const;
-         Real get_perm_tol() const;
-         std::string convert_to_string() const;
-         void set(Integer fi, Real th, Real pt, Integer rp);
-         void set_threshold(Real th);
-  };
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: ILUCP Preconditioner:                                                                              //
 //                                                                                                                       //
 //***********************************************************************************************************************//

@@ -52,6 +52,7 @@
 #include "pmwm_implementation.h"
 
 #include "ILUT.hpp"
+#include "ILUTP.hpp"
 #include "ILUC.hpp"
 
 #ifdef ILUPLUSPLUS_USES_PARDISO
@@ -3554,11 +3555,6 @@ template<class T>  Real vector_sparse_dynamic<T>::memory() const{
 //*************************************************************************************************************************************
 
 template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhanced(){
-    vector_sparse_dynamic_enhanced<T>::size = 0;
-    vector_sparse_dynamic_enhanced<T>::nnz=0;
-    vector_sparse_dynamic_enhanced<T>::data = 0;
-    vector_sparse_dynamic_enhanced<T>::occupancy=0;
-    vector_sparse_dynamic_enhanced<T>::pointer=0;
     current_position_iter=key.begin();
   }
 
@@ -3567,31 +3563,9 @@ template<class T> vector_sparse_dynamic_enhanced<T>::~vector_sparse_dynamic_enha
 
 
 template<class T> void vector_sparse_dynamic_enhanced<T>::resize(Integer m) {
-    try {
-        if (this->size != m){
-            if (m<0) m=0;
-            this->size = m;
-            this->nnz = 0;
-            if(this->data !=0) delete [] this->data;
-            this->data = 0;
-            if(m>0) this->data = new T[m];
-            if(this->occupancy !=0) delete [] this->occupancy;
-            this->occupancy = 0;
-            if(m>0) this->occupancy = new Integer[m];
-            if(this->pointer !=0) delete [] this->pointer;
-            this->pointer = 0;
-            if(m>0) this->pointer = new Integer[m];
-        }
-        zero_set();
-        current_position_iter=key.begin();
-    }
-    catch(std::bad_alloc){
-        std::cerr<<"vector_sparse_dynamic_enhanced::resize: Error allocating memory."<<std::endl;
-        if(this->data !=0) delete [] this->data; this->data = 0;
-        if(this->occupancy !=0) delete [] this->occupancy; this->occupancy = 0;
-        if(this->pointer !=0) delete [] this->pointer; this->pointer = 0;
-        throw iluplusplus_error(INSUFFICIENT_MEMORY);
-    }
+    vector_sparse_dynamic<T>::resize(m);
+    zero_set();
+    current_position_iter=key.begin();
  }
 
 template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhanced(Integer m) {
@@ -6265,7 +6239,7 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_pe
     Integer offset = x.dimension()-number_rows;
     w.resize_without_initialization(number_rows);
     for(i=0;i<number_rows;i++) w[i]=x[offset+i];
-    for(i=0;i<number_rows;i++) x[offset+i]=w[perm.get(i)];
+    for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
     triangular_solve_with_smaller_matrix(form,use,x);
   }
   catch(iluplusplus_error ippe){
@@ -6283,7 +6257,7 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_pe
         w.resize_without_initialization(number_rows);
         triangular_solve_with_smaller_matrix(form,use,x);
         for(i=0;i<number_rows;i++) w[i]=x[offset+i];
-        for(i=0;i<number_rows;i++) x[offset+i]=w[perm.get(i)];
+        for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
     }
     catch(iluplusplus_error ippe){
        std::cerr << "matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_last: "<<ippe.error_message() << std::endl;
@@ -6291,11 +6265,13 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_pe
     }
 }
 
-template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list perm, const vector_dense<T>& b, vector_dense<T>& x) const{
-  try {
+template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const{
     if(non_fatal_error(!(square_check()),"matrix_sparse::triangular_solve: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(b.dimension() != number_rows, "matrix_sparse::triangular_solve: size of rhs is incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    x.resize(b.dimension(),0);
+
+    if (x.dimension() != b.dimension())
+        x.resize(b.dimension(),0);
+
     Integer k;
     Integer j;
      # ifdef VERYVERBOSE
@@ -6398,11 +6374,11 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
           time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
           std::cout<<std::endl<<"          triangular_solve "<<time<<std::endl<<std::flush;
      #endif
-   }  // end try
-   catch(iluplusplus_error ippe){
-     std::cerr << "matrix_sparse<T>::triangular_solve with permutation: "<<ippe.error_message() << std::endl;
-     throw;
-  }
+}
+
+template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const {
+    vector_dense<T> b = x;
+    triangular_solve(form, use, perm, b, x);
 }
 
 
@@ -6737,181 +6713,6 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix
 //***********************************************************************************************************************
 // Class matrix_sparse: Preconditioners                                                                                 *
 //***********************************************************************************************************************
-
-template<class T> bool matrix_sparse<T>::ILUTP2(const matrix_sparse<T>& A, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer bp, Integer& zero_pivots, Real& time_self, Real mem_factor){
-  try {
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
-      if (threshold > 500) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      if (perm_tol > 500) perm_tol=0.0;
-      else perm_tol=std::exp(-perm_tol*std::log(10.0));
-      #ifdef VERBOSE
-          Integer max_el_w=0;
-          Integer total_el_w=0;
-          clock_t time_0, time_1, time_2, time_3, time_4,time_1_1,time_1_2,time_1_3,time_1_4,time_1_5,time_1_6;
-          Real time=0.0;
-          Real time_copy=0.0;
-          Real time_sort=0.0;
-          Real time_calc=0.0;
-          Real time_zeroset=0.0;
-          time_0 = clock();
-      #endif
-      if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUTP2: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer m = A.rows();
-      Integer n = A.columns();
-      Integer k,i,j,p;
-      zero_pivots=0;
-      Real norm_L,norm_U, norm_w; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-      vector_sparse_dynamic_enhanced<T> w;
-      index_list list_L;
-      index_list list_U;
-      index_list inverse_perm;
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>n) max_fill_in = n;
-      Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
-      U.reformat(m,m,reserved_memory,ROW);
-      reformat(m,m,reserved_memory,ROW);
-      perm.resize(n);
-      w.resize(m);
-      inverse_perm.resize(n);
-      // (1.) begin for i
-      #ifdef VERBOSE
-          time_1 = clock();
-          time = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-          std::cout<<std::endl<<"ILUTP2 initialization time "<<time<<std::endl<<std::flush;
-      #endif
-      for(i=0;i<n;i++){
-          if (i == bp) perm_tol = 1.0;
-          #ifdef VERBOSE
-             time_1_1=clock();
-          #endif
-          // (2.) initialize w
-          for(k=A.pointer[i];k<A.pointer[i+1];k++){
-              w(A.indices[k],inverse_perm.get(A.indices[k])) = A.data[k];
-          }     // end for k
-          #ifdef VERBOSE
-              time_1_2=clock();
-              time_copy += (Real)(time_1_2-time_1_1)/(Real)CLOCKS_PER_SEC;
-          #endif
-          norm_w=w.norm2();
-          w.move_to_beginning();
-          while(w.current_sorting_index()<i && !w.at_end()){
-              w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
-              if(abs(w.current_element())<threshold*norm_w){
-                   w.current_zero_set();
-                   // taking a step forward is not necessary, because the iterator jumps automatically ahead if current element is erased.
-              } else {
-                  for(j=U.pointer[w.current_sorting_index()]+1; j<U.pointer[w.current_sorting_index()+1]; j++){
-                      w(U.indices[j],inverse_perm.get(U.indices[j])) -= w.current_element()*U.data[j];
-                  } // end for
-                  w.take_step_forward();
-              }   // end if
-          } // end while
-          #ifdef VERBOSE
-              time_1_3=clock();
-              time_calc += (Real)(time_1_3-time_1_2)/(Real)CLOCKS_PER_SEC;
-              max_el_w=max(max_el_w,w.non_zeroes());
-              total_el_w += w.non_zeroes();
-          #endif
-          // (10.) Do dropping in w.
-          w.take_largest_elements_by_abs_value_with_threshold(norm_L,norm_U,list_L,list_U,inverse_perm,max_fill_in-1,max_fill_in,threshold,threshold,i,perm_tol); // we need one element less for L, as the diagonal will always be 1.
-          if(list_U.dimension()==0){
-              if(threshold>0.0) w.take_largest_elements_by_abs_value_with_threshold(norm_L,norm_U,list_L,list_U,inverse_perm,max_fill_in-1,max_fill_in,threshold,0.0,i); // we need one element less for L, as the diagonal will always be 1.
-              if(list_U.dimension()==0){
-                  zero_pivots++;
-                  w(perm.get(i),i)=1.0;
-                  list_U.resize(1);
-                  list_U[0]=perm.get(i);
-              }
-          }
-          #ifdef VERBOSE
-              time_1_4=clock();
-              time_sort += (Real)(time_1_4-time_1_3)/(Real)CLOCKS_PER_SEC;
-          #endif
-           if(pointer[i]+list_L.dimension()+1>reserved_memory){
-              std::cerr<<"matrix_sparse::ILUTP2: memory reserved was insufficient."<<std::endl;
-              return false;
-          }
-          for(j=0;j<list_L.dimension();j++){
-              data[pointer[i]+j] = w.read(list_L[list_L.dimension()-1-j]);
-              indices[pointer[i]+j] = inverse_perm.get(list_L[list_L.dimension()-1-j]);
-          } // end for j
-          data[pointer[i]+list_L.dimension()]=1.0;
-          indices[pointer[i]+list_L.dimension()]=i;
-          pointer[i+1]=pointer[i]+list_L.dimension()+1;
-          // (12.) Copy values to U:
-           if(U.pointer[i]+list_U.dimension()>reserved_memory){
-              std::cerr<<"matrix_sparse::ILUTP2: memory reserved was insufficient."<<std::endl;
-              return false;
-          }
-          for(j=0;j<list_U.dimension();j++){
-              U.data[U.pointer[i]+j] = w.read(list_U[list_U.dimension()-1-j]);
-              U.indices[U.pointer[i]+j] = list_U[list_U.dimension()-1-j];
-          }  // end j
-          U.pointer[i+1]=U.pointer[i]+list_U.dimension();
-          p=inverse_perm.get(U.indices[U.pointer[i]]);
-          inverse_perm.switch_index(perm.get(i),U.indices[U.pointer[i]]);
-          perm.switch_index(i,p);
-          if(U.data[U.pointer[i]]==0) {
-              std::cerr<<"matrix_sparse::ILUTP2: encountered zero pivot in row "<<i<<std::endl;
-              reformat(0,0,0,A.orientation);
-              U.reformat(0,0,0,A.orientation);
-              return false;
-          }
-          #ifdef VERBOSE
-              time_1_5=clock();
-              time_copy += (Real)(time_1_5-time_1_4)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (13.) w:=0
-          w.zero_reset();
-          #ifdef VERBOSE
-              time_1_6=clock();
-              time_zeroset += (Real)(time_1_6-time_1_5)/(Real)CLOCKS_PER_SEC;
-          #endif
-      }  // (14.) end for i
-      #ifdef VERBOSE
-          time_2 = clock();
-          time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"ILUTP2 calculation time "<<time<<std::endl<<std::flush;
-          std::cout<<"    ILUTP2 calculation time: copying:     "<<time_copy<<std::endl<<std::flush;
-          std::cout<<"    ILUTP2 calculation time: calculating: "<<time_calc<<std::endl<<std::flush;
-          std::cout<<"    ILUTP2 calculation time: sorting:     "<<time_sort<<std::endl<<std::flush;
-          std::cout<<"    ILUTP2 calculation time: zero_set:    "<<time_zeroset<<std::endl<<std::flush;
-          std::cout<<"ILUTP2 total calculation time:            "<<time_copy+time_calc+time_sort+time_zeroset<<std::endl<<std::flush;
-      #endif
-      compress();
-      U.compress();
-      #ifdef VERBOSE
-          time_3 = clock();
-          time = ((Real)time_3-(Real)time_2)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"ILUTP2 compressing time "<<time<<std::endl<<std::flush;
-      #endif
-      U.reorder(inverse_perm);
-      normal_order();
-      #ifdef VERBOSE
-          time_4 = clock();
-          time = ((Real)time_4-(Real)time_3)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"ILUTP2 resorting time "<<time<<std::endl<<std::flush;
-          std::cerr<<"Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
-          std::cout<<"maximal size of intermediate result w encountered: "<<max_el_w<<std::endl;
-          std::cout<<"average size of intermediate result w encountered: "<<(Real) total_el_w / (Real) n<<std::endl;
-      #endif
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-      return true;
-   }  // end try, not indented
-   catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::ILUTP2: "<<ippe.error_message()<<"Returning 0x0 matrices and permutation of dimension 0"<<std::endl;
-      U.reformat(0,0,0,ROW);
-      reformat(0,0,0,ROW);
-      perm.resize(0);
-      return false;
-  }
-}
-
-
 
  // we use linked list for L and A, A is only needed in column format and we perform column pivoting
  // U is stored with a companion structure 

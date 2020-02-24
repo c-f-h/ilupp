@@ -2499,156 +2499,6 @@ template <class T, class matrix_type, class vector_type>
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: generic_split_preconditioner                                                    //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-  try {
-      if(left_matrix_usage == DIRECT) Precond_left.matrix_vector_multiplication(use,v,w);
-      else Precond_left.triangular_solve(left_matrix_shape,use,v,w);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::apply_preconditioner_left: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_left(matrix_usage_type use, vector_type &w) const {
-  try {
-      if(left_matrix_usage == DIRECT) Precond_left.matrix_vector_multiplication(use,w);
-      else Precond_left.triangular_solve(left_matrix_shape,use,w);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::apply_preconditioner_left: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-  try {
-      if(right_matrix_usage == DIRECT) Precond_right.matrix_vector_multiplication(use,v,w);
-      else Precond_right.triangular_solve(right_matrix_shape,use,v,w);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::apply_preconditioner_right: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use,vector_type &w) const {
-  try {
-      if(right_matrix_usage == DIRECT) Precond_right.matrix_vector_multiplication(use,w);
-      else Precond_right.triangular_solve(right_matrix_shape,use,w);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::apply_preconditioner_right: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const{
-      std::cerr<<"generic_split_preconditioner::unapply_preconditioner_left: undoing this preconditioner is not yet implemented."<<std::endl;
-      throw iluplusplus_error(OTHER_ERROR);
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_left(matrix_usage_type use, vector_type &w) const{
-      std::cerr<<"generic_split_preconditioner::unapply_preconditioner_left: undoing this preconditioner is not yet implemented."<<std::endl;
-      throw iluplusplus_error(OTHER_ERROR);
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const{
-      std::cerr<<"generic_split_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
-      throw iluplusplus_error(OTHER_ERROR);
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_right(matrix_usage_type use,vector_type &w) const{
-      std::cerr<<"generic_split_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
-      throw iluplusplus_error(OTHER_ERROR);
-  }
-
-template <class T, class matrix_type, class vector_type>
-   generic_split_preconditioner<T,matrix_type,vector_type>::generic_split_preconditioner(){
-      this->pre_image_size=0;
-      this->image_size=0;
-      this->intermediate_size=0;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  generic_split_preconditioner<T,matrix_type,vector_type>::~generic_split_preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type generic_split_preconditioner<T,matrix_type,vector_type>::extract_left_matrix() const {
-  try {
-      return Precond_left;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::extract_left_matrix: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type generic_split_preconditioner<T,matrix_type,vector_type>::extract_right_matrix() const {
-  try {
-     return Precond_right;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::extract_right_matrix: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  Integer generic_split_preconditioner<T,matrix_type,vector_type>::left_nnz() const {return Precond_left.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer generic_split_preconditioner<T,matrix_type,vector_type>::right_nnz() const {return Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer generic_split_preconditioner<T,matrix_type,vector_type>::total_nnz() const {return Precond_left.actual_non_zeroes()+Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type& generic_split_preconditioner<T,matrix_type,vector_type>::left_preconditioning_matrix() {
-  try {
-     return Precond_left;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::left_preconditioning_matrix: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  matrix_type& generic_split_preconditioner<T,matrix_type,vector_type>::right_preconditioning_matrix(){
-  try {
-     return Precond_right;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"generic_split_preconditioner::right_preconditioning_matrix: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  void generic_split_preconditioner<T,matrix_type,vector_type>::print_info() const {
-      std::cout<<"The left matrix of the preconditioner:"<<std::endl;
-      Precond_left.print_info();
-      std::cout<<"The right matrix of the preconditioner:"<<std::endl;
-      Precond_right.print_info();
-    }
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: NullPrecondioner: does not precondition.                                                           //
 //                                                                                                                       //
 //***********************************************************************************************************************//
@@ -2980,67 +2830,35 @@ template <class T, class matrix_type, class vector_type>
   ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner() {this->pre_image_size=0; this->image_size=0; this->intermediate_size=0; this->zero_pivots=0;this->preconditioner_exists=true;this->left_matrix_usage = NOPERM;this->right_matrix_usage = PERM1;}
 
 template <class T, class matrix_type, class vector_type>
-  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real pt, Integer rp){
-  try {
-      if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUTP2(A,this->Precond_right,this->permutation,max_fill_in,threshold,pt,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=PERMUTED_UPPER_TRIANGULAR;
-          this->left_matrix_usage = NOPERM;
-          this->right_matrix_usage = PERM1;
-      } else {
-          this->preconditioner_exists = this->Precond_right.ILUTP2(A,this->Precond_left,this->permutation,max_fill_in,threshold,pt,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
-          this->Precond_left.transpose_in_place();
-          this->Precond_right.transpose_in_place();
-          this->left_form=PERMUTED_LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-          this->left_matrix_usage = PERM1;
-          this->right_matrix_usage = NOPERM;
-      }
-      this->pre_image_size=this->Precond_left.rows();
-      this->image_size=this->Precond_right.columns();
-      this->intermediate_size=this->Precond_left.columns();
-      this->memory_allocated_to_create=0.0;
-      this->memory_used_to_create=0.0;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"ILUTPPreconditioner::ILUTPPreconditioner: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-}
-
-template <class T, class matrix_type, class vector_type>
-  ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, const ILUTP_precond_parameter& p){
-  try {
-      if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUTP2(
-                  A, this->Precond_right, this->permutation, p.get_fill_in(), p.get_threshold(),
-                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
-          this->left_form=LOWER_TRIANGULAR;
-          this->right_form=PERMUTED_UPPER_TRIANGULAR;
-          this->left_matrix_usage = NOPERM;
-          this->right_matrix_usage = PERM1;
-      } else {
-          this->preconditioner_exists = this->Precond_right.ILUTP2(
-                  A, this->Precond_left, this->permutation, p.get_fill_in(), p.get_threshold(),
-                  p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
-          this->Precond_left.transpose_in_place();
-          this->Precond_right.transpose_in_place();
-          this->left_form=PERMUTED_LOWER_TRIANGULAR;
-          this->right_form=UPPER_TRIANGULAR;
-          this->left_matrix_usage = PERM1;
-          this->right_matrix_usage = NOPERM;
-      }
-      this->pre_image_size=this->Precond_left.rows();
-      this->image_size=this->Precond_right.columns();
-      this->intermediate_size=this->Precond_left.columns();
-      this->memory_allocated_to_create=0.0;
-      this->memory_used_to_create=0.0;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"ILUTPPreconditioner::ILUTPPreconditioner: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor)
+{
+    if(A.orient()==ROW){
+        this->preconditioner_exists = ILUTP2(A, this->Precond_left,
+                this->Precond_right, this->permutation, max_fill_in, threshold,
+                perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
+        //const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm,
+        //Integer max_fill_in, Real threshold, Real perm_tol, Integer bp,
+        //Integer& zero_pivots, Real& time_self, Real mem_factor)
+        this->left_form=LOWER_TRIANGULAR;
+        this->right_form=PERMUTED_UPPER_TRIANGULAR;
+        this->left_matrix_usage = NOPERM;
+        this->right_matrix_usage = PERM1;
+    } else {
+        this->preconditioner_exists = ILUTP2(A, this->Precond_right,
+                this->Precond_left, this->permutation, max_fill_in, threshold,
+                perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
+        this->Precond_left.transpose_in_place();
+        this->Precond_right.transpose_in_place();
+        this->left_form=PERMUTED_LOWER_TRIANGULAR;
+        this->right_form=UPPER_TRIANGULAR;
+        this->left_matrix_usage = PERM1;
+        this->right_matrix_usage = NOPERM;
+    }
+    this->pre_image_size=this->Precond_left.rows();
+    this->image_size=this->Precond_right.columns();
+    this->intermediate_size=this->Precond_left.columns();
+    this->memory_allocated_to_create=0.0;
+    this->memory_used_to_create=0.0;
 }
 
 template <class T, class matrix_type, class vector_type>

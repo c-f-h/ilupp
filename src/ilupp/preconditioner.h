@@ -399,7 +399,7 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
           virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_right(matrix_usage_type use,vector_type &w) const;
+          virtual void apply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
           virtual void unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_left(matrix_usage_type use,vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
@@ -424,46 +424,6 @@ template <class T, class matrix_type, class vector_type>
 
 
 
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
-//         The class: generic_split_preconditioner                                                                       //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-template <class T, class matrix_type, class vector_type>
-  class generic_split_preconditioner : public split_preconditioner <T,matrix_type, vector_type>
-  {
-       protected:
-          matrix_type Precond_left;     // the left preconditioning matrix
-          matrix_type Precond_right;    // the right preconditioning matrix
-          preconditioner_matrix_type left_matrix_usage;
-          preconditioner_matrix_type right_matrix_usage;
-          special_matrix_type left_matrix_shape;
-          special_matrix_type right_matrix_shape;
-          virtual void apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
-          virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_right(matrix_usage_type use,vector_type &w) const;
-          virtual void unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void unapply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
-          virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void unapply_preconditioner_right(matrix_usage_type use,vector_type &w) const;
-       public:
-          generic_split_preconditioner();
-          virtual ~generic_split_preconditioner();
-          virtual matrix_type extract_left_matrix() const;
-          virtual matrix_type extract_right_matrix() const;
-          virtual Integer left_nnz() const;
-          virtual Integer right_nnz() const;
-          virtual Integer total_nnz() const;
-          virtual matrix_type& left_preconditioning_matrix();
-          virtual matrix_type& right_preconditioning_matrix();
-          virtual void print_info() const;
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
-  };
 
 
 //***********************************************************************************************************************//
@@ -546,8 +506,7 @@ template <class T, class matrix_type, class vector_type>
           Integer zero_pivots;
        public:
           ILUTPPreconditioner();
-          ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real pt, Integer rp); // default threshold=-1.0, pt = 0.0,  rp=0
-          ILUTPPreconditioner(const matrix_type &A, const ILUTP_precond_parameter& p);
+          ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor); // default threshold=-1.0, pt = 0.0,  rp=0
           ILUTPPreconditioner(const ILUTPPreconditioner &A);
           ILUTPPreconditioner& operator = (const ILUTPPreconditioner<T,matrix_type, vector_type> &A);
           virtual bool exists() const;

@@ -2502,35 +2502,6 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: ILUT Preconditioner (Saad):                                                                        //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-         ILUTP_precond_parameter::ILUTP_precond_parameter() : fill_in(0), threshold(1000.0), perm_tol(0.0), row_pos(0) {}
-         ILUTP_precond_parameter::ILUTP_precond_parameter(Integer fi, Real th, Real pt, Integer rp) : fill_in(fi), threshold(th), perm_tol(pt), row_pos(rp) {}
-         ILUTP_precond_parameter::ILUTP_precond_parameter(const ILUTP_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol; row_pos=p.row_pos;}
-         ILUTP_precond_parameter& ILUTP_precond_parameter::operator =(const ILUTP_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol; row_pos=p.row_pos;return *this;}
-         Integer ILUTP_precond_parameter::get_fill_in() const {return fill_in;}
-         Integer ILUTP_precond_parameter::get_row_pos() const {return row_pos;}
-         Real ILUTP_precond_parameter::get_threshold() const {return threshold;}
-         Real ILUTP_precond_parameter::get_perm_tol() const {return perm_tol;}
-         std::string ILUTP_precond_parameter::convert_to_string() const {
-             std::ostringstream _fill_in;
-             std::ostringstream _threshold;
-             _threshold.precision(2);
-             if(threshold<500.0)
-                 _threshold<<threshold;
-             else
-                 _threshold<<"N";
-             _fill_in<<fill_in;
-             return _fill_in.str()+"-"+_threshold.str();
-         }
-         void ILUTP_precond_parameter::set(Integer fi, Real th, Real pt, Integer rp){fill_in=fi; threshold=th; perm_tol=pt; row_pos=rp;}
-         void ILUTP_precond_parameter::set_threshold(Real th){threshold=th;}
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: ILUCP Preconditioner:                                                                              //
 //                                                                                                                       //
 //***********************************************************************************************************************//

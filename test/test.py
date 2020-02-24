@@ -15,6 +15,8 @@ def random_example(n):
 
 ########################################
 
+## multilevel preconditioner
+
 def test_ml_solve_laplace():
     n = 100
     A = laplace_matrix(n)
@@ -38,7 +40,7 @@ def test_ml_precond_laplace():
     x = P.dot(b)
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
-    nnz, mem = P.total_nnz, P.memory
+    print('total nnz:', P.total_nnz, 'memory:', P.memory)
 
 def test_ml_precond_random():
     A, b, x_exact = random_example(50)
@@ -48,18 +50,19 @@ def test_ml_precond_random():
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
 
+## ILUT preconditioner
+
 def test_ILUT_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
     P = ilupp.ILUTPreconditioner(A, threshold=0.0)
     x = P.dot(b)
-    print(b)
-    print(x)
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
     # each L/u factor has a diagonal and an off-diagonal,
     # but ILU++ reports by n less for unknown reasons
+    print('total nnz:', P.total_nnz)
     assert P.total_nnz <= 2 * (n + (n-1))
 
 def test_ILUT_random():
@@ -70,18 +73,42 @@ def test_ILUT_random():
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
 
+## ILUTP preconditioner
+
+def test_ILUTP_laplace():
+    n = 100
+    A = laplace_matrix(n)
+    b = np.ones(n)
+    P = ilupp.ILUTPPreconditioner(A, threshold=0.0)
+    x = P.dot(b)
+    X = np.linspace(0, 1, n+2)[1:-1]
+    assert np.allclose(x, X*(1-X)/2)
+    # each L/u factor has a diagonal and an off-diagonal,
+    # but ILU++ reports by n less for unknown reasons
+    print('total nnz:', P.total_nnz)
+    assert P.total_nnz <= 2 * (n + (n-1))
+
+def test_ILUTP_random():
+    A, b, x_exact = random_example(50)
+    P = ilupp.ILUTPPreconditioner(A, fill_in=1000, threshold=0.0)
+    x = b.copy()
+    P.apply(x)
+    print('Error:', np.linalg.norm(x - x_exact))
+    assert np.allclose(x, x_exact)
+
+## ILUC preconditioner
+
 def test_ILUC_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
     P = ilupp.ILUCPreconditioner(A, threshold=0.0)
     x = P.dot(b)
-    print(b)
-    print(x)
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
     # each L/u factor has a diagonal and an off-diagonal,
     # but ILU++ reports by n less for unknown reasons
+    print('total nnz:', P.total_nnz)
     assert P.total_nnz <= 2 * (n + (n-1))
 
 def test_ILUC_random():

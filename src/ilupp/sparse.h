@@ -211,7 +211,7 @@ template<class T> class vector_dense
 
  template<class T> class vector_sparse_dynamic
    {
-       private:
+       protected:
            Integer size;
            Integer nnz;
            std::vector<T> data;
@@ -490,8 +490,8 @@ template<class T> class matrix_sparse
            void upper_triangular_solve(const vector_dense<T>& b, vector_dense<T>& x) const;
            void triangular_solve(special_matrix_type form, matrix_usage_type use, const vector_dense<T>& b, vector_dense<T>& x) const;
            void triangular_solve(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const;
-           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list perm, const vector_dense<T>& b, vector_dense<T>& x) const;
-           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list perm, vector_dense<T>& x) const;
+           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const;
+           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
            void triangular_solve_with_smaller_matrix(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const; // solve is performed for bottom part of matrix
            void triangular_solve_with_smaller_matrix_permute_first(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
            //not needed // void triangular_solve_with_smaller_matrix_permute_first_return_small(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
@@ -512,9 +512,6 @@ template<class T> class matrix_sparse
            void regularize(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos); // insert a column b, a row c at positions indicated in attempt to increase rank by 2
            void regularize_with_rhs(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos, const vector_dense<T>& old_rhs, vector_dense<T>& new_rhs);  // same as above, but yields new rhs
            // Preconditioners
-           //bool ILUTP_new(const matrix_sparse<T>& A, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Integer& zero_pivots);
-           // ILUTP is the standard implemenation. Accessing elements of w in increasing order is slow. This is improved in ILUTP2
-           bool ILUTP2(const matrix_sparse<T>& A, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer bp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0); // using vector_sparse_dynamic_enhanced
            // ILUCP
            // ILUCP: standard implementation, ILUCPinv: implementation with inverse dropping; old implementations have slow access for L
            bool ILUCP4(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);

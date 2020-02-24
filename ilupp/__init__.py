@@ -155,6 +155,46 @@ class ILUTPreconditioner(scipy.sparse.linalg.LinearOperator):
     def total_nnz(self):
         return self.pr.total_nnz
 
+class ILUTPPreconditioner(scipy.sparse.linalg.LinearOperator):
+    """An ILUTP preconditioner. Implements the scipy LinearOperator protocol.
+
+    Args:
+        A: a sparse matrix in CSR or CSC format
+        fill_in: the fill_in parameter for the ILU++ preconditioner
+        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+    """
+    def __init__(self, A, threshold=1.0, fill_in=10000, perm_tol=0.0, row_pos=-1, mem_factor=20.0):
+        if isinstance(A, scipy.sparse.csr_matrix):
+            is_csr = True
+        elif isinstance(A, scipy.sparse.csc_matrix):
+            is_csr = False
+        else:
+            raise TypeError("A must be a csr_matrix or a csc_matrix")
+
+        if A.shape[0] != A.shape[1]:
+            raise ValueError("A must be a square matrix!")
+
+        self.pr = _ilupp.ILUTPPreconditioner(A.data, A.indices, A.indptr, is_csr,
+                fill_in, threshold, perm_tol, row_pos, mem_factor)
+        scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
+
+    def _matvec(self, x):
+        if x.ndim != 1:
+            raise ValueError('only implemented for 1D vectors')
+        y = x.copy()
+        self.pr.apply(y)
+        return y
+
+    def apply(self, x):
+        """Apply the preconditioner to `x` in-place."""
+        if x.ndim != 1:
+            raise ValueError('only implemented for 1D vectors')
+        self.pr.apply(x)
+
+    @property
+    def total_nnz(self):
+        return self.pr.total_nnz
+
 class ILUCPreconditioner(scipy.sparse.linalg.LinearOperator):
     """An ILUC (Crout ILU) preconditioner. Implements the scipy LinearOperator protocol.
 
