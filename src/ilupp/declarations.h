@@ -177,7 +177,7 @@ template <class T, class matrix_type, class vector_type> class split_preconditio
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_multilevel_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_pseudo_triangular_preconditioner;
-template <class T, class matrix_type, class vector_type> class generic_split_preconditioner;
+
 // specific preconditioners
 template <class T, class matrix_type, class vector_type> class NullPreconditioner;
 template <class T, class matrix_type, class vector_type> class ILUCPreconditioner;
@@ -186,7 +186,6 @@ template <class T, class matrix_type, class vector_type> class ILUTPPrecondition
 template <class T, class matrix_type, class vector_type> class ILUCPPreconditioner;
 template <class T, class matrix_type, class vector_type> class ILUCDPPreconditioner;
 template <class T, class matrix_type, class vector_type> class multilevelILUCDPPreconditioner;
-template <class T, class matrix_type, class vector_type> class DualLayerMultilevelILUCDPPreconditioner;
 
 // classes for function_class.h
 
