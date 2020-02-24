@@ -55,8 +55,26 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None,
     else:
         return sol
 
+class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
+    def _matvec(self, x):
+        if x.ndim != 1:
+            raise ValueError('only implemented for 1D vectors')
+        y = x.copy()
+        self.pr.apply(y)
+        return y
 
-class ILUppPreconditioner(scipy.sparse.linalg.LinearOperator):
+    def apply(self, x):
+        """Apply the preconditioner to `x` in-place."""
+        if x.ndim != 1:
+            raise ValueError('only implemented for 1D vectors')
+        self.pr.apply(x)
+
+    @property
+    def total_nnz(self):
+        return self.pr.total_nnz
+
+
+class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner. Implements the scipy LinearOperator protocol.
 
     Args:
@@ -86,23 +104,6 @@ class ILUppPreconditioner(scipy.sparse.linalg.LinearOperator):
         self.pr.setup(A.data, A.indices, A.indptr, is_csr, params)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
-    def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
-        self.pr.apply(y)
-        return y
-
-    def apply(self, x):
-        """Apply the preconditioner to `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
-
-    @property
-    def total_nnz(self):
-        return self.pr.total_nnz
-
     @property
     def memory(self):
         return self.pr.memory
@@ -116,7 +117,7 @@ class ILUppPreconditioner(scipy.sparse.linalg.LinearOperator):
         return self.pr.memory_allocated_calculations
 
 
-class ILUTPreconditioner(scipy.sparse.linalg.LinearOperator):
+class ILUTPreconditioner(_BaseWrapper):
     """An ILUT preconditioner. Implements the scipy LinearOperator protocol.
 
     Args:
@@ -138,24 +139,7 @@ class ILUTPreconditioner(scipy.sparse.linalg.LinearOperator):
         self.pr = _ilupp.ILUTPreconditioner(A.data, A.indices, A.indptr, is_csr, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
-    def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
-        self.pr.apply(y)
-        return y
-
-    def apply(self, x):
-        """Apply the preconditioner to `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
-
-    @property
-    def total_nnz(self):
-        return self.pr.total_nnz
-
-class ILUTPPreconditioner(scipy.sparse.linalg.LinearOperator):
+class ILUTPPreconditioner(_BaseWrapper):
     """An ILUTP preconditioner. Implements the scipy LinearOperator protocol.
 
     Args:
@@ -178,24 +162,7 @@ class ILUTPPreconditioner(scipy.sparse.linalg.LinearOperator):
                 fill_in, threshold, perm_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
-    def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
-        self.pr.apply(y)
-        return y
-
-    def apply(self, x):
-        """Apply the preconditioner to `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
-
-    @property
-    def total_nnz(self):
-        return self.pr.total_nnz
-
-class ILUCPreconditioner(scipy.sparse.linalg.LinearOperator):
+class ILUCPreconditioner(_BaseWrapper):
     """An ILUC (Crout ILU) preconditioner. Implements the scipy LinearOperator protocol.
 
     Args:
@@ -216,20 +183,3 @@ class ILUCPreconditioner(scipy.sparse.linalg.LinearOperator):
 
         self.pr = _ilupp.ILUCPreconditioner(A.data, A.indices, A.indptr, is_csr, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
-
-    def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
-        self.pr.apply(y)
-        return y
-
-    def apply(self, x):
-        """Apply the preconditioner to `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
-
-    @property
-    def total_nnz(self):
-        return self.pr.total_nnz
