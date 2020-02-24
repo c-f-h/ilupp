@@ -52,73 +52,38 @@ namespace iluplusplus {
 
 
 template <class T, class matrix_type, class vector_type>
-  preconditioner<T,matrix_type,vector_type>::preconditioner() {
-      pre_image_size = 0; image_size=0;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  preconditioner<T,matrix_type,vector_type>::~preconditioner(){}
-
-template <class T, class matrix_type, class vector_type>
-  preconditioner<T,matrix_type,vector_type>::preconditioner(const preconditioner &A){
-      pre_image_size=A.pre_image_size; image_size=A.image_size;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, T* data, Integer dim) const {
-      vector_type y;
-      y.interchange(data,dim);
-      apply_preconditioner_only(use,y);
-      y.interchange(data,dim);
-  }
-
-
-template <class T, class matrix_type, class vector_type>
-  void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, std::vector<T>& data) const {
-      preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(use,&data[0],data.size());
+preconditioner<T,matrix_type,vector_type>::preconditioner() {
+    pre_image_size = 0; image_size=0;
 }
 
 template <class T, class matrix_type, class vector_type>
-  Integer preconditioner<T,matrix_type,vector_type>::pre_image_dimension() const {
-      return pre_image_size;
-  }
+preconditioner<T,matrix_type,vector_type>::~preconditioner(){}
 
 template <class T, class matrix_type, class vector_type>
-  Integer preconditioner<T,matrix_type,vector_type>::image_dimension() const {
-      return image_size;
-  }
+preconditioner<T,matrix_type,vector_type>::preconditioner(const preconditioner &A){
+    pre_image_size=A.pre_image_size; image_size=A.image_size;
+}
 
 template <class T, class matrix_type, class vector_type>
-  bool preconditioner<T,matrix_type,vector_type>::exists() const {
-      return preconditioner_exists;
-  }
+void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, T* data, Integer dim) const {
+    vector_type y;
+    y.interchange(data,dim);
+    apply_preconditioner_only(use,y);
+    y.interchange(data,dim);
+}
+
 
 template <class T, class matrix_type, class vector_type>
-  std::string preconditioner<T,matrix_type,vector_type>::special_info() const {
-      std::ostringstream info;
-      info<<"";
-      return info.str();
-  }
+void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix_usage_type use, std::vector<T>& data) const {
+    preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(use,&data[0],data.size());
+}
 
 template <class T, class matrix_type, class vector_type>
-  Real preconditioner<T,matrix_type,vector_type>::time() const {
-      return setup_time;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  Real preconditioner<T,matrix_type,vector_type>::memory_allocated_calculations() const {
-      return memory_allocated_to_create;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  Real preconditioner<T,matrix_type,vector_type>::memory_used_calculations() const {
-      return memory_used_to_create;
-  }
-
-template <class T, class matrix_type, class vector_type>
-  Real preconditioner<T,matrix_type,vector_type>::memory() const {
-      return 0.0;
-  }
+std::string preconditioner<T,matrix_type,vector_type>::special_info() const {
+    std::ostringstream info;
+    info<<"";
+    return info.str();
+}
 
 template <class T, class matrix_type, class vector_type>
 void preconditioner<T,matrix_type,vector_type>::preconditioned_residual(preconditioner_application1_type PA1,const matrix_type& A, const vector_type &b, const vector_type &x, vector_type &r) const {

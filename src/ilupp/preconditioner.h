@@ -100,19 +100,22 @@ template <class T, class matrix_type, class vector_type> class preconditioner
 
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b, const vector_type& x) const = 0;
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const = 0;
-          virtual Integer pre_image_dimension() const;
-          virtual Integer image_dimension() const;
-          virtual bool exists() const;
-          virtual Real memory_used_calculations() const;
-          virtual Real memory_allocated_calculations() const;
-          virtual Real memory() const;
+
+          Integer pre_image_dimension() const   { return pre_image_size; }
+          Integer image_dimension() const       { return image_size; }
+
+          bool exists() const                   { return preconditioner_exists; }
+          Real memory_used_calculations() const { return memory_used_to_create; }
+          Real memory_allocated_calculations() const { return memory_allocated_to_create; }
+          Real time() const                     { return setup_time; }
+
+          virtual Real memory() const           { return 0.0; }
           virtual std::string special_info() const;
         // info
           virtual Integer total_nnz() const = 0;
           virtual void print_info() const = 0;
           virtual void read_binary(std::string filename) = 0;
           virtual void write_binary(std::string filename) const = 0;
-          virtual Real time() const;
   };
 
 
