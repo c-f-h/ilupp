@@ -7,6 +7,17 @@ def laplace_matrix(n):
     d = np.ones(n) / (h**2)
     return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).tocsr()
 
+def laplace_Matrix_2d(n):
+    A, I = laplace_matrix(n), scipy.sparse.eye(n)
+    return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).tocsr()
+
+def example_2d(n):
+    A = laplace_Matrix_2d(n)
+    m = A.shape[0]
+    x_exact = np.ones(m)
+    b = A.dot(x_exact)
+    return A, b, x_exact
+
 def random_example(n):
     A = scipy.sparse.random(n, n, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(n)
     x_exact = np.ones(n)
@@ -17,14 +28,41 @@ def random_example(n):
 
 ## multilevel preconditioner
 
-def test_ml_solve_laplace():
-    n = 100
-    A = laplace_matrix(n)
-    b = np.ones(n)
-    x, info = ilupp.solve(A, b, rtol=1e-6, info=True)
-    X = np.linspace(0, 1, n+2)[1:-1]
-    assert np.allclose(x, X*(1-X)/2)
+def test_ml_solve_laplace_PQ():
+    A, b, x_exact = example_2d(30)
+    param = ilupp.iluplusplus_precond_parameter()
+    param.PREPROCESSING.set_PQ()
+    param.threshold = 2.0
+    x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
     print('Convergence info:', info)
+    assert np.allclose(x_exact, x)
+
+def test_ml_solve_laplace_MWM():
+    A, b, x_exact = example_2d(30)
+    param = ilupp.iluplusplus_precond_parameter()
+    param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING()
+    param.threshold = 2.0
+    x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
+    print('Convergence info:', info)
+    assert np.allclose(x_exact, x)
+
+def test_ml_solve_laplace_MWM_sPQ():
+    A, b, x_exact = example_2d(30)
+    param = ilupp.iluplusplus_precond_parameter()
+    param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING_SYM_PQ()
+    param.threshold = 2.0
+    x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
+    print('Convergence info:', info)
+    assert np.allclose(x_exact, x)
+
+def test_ml_solve_laplace_SF():
+    A, b, x_exact = example_2d(30)
+    param = ilupp.iluplusplus_precond_parameter()
+    param.PREPROCESSING.set_SPARSE_FIRST()
+    param.threshold = 2.0
+    x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
+    print('Convergence info:', info)
+    assert np.allclose(x_exact, x)
 
 def test_ml_solve_random():
     A, b, x_exact = random_example(50)
