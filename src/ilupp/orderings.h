@@ -56,13 +56,14 @@ class preprocessing_sequence
 ************************************************************************************/
 
 
-class preprocessing_sequence : public array<preprocessing_type> {
-              typedef  array<preprocessing_type> Arr;
+class preprocessing_sequence : public std::vector<preprocessing_type> {
     public:
-        preprocessing_sequence();
-        ~preprocessing_sequence();
-        preprocessing_sequence(const preprocessing_sequence& A);
-        preprocessing_sequence& operator = (const preprocessing_sequence& A);
+        // compatibility with custom array<>
+        Integer dimension() const   { return size(); }
+        Integer dim() const         { return size(); }
+        preprocessing_type get(Integer k) const { return (*this)[k]; }
+        preprocessing_type& set(Integer k)  { return (*this)[k]; }
+
         void set_test_new();  // only for testing purposes
         void set_none();
         void set_normalize();
