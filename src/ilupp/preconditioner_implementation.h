@@ -1376,7 +1376,7 @@ Integer multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::zero_pivots_e
 #ifdef DEBUG
     if(non_fatal_error(k<0||k>=this->number_levels, "multilevelILUCDPPreconditioner::zero_pivots_encountered: This level does not exist.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
-    return this->zero_pivots.get(k);
+    return this->zero_pivots[k];
 }
 
 
@@ -1397,7 +1397,8 @@ template <class T, class matrix_type, class vector_type>
   std::string multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::special_info() const {
       std::ostringstream info;
       bool zp=false;
-      for(Integer k=0;k<this->number_levels;k++) zp |=  this->zero_pivots.get(k) == 0;
+      for(Integer k=0;k<this->number_levels;k++)
+          zp |= (this->zero_pivots[k] == 0);
       if (zp) info<<"-"<<this->number_levels;
       else info<<"-"<<this->number_levels<<"*";
       if(dim_zero_matrix_factored>0) info << "#"<<this->dim_zero_matrix_factored;

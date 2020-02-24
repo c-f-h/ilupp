@@ -447,7 +447,7 @@ template <class T, class matrix_type, class vector_type>
   class multilevelILUCDPPreconditioner : public indirect_split_triangular_multilevel_preconditioner <T,matrix_type, vector_type>
   {
        private:
-          array<Integer> zero_pivots;
+          std::vector<Integer> zero_pivots;
           iluplusplus_precond_parameter param;
           Integer dim_zero_matrix_factored;
        public:
