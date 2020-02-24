@@ -3767,9 +3767,23 @@ template <class T, class matrix_type, class vector_type>
                   std::cout<<"     last row to eliminate decided by preconditioner."<<std::endl;
                   std::cout<<std::endl;
               #endif
-              if(use_ILUC)this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUC(Akrow,Akrow_next,IP,false,this->Precond_right[this->number_levels],this->Precond_middle[this->number_levels],last_row_to_eliminate,tau,this->zero_pivots[this->number_levels],partial_setup_time,mem_factor,memory_allocated_factorization,memory_used_factorization);
-              else this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUCDP(Akrow,Akcol,Akrow_next,IP,false,this->Precond_right[this->number_levels],this->Precond_middle[this->number_levels],pc2,pr2,ipc2,ipr2,last_row_to_eliminate,tau,bp,bpr,epr,this->zero_pivots[this->number_levels],partial_setup_time,mem_factor,memory_allocated_factorization,memory_used_factorization);
-              if(! this->preconditioner_exists) return;
+
+              if(use_ILUC)
+                  this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUC(
+                          Akrow, Akrow_next, IP, false, this->Precond_right[this->number_levels],
+                          this->Precond_middle[this->number_levels], last_row_to_eliminate, tau,
+                          this->zero_pivots[this->number_levels], partial_setup_time, mem_factor,
+                          memory_allocated_factorization, memory_used_factorization);
+              else
+                  this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUCDP(
+                          Akrow, Akcol, Akrow_next, IP, false, this->Precond_right[this->number_levels],
+                          this->Precond_middle[this->number_levels], pc2, pr2, ipc2, ipr2, last_row_to_eliminate, tau,
+                          bp, bpr, epr, this->zero_pivots[this->number_levels], partial_setup_time, mem_factor,
+                          memory_allocated_factorization, memory_used_factorization);
+
+              if (!this->preconditioner_exists)
+                  return;
+
               #ifdef INFO
                   std::cout<<"     zero-pivots            = "<<this->zero_pivots[this->number_levels]<<std::endl;
                   std::cout<<"     local fill-in          = "<<((Real)(this->Precond_left[this->number_levels].actual_non_zeroes()+this->Precond_right[this->number_levels].actual_non_zeroes())- (Real) Akrow.rows() )/((Real)Akrow.actual_non_zeroes())<<std::endl;
@@ -3778,6 +3792,7 @@ template <class T, class matrix_type, class vector_type>
                   total_equality_permutations += equality_permutations;
                   std::cout<<"     symmetry of permutations used in factorization          = "<<(Real) equality_permutations/(Real)(Akrow.rows()-Akrow_next.rows()) <<std::endl;
               #endif
+
               if(use_ILUC){
                   this->permutation_columns[this->number_levels] = pc1;
                   this->permutation_rows[this->number_levels ]= pr1;                  
