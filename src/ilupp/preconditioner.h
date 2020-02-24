@@ -201,24 +201,6 @@ template <class T, class matrix_type, class vector_type>
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: indirect_single_triangular_preconditioner                                                          //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-template <class T, class matrix_type, class vector_type>
-  class indirect_single_triangular_preconditioner : public single_preconditioner <T, matrix_type, vector_type>
-  {
-       protected:
-          special_matrix_type matrix_shape;
-          virtual void apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner(matrix_usage_type use, vector_type &w) const;
-          virtual void unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
-          virtual void unapply_preconditioner(matrix_usage_type use, vector_type &w) const;
-  };
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: indirect_split_triangular_preconditioner                                                                      //
 //                                                                                                                       //
 //***********************************************************************************************************************//
@@ -398,6 +380,13 @@ template <class T, class matrix_type, class vector_type>
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
   };
+
+
+//***********************************************************************************************************************//
+//                                                                                                                       //
+//         The class: ILUT Preconditioner (Saad):                                                                         //
+//                                                                                                                       //
+//***********************************************************************************************************************//
 
 
 template <class T, class matrix_type, class vector_type>

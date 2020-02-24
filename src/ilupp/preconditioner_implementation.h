@@ -606,36 +606,6 @@ template <class T, class matrix_type, class vector_type>
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: indirect_single_triangular_preconditioner                                                          //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-
-template <class T, class matrix_type, class vector_type>
-void indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const {
-    this->Precond.triangular_solve(matrix_shape,use,v,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::apply_preconditioner(matrix_usage_type use, vector_type &w) const {
-    this->Precond.triangular_solve(matrix_shape,use,w);
-}
-
-template <class T, class matrix_type, class vector_type>
-void indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const{
-    std::cerr<<"indirect_single_triangular_preconditioner::unapply_preconditioner: not yet implemented."<<std::endl;
-    throw iluplusplus_error(OTHER_ERROR);
-}
-
-template <class T, class matrix_type, class vector_type>
-void indirect_single_triangular_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner(matrix_usage_type use, vector_type &w) const{
-    std::cerr<<"indirect_single_triangular_preconditioner::unapply_preconditioner: not yet implemented."<<std::endl;
-    throw iluplusplus_error(OTHER_ERROR);
-}
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: indirect_split_triangular_preconditioner                                                                      //
 //                                                                                                                       //
 //***********************************************************************************************************************//
