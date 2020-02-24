@@ -325,16 +325,18 @@ template<class T> class vector_sparse_dynamic_enhanced  : public vector_sparse_d
 
 
 template<class T> class matrix_sparse
-  {
-       private:
+{
+    public:
+        // these are public so that ILU* algorithms can access them directly
+        T* data;
+        Integer* pointer;
+        Integer* indices;
+        orientation_type orientation;
+    private:
            Integer number_rows;
            Integer number_columns;
            Integer nnz;
-           orientation_type orientation;
            Integer pointer_size;
-           T* data;
-           Integer* pointer;
-           Integer* indices;
            bool non_owning = false;     // if true, data won't be freed in the destructor
            void insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index);
              // copies the indices from list into indices and the data stored in data_vector corresponding to the appropriate indices into data.
@@ -510,23 +512,6 @@ template<class T> class matrix_sparse
            void regularize(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos); // insert a column b, a row c at positions indicated in attempt to increase rank by 2
            void regularize_with_rhs(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos, const vector_dense<T>& old_rhs, vector_dense<T>& new_rhs);  // same as above, but yields new rhs
            // Preconditioners
-           bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor = 10.0);
-           // calculates the (incomplete) LU factorization with Crout;
-           // *this will be U such that A = LU;
-           // see: Saad: "Crout Versions of ILU for general sparse matrices".
-           // returns false in case of break-down, true in case of success.
-           // although this algorithm works for A being both a ROW and COLUMN matrix,
-           // if A is a COLUMN matrix, L and U will be reversed, even though L still has 1's on the diagonal.
-           // In this case, it still works as a preconditioner
-           // ILUC2 employs the linked lists for data structures and ist MUCH faster.
-           bool ILUT(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real& time_self);
-           bool ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real& time_self);
-           // calculates the (incomplete) LU factorization;
-           // *this will be U such that A = LU;
-           // returns false in case of break-down, true in case of success.
-           // although this algorithm works for A being both a ROW and COLUMN matrix,
-           // if A is a COLUMN matrix, L and U will be reversed, even though L still has 1's on the diagonal.
-           // In this case, it still works as a preconditioner
            //bool ILUTP_new(const matrix_sparse<T>& A, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Integer& zero_pivots);
            // ILUTP is the standard implemenation. Accessing elements of w in increasing order is slow. This is improved in ILUTP2
            bool ILUTP2(const matrix_sparse<T>& A, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer bp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0); // using vector_sparse_dynamic_enhanced
@@ -805,25 +790,6 @@ class index_list
            Real relative_equality(const index_list& v, Integer from, Integer to) const;
   };
 
-
-/*********************************************************************/
-// Declarations for ILUC-type preconditioners
-/*********************************************************************/
-
-template <class IntArr>
-void initialize_triangular_fields(Integer n, IntArr& list);
-
-template <class IntArr>
-void update_triangular_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& first);
-
-template <class IntArr>
-void insert(IntArr& list, IntArr& head, Integer i, Integer j);
-
-template <class IntArr>
-void initialize_sparse_matrix_fields(Integer n, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first);
-
-template <class IntArr>
-void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, IntArr& list, IntArr& head, IntArr& first);
 
 /*********************************************************************/
 // Other Declarations

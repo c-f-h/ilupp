@@ -2735,13 +2735,12 @@ template <class T, class matrix_type, class vector_type>
   ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
   try {
       const clock_t time_begin = clock();
-      if(A.orient()==ROW){
-          this->preconditioner_exists = this->Precond_left.ILUC2(A,this->Precond_right,max_fill_in,threshold);      // preconditioner of A.
+      if (A.orient() == ROW) {
+          this->preconditioner_exists = ILUC2(A, this->Precond_left, this->Precond_right, max_fill_in, threshold);
           this->left_form=LOWER_TRIANGULAR;
           this->right_form=UPPER_TRIANGULAR;
       } else {
-         // std::cout<<"doing column matrix"<<std::endl;
-         this->preconditioner_exists = this->Precond_right.ILUC2(A,this->Precond_left,max_fill_in,threshold);      // preconditioner of A.
+         this->preconditioner_exists = ILUC2(A, this->Precond_right, this->Precond_left, max_fill_in, threshold);
          this->left_form=LOWER_TRIANGULAR;
          this->right_form=UPPER_TRIANGULAR;
          //this->Precond_left.transpose_in_place();
@@ -2853,11 +2852,11 @@ template <class T, class matrix_type, class vector_type>
   try {
       if(A.orient()==ROW){
           // NOTE: ILUT2 does not yet work.
-          this->preconditioner_exists = this->Precond_left.ILUT(A,this->Precond_right,max_fill_in,threshold,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = ILUT(A, this->Precond_left, this->Precond_right, max_fill_in, threshold, this->setup_time);
           this->left_form=LOWER_TRIANGULAR;
           this->right_form=UPPER_TRIANGULAR;
       } else {
-          this->preconditioner_exists = this->Precond_right.ILUT(A,this->Precond_left,max_fill_in,threshold,this->setup_time);      // preconditioner of A.
+          this->preconditioner_exists = ILUT(A, this->Precond_right, this->Precond_left, max_fill_in, threshold, this->setup_time);
           this->Precond_left.transpose_in_place();
           this->Precond_right.transpose_in_place();
           this->left_form=LOWER_TRIANGULAR;

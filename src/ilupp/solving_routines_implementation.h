@@ -63,7 +63,7 @@ template <class T, class matrix_type, class vector_type>
           Real mem_factor_storage = P.memory()/matrix_memory;
           Real mem_factor_calc_used = P.memory_used_calculations()/matrix_memory;
           Real mem_factor_calc_alloc = P.memory_allocated_calculations()/matrix_memory;
-          bool use_split = (t==ILUC || t==ILUT || t==ILUTP  || t==ILUCP || t == ILUCDP || t==ML_ILUCDP || t == DLML_ILUCDP);
+          bool use_split = (t==PC_ILUC || t==PC_ILUT || t==PC_ILUTP || t==PC_ILUCP || t==PC_ILUCDP || t==PC_ML_ILUCDP || t==PC_DLML_ILUCDP);
           bool no_iteration_possible = !dimensions_compatible || !P.exists();
           bool iteration_successful = true;
           if(no_iteration_possible){
@@ -172,7 +172,9 @@ template <class T, class matrix_type, class vector_type>
           std::string precond_name = "NP";
           std::string filename = "NP.out";
           NullPreconditioner<T,matrix_type, vector_type> P(A.columns(),A.rows());
-          success = solve_linear_system<T,matrix_type,vector_type>(NOPRECOND,P,A,b,x_exact,x,exact_solution_known,eps_rel_residual, abs_residual, max_iter_iterations_used, abs_error,time,directory,filename,matrix_name,precond_name);
+          success = solve_linear_system<T,matrix_type,vector_type>(PC_NOPRECOND, P, A, b, x_exact, x,
+                  exact_solution_known, eps_rel_residual, abs_residual, max_iter_iterations_used,
+                  abs_error, time, directory, filename, matrix_name, precond_name);
           return success;
     }
     catch(iluplusplus_error ippe){
@@ -199,7 +201,9 @@ template <class T, class matrix_type, class vector_type>
           multilevelILUCDPPreconditioner<T,matrix_type, vector_type> P;
           if(IP.get_PRECON_PARAMETER()>= 0){ 
               P.make_preprocessed_multilevelILUCDP(A,IP);
-              success = solve_linear_system<T,matrix_type,vector_type>(ML_ILUCDP,P,A,b,x_exact,x,exact_solution_known,eps_rel_residual, abs_residual, max_iter_iterations_used, abs_error,time,directory,filename,matrix_name,precond_name);
+              success = solve_linear_system<T,matrix_type,vector_type>(PC_ML_ILUCDP, P, A, b, x_exact, x,
+                      exact_solution_known, eps_rel_residual, abs_residual, max_iter_iterations_used,
+                      abs_error, time, directory, filename, matrix_name, precond_name);
           } else {
               std::cout<<"solve_with_multilevel_preconditioner: PRECON_PARAMETER is negative. This is not permitted. Returning without solving."<<std::endl;
               return false;
@@ -219,13 +223,15 @@ template <class T, class matrix_type, class vector_type>
 {
     try {
           std::string precond_name = IP.precondname();
-          std::string filename = IP.filename(); 
+          std::string filename = IP.filename();
           std::string filenname_with_matrix = IP.filename(matrix_name);
-          bool successful_solve;
+          bool success;
           multilevelILUCDPPreconditioner<T,matrix_type, vector_type> P;
           if(IP.get_PRECON_PARAMETER()>= 0){ 
               P.make_preprocessed_multilevelILUCDP(A,IP);
-              successful_solve = solve_linear_system<T,matrix_type,vector_type>(ML_ILUCDP,P,A,b,x_exact,x,exact_solution_known,eps_rel_residual, abs_residual, max_iter_iterations_used, abs_error,time,directory,filename,matrix_name,precond_name);
+              success = solve_linear_system<T,matrix_type,vector_type>(PC_ML_ILUCDP, P, A, b, x_exact, x,
+                      exact_solution_known, eps_rel_residual, abs_residual, max_iter_iterations_used,
+                      abs_error, time, directory, filename, matrix_name, precond_name);
           } else {
               std::cout<<"solve_with_multilevel_preconditioner_with_detailed_output: PRECON_PARAMETER is negative. This is not permitted. Returning without solving."<<std::endl;
               return false;
@@ -238,10 +244,10 @@ template <class T, class matrix_type, class vector_type>
           outfile_data.open((output_directory+filename_data).c_str(), std::ios_base::app);
           if(!outfile_data){
               std::cerr<<"solve_with_multilevel_preconditioner_with_detailed_output: error opening file to write. Returning."<<std::endl;
-              return successful_solve;
+              return success;
           }
           outfile_data.setf(std::ios_base::left);
-          if(successful_solve && P.exists()) outfile_data<<"1\t";
+          if(success && P.exists()) outfile_data<<"1\t";
           else outfile_data<<"0\t";
           outfile_data<<std::setprecision(4)<<IP.get_threshold()<<"\t"<<std::setprecision(4)<<(Real)P.total_nnz()/(Real)A.actual_non_zeroes();
           outfile_data<<std::setprecision(4)<<"\t"<<P.memory()/matrix_memory<<"\t"<<std::setprecision(4)<<P.memory_used_calculations()/matrix_memory;
@@ -255,7 +261,7 @@ template <class T, class matrix_type, class vector_type>
           outfile_data<<std::setprecision(4)<<"\t"<<A.dimension()<<"\t"<<std::setprecision(4)<<A.non_zeroes()<<"\t"<<std::setprecision(4)<<P.levels();
           outfile_data<<std::endl;
           outfile_data.close();
-          return successful_solve;
+          return success;
     }
     catch(iluplusplus_error ippe){
         std::cerr<<"solve_with_multilevel_preconditioner_with_detailed_output: "<<ippe.error_message()<<". Returning."<<std::endl;

@@ -120,7 +120,7 @@ enum preprocessing_type {
 enum iterative_method_type {BICGSTAB, CG, CGS, GMRES, CGNR, CGNE};
 
 // types of preconditioners
-enum preconditioner_type {ILUC, ILUT, ILUTP, ILUCP, ILUCDP, ML_ILUCDP,DLML_ILUCDP, MG_ILUCDP, NOPRECOND};
+enum preconditioner_type {PC_ILUC, PC_ILUT, PC_ILUTP, PC_ILUCP, PC_ILUCDP, PC_ML_ILUCDP, PC_DLML_ILUCDP, PC_MG_ILUCDP, PC_NOPRECOND};
 
 // types of data for analysis
 
@@ -180,7 +180,6 @@ template <class T, class matrix_type, class vector_type> class direct_single_pre
 template <class T, class matrix_type, class vector_type> class indirect_single_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_multilevel_preconditioner;
-template <class T, class matrix_type, class vector_type, class preconditioner_type> class multigrid_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_pseudo_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class generic_split_preconditioner;
 // specific preconditioners
