@@ -147,7 +147,6 @@ class preprocessing_sequence;
 // classes for pmwm_declarations.h
 
 struct dist;
-template<class sparse_matrix_class, class permutation> class sapTree;
 
 
 // classes for matrix_sparse.h

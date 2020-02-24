@@ -32,12 +32,71 @@
 namespace iluplusplus{
 
 //**************************************************************************************//
-//               Implemtation of Class sapTree
+//               Class sapTree (for storing shortest alternating path trees)
 //**************************************************************************************//
 
-//******************************************************************************************************************************
-// Class sapTree: Private Functions                                                                                            *
-//******************************************************************************************************************************
+template<class sparse_matrix_class, class permutation> class sapTree
+{
+    private:
+        Integer root;   // root node (row)
+        Real lsap;      // length of shortest augmenting path in the tree
+
+        // matched candidate nodes are stored in a priority queue with minimum element at the top
+        std::priority_queue< dist, std::vector<dist>, std::greater< dist > > cand_nodes;
+
+        // contains column nodes whose shortest distances to the root node are known; is set to 1 if node is in B
+        vector_sparse_dynamic<Integer> checked_nodes;
+
+        // pointer array for row nodes, such that (i,mate_row(i)), (row_pointer(i),mate_row(i)) are consecutive edges towards the root
+        std::vector<Integer> row_pointer;
+
+        // stores reduced distances from the root node to a column node (indexed access)
+        vector_sparse_dynamic<Real> reduced_dist;
+
+        // stores candidate weights; if the corresponding nodes are getting matched, these elements are copied to field weights
+        std::vector<Real> cand_weights;
+
+        // stores weights of matched column nodes, i.e. c(i,j), for updating duals
+        std::vector<Real> weights;
+
+        void resize_fields(Integer size);
+        // functions for allocating / deallocating memory for fields cand_weights, weights and row_pointer
+
+    public:
+        sapTree();
+
+        // Accessing
+        Integer get_root() const    { return root; }
+        Real get_lsap() const       { return lsap; }
+
+        // Manipulation
+
+        // resizes fields cand_weights and weights to dim
+        void resize(Integer dim);
+
+        // resets the sapTree, i.e. emptying cand_nodes, setting new root node r, and reseting checked_nodes, reduced_dist to zero
+        void reset(Integer r);
+
+        // augments along edge (i,j)
+        void augment(permutation& mate_row, permutation& mate_col, Integer i, Integer j);
+
+        // initialization of dual variables using heuristic
+        void dual_initialization(const sparse_matrix_class& A, const std::vector<Real>& comp, std::vector<Real>& u, std::vector<Real>& v);
+
+        // determines an initial extreme matching using heuristically initialized dual variables
+        void matching_initialization(const sparse_matrix_class& A, permutation& mate_row, permutation& mate_col, const std::vector<Real>& comp, const std::vector<Real>& u, const std::vector<Real>& v);
+
+        // updates dual vectors u and v
+        void dual_update(const sparse_matrix_class& A, const permutation& mate_row, const permutation& mate_col, std::vector<Real>& u, std::vector<Real>& v, Integer isap, Integer jsap);
+
+        // procedure for finding a shortest augmenting path starting at the root node; writes edge (isap,jsap) for augmenting
+        void find_sap(const sparse_matrix_class& A, const permutation& mate_col, const std::vector<Real>& comp, const std::vector<Real>& u, const std::vector<Real>& v, Integer& isap, Integer& jsap);
+};
+
+
+//**************************************************************************************//
+//               Implementation of Class sapTree
+//**************************************************************************************//
 
 template<class sparse_matrix_class, class permuation>
 void sapTree<sparse_matrix_class, permuation>::resize_fields(Integer size) {
@@ -46,35 +105,12 @@ void sapTree<sparse_matrix_class, permuation>::resize_fields(Integer size) {
     weights.resize(size);
 }
 
-
-//******************************************************************************************************************************
-// Class sapTree: Constructors                                                                                                 *
-//******************************************************************************************************************************
-
 // Default constructor
 template<class sparse_matrix_class, class permutation>
-	sapTree<sparse_matrix_class, permutation>::sapTree() : cand_nodes(), checked_nodes(), reduced_dist() {
-		root = -1;
-		lsap = -1;
-	}
-
-//******************************************************************************************************************************
-// Class sapTree: Accessing                                                                                                    *
-//******************************************************************************************************************************
-
-template<class sparse_matrix_class, class permutation>
-	Integer sapTree<sparse_matrix_class, permutation>::get_root() const {
-	return root;
+sapTree<sparse_matrix_class, permutation>::sapTree() : cand_nodes(), checked_nodes(), reduced_dist() {
+    root = -1;
+    lsap = -1;
 }
-
-template<class sparse_matrix_class, class permutation>
-	Real sapTree<sparse_matrix_class, permutation>::get_lsap() const {
-	return lsap;
-}
-
-//******************************************************************************************************************************
-// Class sapTree: Manipulation                                                                                                 *
-//******************************************************************************************************************************
 
 template<class sparse_matrix_class, class permutation>
 void sapTree<sparse_matrix_class, permutation>::resize(Integer dim) {
@@ -84,14 +120,14 @@ void sapTree<sparse_matrix_class, permutation>::resize(Integer dim) {
 }
 
 template<class sparse_matrix_class, class permutation>
-	void sapTree<sparse_matrix_class, permutation>::reset(Integer r) {
-		root = r;
-		lsap = -1;
-		std::priority_queue< dist, std::vector<dist>, std::greater< dist > > empty;
-		cand_nodes = empty;
-		checked_nodes.zero_reset();
-		reduced_dist.zero_reset();
-	}
+void sapTree<sparse_matrix_class, permutation>::reset(Integer r) {
+    root = r;
+    lsap = -1;
+    std::priority_queue< dist, std::vector<dist>, std::greater< dist > > empty;
+    cand_nodes = empty;
+    checked_nodes.zero_reset();
+    reduced_dist.zero_reset();
+}
 
 
 template<class sparse_matrix_class, class permutation>
@@ -102,16 +138,16 @@ void sapTree<sparse_matrix_class, permutation>::augment(permutation& mate_row, p
 #endif /*VERBOSE*/
 
     Integer k;
-    mate_col.set(j) = i;
+    mate_col[j] = i;
     while (i != root) {
         weights[j] = cand_weights[j];
-        k = mate_row.get(i);
-        mate_row.set(i) = j;
+        k = mate_row[i];
+        mate_row[i] = j;
         j = k;
         i = row_pointer[i];
-        mate_col.set(j) = i;
+        mate_col[j] = i;
     }
-    mate_row.set(root) = j;
+    mate_row[root] = j;
     weights[j] = cand_weights[j];
 
 #ifdef VERBOSE
@@ -121,7 +157,7 @@ void sapTree<sparse_matrix_class, permutation>::augment(permutation& mate_row, p
 }
 
 template<class sparse_matrix_class, class permutation>
-void sapTree<sparse_matrix_class, permutation>::dual_initialization(const sparse_matrix_class& A,  const array<Real>& comp, array<Real>& u, array<Real>& v) {
+void sapTree<sparse_matrix_class, permutation>::dual_initialization(const sparse_matrix_class& A,  const std::vector<Real>& comp, std::vector<Real>& u, std::vector<Real>& v) {
     Integer i, row, col;
     Integer dim = A.dimension();
     Integer nz = A.non_zeroes();
@@ -150,7 +186,7 @@ void sapTree<sparse_matrix_class, permutation>::dual_initialization(const sparse
 }
 
 template<class sparse_matrix_class, class permutation>
-void sapTree<sparse_matrix_class, permutation>::matching_initialization(const sparse_matrix_class& A, permutation& mate_row, permutation& mate_col, const array<Real>& comp, const array<Real>& u, const array<Real>& v) {
+void sapTree<sparse_matrix_class, permutation>::matching_initialization(const sparse_matrix_class& A, permutation& mate_row, permutation& mate_col, const std::vector<Real>& comp, const std::vector<Real>& u, const std::vector<Real>& v) {
     Integer i, row, col;
     Integer dim = A.dimension();
 
@@ -158,8 +194,8 @@ void sapTree<sparse_matrix_class, permutation>::matching_initialization(const sp
     for (row = 0; row < dim; row++) {
         for (i = A.read_pointer(row); i < A.read_pointer(row+1); i++) {
             col = A.read_index(i);
-            if ( mate_col.get(col) == -1 && (comp[i] - u[row] - v[col] == 0) ) {
-                mate_row.set(row) = col; mate_col.set(col) = row;
+            if ( mate_col[col] == -1 && (comp[i] - u[row] - v[col] == 0) ) {
+                mate_row[row] = col; mate_col[col] = row;
                 weights[col] = comp[i];
                 break;
             }
@@ -170,22 +206,22 @@ void sapTree<sparse_matrix_class, permutation>::matching_initialization(const sp
     // sets set row_new = mate_col(j) and continues the search in the neighborhood of rode_new like above
     Integer row_new, col_new;
     for (row = 0; row < dim; row++) {
-        if (mate_row.get(row) == -1) {
+        if (mate_row[row] == -1) {
             for (i = A.read_pointer(row); i < A.read_pointer(row+1); i++) {
                 col = A.read_index(i);
-                if ( mate_col.get(col) != -1 && (comp[i] - u[row] - v[col] == 0) ) {
-                    row_new = mate_col.get(col);
+                if ( mate_col[col] != -1 && (comp[i] - u[row] - v[col] == 0) ) {
+                    row_new = mate_col[col];
                     for (Integer j = A.read_pointer(row_new); j < A.read_pointer(row_new+1); j++) {
                         col_new = A.read_index(j);
-                        if ( mate_col.get(col_new) == -1 && (comp[j] - u[row_new] - v[col_new] == 0) ) {
-                            mate_row.set(row) = col; mate_col.set(col) = row;
-                            mate_row.set(row_new) = col_new; mate_col.set(col_new) = row_new;
+                        if ( mate_col[col_new] == -1 && (comp[j] - u[row_new] - v[col_new] == 0) ) {
+                            mate_row[row] = col; mate_col[col] = row;
+                            mate_row[row_new] = col_new; mate_col[col_new] = row_new;
                             weights[col_new] = comp[j]; weights[col] = comp[i];
                             break;
                         }
                     }
                 }
-                if (mate_row.get(row) != -1) break;
+                if (mate_row[row] != -1) break;
             }
         }
     }
@@ -198,7 +234,7 @@ void sapTree<sparse_matrix_class, permutation>::matching_initialization(const sp
 }
 
 template<class sparse_matrix_class, class permutation>
-void sapTree<sparse_matrix_class, permutation>::dual_update(const sparse_matrix_class& A, const permutation& mate_row, const permutation& mate_col, array<Real>& u, array<Real>& v, Integer isap, Integer jsap) {
+void sapTree<sparse_matrix_class, permutation>::dual_update(const sparse_matrix_class& A, const permutation& mate_row, const permutation& mate_col, std::vector<Real>& u, std::vector<Real>& v, Integer isap, Integer jsap) {
     Integer col;
     Integer index_checked_nodes;
 
@@ -214,14 +250,14 @@ void sapTree<sparse_matrix_class, permutation>::dual_update(const sparse_matrix_
     while (i != root) {
         checked_nodes[j] = 0;
         u[i] = weights[j] - v[j];
-        i = row_pointer[i]; j = mate_row.get(i);
+        i = row_pointer[i]; j = mate_row[i];
     }
     checked_nodes[j] = 0; u[root] = weights[j] - v[j];
 
     // updating elements of u (in checked_nodes)
     for (index_checked_nodes = 0; index_checked_nodes < checked_nodes.non_zeroes(); index_checked_nodes++) {
         col = checked_nodes.get_pointer(index_checked_nodes);
-        u[mate_col.get(col)] = weights[col] - v[col];
+        u[mate_col[col]] = weights[col] - v[col];
     }
 
 #ifdef VERBOSE
@@ -231,7 +267,7 @@ void sapTree<sparse_matrix_class, permutation>::dual_update(const sparse_matrix_
 }
 
 template<class sparse_matrix_class, class permutation>
-void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_class& A, const permutation& mate_col,  const array<Real>& comp, const array<Real>& u, const array<Real>& v, Integer& isap, Integer& jsap) {
+void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_class& A, const permutation& mate_col,  const std::vector<Real>& comp, const std::vector<Real>& u, const std::vector<Real>& v, Integer& isap, Integer& jsap) {
     Real dnew;
     Real weight;
     dist temp_dist;     // temporary distance, for pushing struct dist into heap cand_nodes
@@ -268,7 +304,7 @@ void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_cla
                 if (lsap == -1 || dnew < lsap) {
 
                     // if node j is unmatched, lsap is shortest augmenting path so far
-                    if ( mate_col.get(j) == -1 ) {
+                    if ( mate_col[j] == -1 ) {
                         lsap = dnew;
                         cand_weights[j] = weight;
 
@@ -280,7 +316,7 @@ void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_cla
                     // if node j is matched, push distance into the heap cand_nodes
                     else if (reduced_dist.get_occupancy(j) == -1 || dnew < reduced_dist.read(j)) {
                         reduced_dist[j] = dnew;
-                        row_pointer[mate_col.get(j)] = i;
+                        row_pointer[mate_col[j]] = i;
                         temp_dist.index = j; temp_dist.value = dnew; temp_dist.weight = weight;
 
                         cand_nodes.push(temp_dist);
@@ -304,7 +340,7 @@ void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_cla
         if (lsap != -1 && lsap <= lsp) break;
         cand_weights[j_min] = min_dist.weight;
         checked_nodes[j_min] = 1;
-        i = mate_col.get(j_min);
+        i = mate_col[j_min];
     }
 }
 
@@ -314,22 +350,22 @@ void sapTree<sparse_matrix_class, permutation>::find_sap(const sparse_matrix_cla
 
 // writes maximum absolute values per row in array max
 template<class sparse_matrix_class>
-void abs_max_row(const sparse_matrix_class& A, array<Real>& max) {
+void abs_max_row(const sparse_matrix_class& A, std::vector<Real>& max) {
     for (Integer row = 0; row < A.dimension(); row++) {
         for (Integer j = A.read_pointer(row); j < A.read_pointer(row+1); j++) {
-            if ( max.get(row) < fabs(A.read_data(j)) ) max.set(row) = fabs(A.read_data(j));
+            if ( max[row] < fabs(A.read_data(j)) ) max[row] = fabs(A.read_data(j));
         }
     }
 }
 
 // calculates transformation to minimization problem and stores new components in field comp
 template<class sparse_matrix_class>
-void transform_and_copy_data(const sparse_matrix_class& A, array<Real>& comp, array<Real>& max) {
+void transform_and_copy_data(const sparse_matrix_class& A, std::vector<Real>& comp, std::vector<Real>& max) {
     abs_max_row<sparse_matrix_class>(A, max);
     Integer row = 0;
     for (Integer i = 0; i < A.non_zeroes(); i++) {
         while ( i >= A.read_pointer(row+1) ) row++;
-        comp[i] = std::log( max.get(row) / fabs(A.read_data(i)) );
+        comp[i] = std::log( max[row] / fabs(A.read_data(i)) );
     }
 }
 
@@ -344,22 +380,21 @@ bool find_pmwm(const sparse_matrix_class& A, permutation& mate_row, permutation&
 
     Integer jsap;
     Integer isap;
-    array<Real> u;              // row duals
-    array<Real> v;              // col duals
-    array<Real> comp;           // transformed components of matrix A
+    std::vector<Real> u;              // row duals
+    std::vector<Real> v;              // col duals
+    std::vector<Real> comp;           // transformed components of matrix A
     sapTree<sparse_matrix_class, permutation> tree;
-    array<Real> abs_max_per_row;
+    std::vector<Real> abs_max_per_row;
     Integer dim = A.dimension();
-
 
 #ifdef PMWM_TIME
     init_fields_start = clock();
 #endif /*PMWM_TIME*/
 
     // initializes fields
-    u.erase_resize_data_field(dim);
-    v.erase_resize_data_field(dim);
-    comp.erase_resize_data_field(A.non_zeroes());
+    u.resize(dim);
+    v.resize(dim);
+    comp.resize(A.non_zeroes());
     mate_row.resize_with_constant_value(dim, -1);
     mate_col.resize_with_constant_value(dim, -1);
     inverse_row_scaling.resize(dim,0);
@@ -390,7 +425,7 @@ bool find_pmwm(const sparse_matrix_class& A, permutation& mate_row, permutation&
 
 
     for (Integer r = 0; r < dim; r++) {
-        if (mate_row.get(r) == -1) {
+        if (mate_row[r] == -1) {
 
 #ifdef PMWM_TIME
             reset_start = clock();
@@ -421,8 +456,8 @@ bool find_pmwm(const sparse_matrix_class& A, permutation& mate_row, permutation&
                 std::cerr << "find_pmwm: No perfect matching found." << std::endl;
 #endif
                 for (Integer s = 0; s < dim; s++) {
-                    inverse_row_scaling.set(s) = (Real) 1;
-                    inverse_col_scaling.set(s) = (Real) 1;
+                    inverse_row_scaling[s] = (Real) 1;
+                    inverse_col_scaling[s] = (Real) 1;
                     mate_row.init();
                     mate_col.init();
                 }
@@ -462,8 +497,8 @@ bool find_pmwm(const sparse_matrix_class& A, permutation& mate_row, permutation&
 
     // calculates vectors for scaling
     for (Integer s = 0; s < dim; s++) {
-        inverse_row_scaling.set(s) = abs_max_per_row.get(s) / std::exp(u[s]);
-        inverse_col_scaling.set(s) = std::exp(-v[s]);
+        inverse_row_scaling[s] = abs_max_per_row[s] / std::exp(u[s]);
+        inverse_col_scaling[s] = std::exp(-v[s]);
     }
 
 #ifdef PMWM_TIME
@@ -500,13 +535,13 @@ void column_perm(const sparse_matrix_class& A, permutation& col_perm) {
     col_perm.resize_with_constant_value(dim,-1);
 
     for (Integer j = 0; j < A.non_zeroes(); j++)
-        nnz_per_col.set(A.read_index(j))++;
+        nnz_per_col[A.read_index(j)]++;
 
     nnz_per_col.quicksort(indices,0,dim-1);
 
-    if (nnz_per_col.get(0) != 0) {
+    if (nnz_per_col[0] != 0) {
         for (Integer j = 0; j < dim; j++) {
-            col_perm.set(j) = indices.get(j);
+            col_perm[j] = indices[j];
         }
     }
     else col_perm.init();

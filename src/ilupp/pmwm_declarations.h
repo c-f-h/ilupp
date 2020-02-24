@@ -54,9 +54,8 @@
  *                                                                                                          *
  *  permutation: field of Integers storing the permutation                                                  *
  *  permutation functions:                                                                                  *
- *      Intger dimension() const;               // Returns dimension                                        *
- *      Integer get(Integer i) const;           // Returns i-th element of permutation (constant)           *
- *      Integer set(Integer i);                 // Returns i-th element of permutation (non-constant)       *
+ *      Integer dimension() const;              // Returns dimension                                        *
+ *      operator[](Integer i)                   // Access i-th element
  *      void resize_with_constant_value(Integer n, Integer d)                                               *
  *                                              // Resizes field to n and sets all elements to d            *
  *      void init()                             // Initializes permutation to identity                      *
@@ -64,8 +63,7 @@
  *  vector: field of elements of type T                                                                     *
  *  vector functions:                                                                                       *
  *      Integer dimension() const;              // Returns dimension                                        *
- *      T get(Integer i) const;                 // Returns i-th element of vector (constant)                *
- *      T& set(Integer i);                      // Returns i-th element of vector (non-constant)            *
+ *      operator[](Integer i)                   // Access i-th element
  *      void resize(Integer n, T d);            // Resizes field to n and sets all elements to d            *
  *                                                                                                          *
  *                                                                                                          *
@@ -83,7 +81,6 @@
 #include <time.h>
 
 #include "declarations.h"
-#include "arrays.h"
 #include "functions.h"
 #include "function_class.h"
 #include "parameters.h"
@@ -92,14 +89,6 @@
 
 
 namespace iluplusplus {
-
-//**************************************************************************************//
-//               Class Declarations
-//**************************************************************************************//
-
-struct dist;
-template<class sparse_matrix_class, class permutation> class sapTree;
-
 
 //**************************************************************************************//
 //               Function Declarations
@@ -132,77 +121,6 @@ struct dist {
 	}
 };
 
-
-//**************************************************************************************//
-//               Class sapTree (for storing shortest alternating path trees)
-//**************************************************************************************//
-
-template<class sparse_matrix_class, class permutation> class sapTree {
-	
-	private:
-		
-		// Attributes
-		
-		Integer root;	// root node (row)
-		Real lsap; 	    // length of shortest augmenting path in the tree
-		
-		std::priority_queue< dist, std::vector<dist>, std::greater< dist > > cand_nodes; 
-			// matched candidate nodes are stored in a priority queue with minimum element at the top
-		
-		vector_sparse_dynamic<Integer> checked_nodes;
-			// contains column nodes whose shortest distances to the root node are known; is set to 1 if node is in B 
-		
-        std::vector<Integer> row_pointer;
-			// pointer array for row nodes, such that (i,mate_row(i)), (row_pointer(i),mate_row(i)) are consecutive edges towards the root 
-			
-		vector_sparse_dynamic<Real> reduced_dist;
-			// stores reduced distances from the root node to a column node (indexed access)
-			
-        std::vector<Real> cand_weights;
-			// stores candidate weights; if the corresponding nodes are getting matched, these elements are copied to field weights
-		
-        std::vector<Real> weights;
-			// stores weights of matched column nodes, i.e. c(i,j), for updating duals
-			
-		
-		// functions for allocating / deallocating memory for fields cand_weights, weights and row_pointer
-		void resize_fields(Integer size);
-
-				
-	public:
-		
-		// Constructors
-		sapTree();
-		
-		// Accessing
-		Integer get_root() const;
-		Real get_lsap() const;
-	
-		
-		// Manipulation
-
-		void resize(Integer dim);  
-			// resizes fields cand_weights and weights to dim
-		
-		void reset(Integer r);     
-			// resets the sapTree, i.e. emptying cand_nodes, setting new root node r, and reseting checked_nodes, reduced_dist to zero
-		
-		void augment(permutation& mate_row, permutation& mate_col, Integer i, Integer j);
-			// augments along edge (i,j)
-		
-		void dual_initialization(const sparse_matrix_class& A, const array<Real>& comp, array<Real>& u, array<Real>& v);
-			// initialization of dual variables using heuristic
-			
-		void matching_initialization(const sparse_matrix_class& A, permutation& mate_row, permutation& mate_col, const array<Real>& comp, const array<Real>& u, const array<Real>& v);
-			// determines an initial extreme matching using heuristically initialized dual variables
-			
-		void dual_update(const sparse_matrix_class& A, const permutation& mate_row, const permutation& mate_col, array<Real>& u, array<Real>& v, Integer isap, Integer jsap);
-			// updates dual vectors u and v
-		
-		void find_sap(const sparse_matrix_class& A, const permutation& mate_col, const array<Real>& comp, const array<Real>& u, const array<Real>& v, Integer& isap, Integer& jsap);
-			// procedure for finding a shortest augmenting path starting at the root node; writes edge (isap,jsap) for augmenting
-};
-		
 
 } // end namespace iluplusplus
 
