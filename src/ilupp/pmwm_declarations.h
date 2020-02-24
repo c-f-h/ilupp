@@ -105,14 +105,6 @@ template<class sparse_matrix_class, class permutation> class sapTree;
 //               Function Declarations
 //**************************************************************************************//
 
-template<class sparse_matrix_class>
-	void abs_max_row(const sparse_matrix_class& A, array<Real>& max);
-// writes maximum absolute values per row in array max 
-
-template<class sparse_matrix_class>
-	void transform_and_copy_data(const sparse_matrix_class& A, array<Real>& comp, array<Real>& max);
-// calculates transformation to minimization problem and stores new components in field comp
-
 template<class sparse_matrix_class, class permutation, class vector>	
 	bool find_pmwm(const sparse_matrix_class& A, permutation& invPerm, permutation& perm, vector& inverse_row_scaling, vector& inverse_col_scaling); 
 // finds perfect maximum weighted matching
@@ -160,33 +152,27 @@ template<class sparse_matrix_class, class permutation> class sapTree {
 		vector_sparse_dynamic<Integer> checked_nodes;
 			// contains column nodes whose shortest distances to the root node are known; is set to 1 if node is in B 
 		
-		array<Integer> row_pointer;
+        std::vector<Integer> row_pointer;
 			// pointer array for row nodes, such that (i,mate_row(i)), (row_pointer(i),mate_row(i)) are consecutive edges towards the root 
 			
 		vector_sparse_dynamic<Real> reduced_dist;
 			// stores reduced distances from the root node to a column node (indexed access)
 			
-		array<Real> cand_weights;
+        std::vector<Real> cand_weights;
 			// stores candidate weights; if the corresponding nodes are getting matched, these elements are copied to field weights
 		
-		array<Real> weights;
+        std::vector<Real> weights;
 			// stores weights of matched column nodes, i.e. c(i,j), for updating duals
 			
 		
 		// functions for allocating / deallocating memory for fields cand_weights, weights and row_pointer
-		void destroy_fields();
-		void destroy_resize_fields(Integer size);
+		void resize_fields(Integer size);
 
 				
 	public:
 		
 		// Constructors
 		sapTree();
-		sapTree(const sapTree<sparse_matrix_class, permutation>& tree);
-		~sapTree();
-		
-		// Operators
-		sapTree<sparse_matrix_class, permutation>& operator = (const sapTree<sparse_matrix_class, permutation>& tree);
 		
 		// Accessing
 		Integer get_root() const;
