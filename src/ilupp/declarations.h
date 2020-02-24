@@ -172,7 +172,6 @@ class iluplusplus_precond_parameter;
 
 // abstract classes for preconditioners
 template <class T, class matrix_type, class vector_type> class preconditioner;
-template <class T, class matrix_type, class vector_type> class single_preconditioner;
 template <class T, class matrix_type, class vector_type> class split_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_preconditioner;
 template <class T, class matrix_type, class vector_type> class indirect_split_triangular_multilevel_preconditioner;

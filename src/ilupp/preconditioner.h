@@ -121,37 +121,6 @@ template <class T, class matrix_type, class vector_type> class preconditioner
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: single_preconditioner,                                                                             //
-//                i.e. one operating from only one side on a matrix, either directly or indirectly                       //
-//                                                                                                                       //
-//***********************************************************************************************************************//
-
-
-template <class T, class matrix_type, class vector_type>
-  class single_preconditioner : public preconditioner  <T, matrix_type, vector_type>
-  {
-       protected:
-          virtual void apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const = 0;
-          virtual void apply_preconditioner(matrix_usage_type use, vector_type &w) const = 0;
-          virtual void unapply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const = 0;
-          virtual void unapply_preconditioner(matrix_usage_type use, vector_type &w) const = 0;
-
-          // members inherited from preconditioner
-          virtual void apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const;
-          virtual void apply_preconditioner_rhs(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &b, vector_type &c) const;
-          virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &y, vector_type &x) const;
-          virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &x, vector_type &y) const;
-       public:
-          virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
-          using preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only;
-          virtual void apply_preconditioner_only(matrix_usage_type use,const vector_type &x, vector_type &y) const;
-          virtual void apply_preconditioner_only(matrix_usage_type use, vector_type &y) const;
-   };
-
-
-//***********************************************************************************************************************//
-//                                                                                                                       //
 //         The class: split_preconditioner,                                                                              //
 //                i.e. one operating from both sides of a matrix, either directly or indirectly                          //
 //                or any preconditioner constisting of two factors.                                                      //
@@ -348,7 +317,7 @@ template <class T, class matrix_type, class vector_type>
 //***********************************************************************************************************************//
 
 template <class T, class matrix_type, class vector_type>
-  class NullPreconditioner : public single_preconditioner <T,matrix_type, vector_type>
+  class NullPreconditioner : public preconditioner <T,matrix_type, vector_type>
   {
        protected:
           virtual void apply_preconditioner(matrix_usage_type use, const vector_type &v, vector_type &w) const;
