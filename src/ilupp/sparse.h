@@ -706,9 +706,7 @@ template<class T> class matrix_dense
            Real norm1() const;
         // Accessing elements:
            T& operator()(Integer i, Integer j);
-           T& set(Integer i, Integer j);
-           T get(Integer i, Integer j) const;
-           T read(Integer i, Integer j)const;
+           const T& operator()(Integer i, Integer j) const;
         // Conversion
            matrix_sparse<T> compress(orientation_type o, double threshold = -1.0);
            friend matrix_dense<T> matrix_sparse<T>::expand() const;

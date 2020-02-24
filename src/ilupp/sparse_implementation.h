@@ -11577,29 +11577,9 @@ template<class T> T& matrix_dense<T>::operator()(Integer i, Integer j){
      return data[i][j];
   }
 
-template<class T> T& matrix_dense<T>::set(Integer i, Integer j){
-     #ifdef DEBUG
-         if(0<=i&&i<number_rows&&0<=j&&j<number_columns)return data[i][j];
-         else {std::cerr<<"matrix_dense::set: this matrix entry does not exist. Accessing Element ("<<i<<","<<j<<") of a ("<<number_rows<<","<<number_columns<<") matrix."<<std::endl; throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);}
-     #endif
-     return data[i][j];
-  }
-
-template<class T> T matrix_dense<T>::get(Integer i, Integer j) const {
-     #ifdef DEBUG
-         if(0<=i&&i<number_rows&&0<=j&&j<number_columns)return data[i][j];
-         else {std::cerr<<"matrix_dense::set: this matrix entry does not exist. Accessing Element ("<<i<<","<<j<<") of a ("<<number_rows<<","<<number_columns<<") matrix."<<std::endl; throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);}
-     #endif
-     return data[i][j];
-  }
-
-template<class T> T  matrix_dense<T>::read(Integer i, Integer j) const {
-     #ifdef DEBUG
-        if(0<=i&&i<number_rows&&0<=j&&j<number_columns)return data[i][j];
-        else {std::cerr<<"matrix_dense::read:  this matrix entry does not exist. Accessing Element ("<<i<<","<<j<<") of a ("<<number_rows<<","<<number_columns<<") matrix."<<std::endl; throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);}
-     #endif
-     return data[i][j];
-  }
+template<class T> const T& matrix_dense<T>::operator()(Integer i, Integer j) const {
+    return const_cast<matrix_dense<T>&>(*this)(i, j);
+}
 
 //***********************************************************************************************************************
 // Class matrix_dense: Conversion                                                                                       *
@@ -11693,7 +11673,7 @@ template<class T>std::ostream& operator << (std::ostream& os, const matrix_dense
      os<<std::endl;
      for(Integer i=0;i<x.rows();i++){
          os <<"(";
-         for(Integer j=0;j<x.columns();j++) os << std::setw(14) << x.read(i,j)<< "  ";
+         for(Integer j=0;j<x.columns();j++) os << std::setw(14) << x(i,j)<< "  ";
          os << " )" << std::endl;
      }
      os<<std::endl;
