@@ -76,7 +76,6 @@ namespace iluplusplus {
 //*************************************************************************************************************************************
 
 template<class T> void vector_dense<T>::erase_resize_data_field(Integer newsize){
-  try {
     if (size != newsize){
         if (data != 0){ delete [] data; data = 0;}
         if(newsize > 0){
@@ -86,12 +85,6 @@ template<class T> void vector_dense<T>::erase_resize_data_field(Integer newsize)
             size = 0; data = 0;
         }  // end if size>0
     }  // end if size != newsize
-  }
-  catch(std::bad_alloc){
-      std::cerr<<"vector_dense::erase_resize_data_field: Error allocating memory. Returning vector of dimension 0."<<std::endl;
-      size = 0; data = 0;
-      throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 //*************************************************************************************************************************************
@@ -116,40 +109,22 @@ template<class T> vector_dense<T>::vector_dense(Integer m) {
 */
 
 template<class T> vector_dense<T>::vector_dense(Integer m) {
-  try {
     size = 0; data = 0; // initialization needed, so that erase_resize_data_field actually can check if resizing needs to take place.
     erase_resize_data_field(m);
     for(Integer i=0;i<size;i++) data[i]=0;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::vector_dense: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    throw;
-  }
  }
 
 
 template<class T> vector_dense<T>::vector_dense(Integer m, T t) {
-  try {
     size = 0; data = 0;
     erase_resize_data_field(m);
     for(Integer i=0;i<size;i++) data[i]=t;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::vector_dense: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    throw;
-  }
  }
 
 template<class T> vector_dense<T>::vector_dense(const vector_dense& x) {
-  try {
     size = 0; data = 0;
     erase_resize_data_field(x.size);
     for(Integer i=0;i<size;i++) data[i]=x.data[i];
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::vector_dense(vector_dense): "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    throw;
-  }
  }
 
 template<class T> vector_dense<T>::vector_dense(Integer m, T* _data, bool _non_owning)
@@ -197,19 +172,12 @@ template<class T> void vector_dense<T>::scale_at_end(const vector_dense<T>& v){
   }
 
 template<class T> void vector_dense<T>::scale_at_end_and_project(const vector_dense<T>& v, const vector_dense<T>& scale){
-  try {
-     Integer offset = v.size-scale.size;
-     resize_without_initialization(scale.dimension());
-     #ifdef DEBUG
-         if(non_fatal_error((offset<0),"vector_dense<T>::inverse_scale_at_end: dimension of *this must be larger than dimension of argument.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     #endif
-     for(Integer i=0;i<v.size;i++) data[i]= v.data[i+offset] * scale.data[i];
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::scale_at_end_and_project: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    resize_without_initialization(0);
-    throw;
-  }
+    Integer offset = v.size-scale.size;
+    resize_without_initialization(scale.dimension());
+#ifdef DEBUG
+    if(non_fatal_error((offset<0),"vector_dense<T>::inverse_scale_at_end: dimension of *this must be larger than dimension of argument.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(Integer i=0;i<v.size;i++) data[i]= v.data[i+offset] * scale.data[i];
 }
 
 template<class T> void vector_dense<T>::inverse_scale_at_end(const vector_dense<T>& v){
@@ -221,19 +189,12 @@ template<class T> void vector_dense<T>::inverse_scale_at_end(const vector_dense<
   }
 
 template<class T> void vector_dense<T>::inverse_scale_at_end_and_project(const vector_dense<T>& v, const vector_dense<T>& scale){
-  try {
-     Integer offset = v.size-scale.size;
-     resize_without_initialization(scale.dimension());
-     #ifdef DEBUG
-         if(non_fatal_error((offset<0),"vector_dense<T>::inverse_scale_at_end: dimension of *this must be larger than dimension of argument.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     #endif
-     for(Integer i=0;i<v.size;i++) data[i]= v.data[i+offset] / scale.data[i];
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::inverse_scale_at_end_and_project: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    resize_without_initialization(0);
-    throw;
-  }
+    Integer offset = v.size-scale.size;
+    resize_without_initialization(scale.dimension());
+#ifdef DEBUG
+    if(non_fatal_error((offset<0),"vector_dense<T>::inverse_scale_at_end: dimension of *this must be larger than dimension of argument.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(Integer i=0;i<v.size;i++) data[i]= v.data[i+offset] / scale.data[i];
 }
 
 
@@ -278,15 +239,8 @@ template<class T> void vector_dense<T>::invert(){
   }
 
 template<class T> void vector_dense<T>::invert(const vector_dense<T> &v){
-     try {
-         resize_without_initialization(v.size);
-         for(Integer i=0;i<size;i++) data[i] = 1.0/v.data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense:::invert: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-         resize_without_initialization(0);
-         throw;
-     }
+    resize_without_initialization(v.size);
+    for(Integer i=0;i<size;i++) data[i] = 1.0/v.data[i];
   }
 
 
@@ -308,114 +262,83 @@ template<class T> void vector_dense<T>::scale_add(T alpha, const vector_dense<T>
   }
 
 template<class T> void vector_dense<T>::vector_addition(const vector_dense<T> &v, const vector_dense<T> &w){
-     try {
-     #ifdef DEBUG
-         if(v.size != w.size){
-             std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         if(size != v.size){
-             resize(v.size, 0.0);
-         } else {
-             set_all(0.0);
-         }
-         for(Integer i=0;i<size;i++) data[i]=v.data[i]+w.data[i];
-         }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::addition: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+#ifdef DEBUG
+    if(v.size != w.size){
+        std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    if(size != v.size){
+        resize(v.size, 0.0);
+    } else {
+        set_all(0.0);
+    }
+    for(Integer i=0;i<size;i++) data[i]=v.data[i]+w.data[i];
   }
 
 template<class T> void vector_dense<T>::scaled_vector_addition(const vector_dense<T> &v, T alpha, const vector_dense<T> &w){
-     try {
-     #ifdef DEBUG
-         if(v.size != w.size){
-             std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         if(size != v.size){
-             resize(v.size, 0.0);
-         } else {
-             set_all(0.0);
-         }
-         for(Integer i=0;i<size;i++) data[i]=v.data[i]+(alpha*w.data[i]);
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::scaled_vector_addition: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+#ifdef DEBUG
+    if(v.size != w.size){
+        std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    if(size != v.size){
+        resize(v.size, 0.0);
+    } else {
+        set_all(0.0);
+    }
+    for(Integer i=0;i<size;i++) data[i]=v.data[i]+(alpha*w.data[i]);
   }
 
 
 template<class T> void vector_dense<T>::scaled_vector_addition(T alpha, const vector_dense<T> &v, const vector_dense<T> &w){
-     try {
-     #ifdef DEBUG
-         if(v.size != w.size){
-             std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         if(size != v.size){
-             resize(v.size, 0.0);
-         } else {
-             set_all(0.0);
-         }
-         for(Integer i=0;i<size;i++) data[i] = (alpha*v.data[i]) + w.data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::scaled_vector_addition: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+#ifdef DEBUG
+    if(v.size != w.size){
+        std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    if(size != v.size){
+        resize(v.size, 0.0);
+    } else {
+        set_all(0.0);
+    }
+    for(Integer i=0;i<size;i++) data[i] = (alpha*v.data[i]) + w.data[i];
   }
 
 template<class T> void vector_dense<T>::scaled_vector_subtraction(T alpha, const vector_dense<T> &w, const vector_dense<T> &v){
-     try {
-     #ifdef DEBUG
-         if(v.size != w.size){
-             std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         if(size != v.size){
-             resize(v.size, 0.0);
-         } else {
-             set_all(0.0);
-         }
-         for(Integer i=0;i<size;i++) data[i]=(alpha*w.data[i])-v.data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::invert: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+#ifdef DEBUG
+    if(v.size != w.size){
+        std::cerr<<"vector_dense<T>::addition: the addends have incompatible dimensions."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    if(size != v.size){
+        resize(v.size, 0.0);
+    } else {
+        set_all(0.0);
+    }
+    for(Integer i=0;i<size;i++) data[i]=(alpha*w.data[i])-v.data[i];
   }
 
 template<class T> void vector_dense<T>::vector_subtraction(const vector_dense<T> &v, const vector_dense<T> &w){
-     try {
-     #ifdef DEBUG
-         if(v.size != w.size){
-             std::cerr<<"vector_dense<T>::subtraction: the arguments have incompatible dimensions."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         if(size != v.size){
-             resize(v.size, 0.0);
-         } else {
-             set_all(0.0);
-         }
-         for(Integer i=0;i<size;i++) data[i]=v.data[i]-w.data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::subtraction: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+#ifdef DEBUG
+    if(v.size != w.size){
+        std::cerr<<"vector_dense<T>::subtraction: the arguments have incompatible dimensions."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    if(size != v.size){
+        resize(v.size, 0.0);
+    } else {
+        set_all(0.0);
+    }
+    for(Integer i=0;i<size;i++) data[i]=v.data[i]-w.data[i];
   }
 
 
 template<class T> void vector_dense<T>::residual(matrix_usage_type use, const matrix_sparse<T> &A, const vector_dense<T> &x, const vector_dense<T> &b){
-  try {
     if(non_fatal_error(((use==ID) && ((A.columns() != x.dimension()) || (A.rows() != b.dimension())) ), "vector_dense::residual: incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(((use==TRANSPOSE) && ( (A.rows() != x.dimension()) || (A.columns() != b.dimension()) ) ), "vector_dense::residual: incompatible dimensions."  )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     *this=b;
@@ -428,42 +351,25 @@ template<class T> void vector_dense<T>::residual(matrix_usage_type use, const ma
         for(i=0;i<A.read_pointer_size()-1;i++)
             for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
                 data[A.read_index(j)]-=A.read_data(j)*x.data[i];
- }
- catch(iluplusplus_error ippe){
-     std::cerr<<"vector_dense::residual: "<<ippe.error_message()<<std::endl;
-     throw;
- }
 }
 
 
 template<class T> void vector_dense<T>::extract(const matrix_sparse<T> &A, Integer m){
-     try {
-         if(non_fatal_error(m+1>A.pointer_size, "vector_dense<T>::extract: the matrix does not have this column or row.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         resize(A.dim_against_orientation(),0.0);
-         for(Integer i=A.read_pointer(m); i<A.read_pointer(m+1); i++){
-          data[A.read_index(i)] = A.read_data(i);
-         }
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::extract: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+    if(non_fatal_error(m+1>A.pointer_size, "vector_dense<T>::extract: the matrix does not have this column or row.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    resize(A.dim_against_orientation(),0.0);
+    for(Integer i=A.read_pointer(m); i<A.read_pointer(m+1); i++){
+        data[A.read_index(i)] = A.read_data(i);
+    }
 
   }
 
 template<class T> void vector_dense<T>::extract(const vector_dense<T>& x,Integer begin,Integer end) {
-     try  {
-         Integer newsize = end-begin;
-     #ifdef DEBUG
-         if(newsize<0||end>x.dimension()||begin<0){ std::cout<<"vector_dense<T>::extract: extraction range "<<begin<<" to "<<end<<" not possible."<<std::endl; throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);}
-     #endif
-         resize_without_initialization(newsize);
-         for(Integer k=0;k<newsize;k++) set(k) = x.get(k+begin);
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::extract: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+    Integer newsize = end-begin;
+#ifdef DEBUG
+    if(newsize<0||end>x.dimension()||begin<0){ std::cout<<"vector_dense<T>::extract: extraction range "<<begin<<" to "<<end<<" not possible."<<std::endl; throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);}
+#endif
+    resize_without_initialization(newsize);
+    for(Integer k=0;k<newsize;k++) set(k) = x.get(k+begin);
 
 }
 
@@ -486,56 +392,36 @@ template<class T> void vector_dense<T>::extract_from_matrix_update(T d, const ma
 //*************************************************************************************************************************************
 
 template<class T> vector_dense<T> vector_dense<T>::operator * (T k) const {           // Multiplication with a scalar
-     vector_dense<T> y;
-     try {
-         y.resize_without_initialization(size);
-         for(Integer i=0;i<size;i++) y.data[i]=k*data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::operator *: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-         y.resize_without_initialization(0);
-         throw;
-     }
-     return y;
+    vector_dense<T> y;
+    y.resize_without_initialization(size);
+    for(Integer i=0;i<size;i++) y.data[i]=k*data[i];
+    return y;
   }
 
 template<class T> vector_dense<T> vector_dense<T>::operator + (vector_dense const &v) const {
-     vector_dense<T> y;
-     try {
-     #ifdef DEBUG
-         if (size != v.size){
-             std::cerr<<"vector_dense<T>::operator + : Dimension error"<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         y.resize_without_initialization(size);
-         for(Integer i=0;i<size;i++) y.data[i]=data[i]+v.data[i];
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::operator +: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-         y.resize_without_initialization(0);
-         throw;
-     }
-     return y;
+    vector_dense<T> y;
+#ifdef DEBUG
+    if (size != v.size){
+        std::cerr<<"vector_dense<T>::operator + : Dimension error"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    y.resize_without_initialization(size);
+    for(Integer i=0;i<size;i++) y.data[i]=data[i]+v.data[i];
+    return y;
   }
 
 template<class T> vector_dense<T> vector_dense<T>::operator - (vector_dense const &v) const {
-     try {
-         vector_dense<T> y;
-     #ifdef DEBUG
-         if (size != v.size){
-             std::cerr<<"vector_dense<T>::operator - : Dimension error"<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-         y.resize_without_initialization(size);
-         for(Integer i=0;i<size;i++) y.data[i]=data[i]-v.data[i];
-         return y;
-     }
-     catch(iluplusplus_error ippe){
-         std::cerr<<"vector_dense::operator -: "<<ippe.error_message()<<std::endl;
-         throw;
-     }
+    vector_dense<T> y;
+#ifdef DEBUG
+    if (size != v.size){
+        std::cerr<<"vector_dense<T>::operator - : Dimension error"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    y.resize_without_initialization(size);
+    for(Integer i=0;i<size;i++) y.data[i]=data[i]-v.data[i];
+    return y;
   }
 
 template<class T> T vector_dense<T>::operator * (vector_dense const &v) const {   // Scalar-Product
@@ -551,16 +437,10 @@ template<class T> T vector_dense<T>::operator * (vector_dense const &v) const { 
   }
 
 template<class T> vector_dense<T>& vector_dense<T>::operator =(const vector_dense<T>& x){   // Assignment-Operator
-  try {
     if(this == &x) return *this;
-        erase_resize_data_field(x.size);
+    erase_resize_data_field(x.size);
     for(Integer i=0;i<size;i++) data[i]=x.data[i];
     return *this;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"vector_dense::operator =: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-    throw;
-  }
 }
 
 template<class T> void vector_dense<T>::copy_and_destroy(vector_dense<T>& v){
@@ -675,23 +555,11 @@ template<class T> void  vector_dense<T>::append_with_indices(std::string filenam
 
 
 template <class T> void vector_dense<T>::quicksort(index_list& list){
-    try {
-        quicksort(list,0,dimension()-1);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::quicksort: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    quicksort(list,0,dimension()-1);
 }
 
 template <class T> void vector_dense<T>::quicksort(){
-    try {
-        quicksort(0,dimension()-1);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::quicksort: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    quicksort(0,dimension()-1);
 }
 
 template <class T> void vector_dense<T>::quicksort(Integer left, Integer right){
@@ -818,135 +686,114 @@ template <class T> void vector_dense<T>::sort(index_list& list, Integer left, In
 
 
 template<class T> void vector_dense<T>::take_largest_elements_by_abs_value(index_list& list, Integer n) const {
-    try {
-        Integer offset = size-n;
-        Integer i;
-        vector_dense<Real> input_abs;   // will store the absolute values of input
-        index_list complete_list;
-        list.resize_without_initialization(n);
-        complete_list.resize(size);
-        input_abs.absvalue(*this);                   // make vector containing abs. value of input
-        //input_abs.quicksort(complete_list,0,size-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-        input_abs.sort(complete_list,0,size-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-        complete_list.quicksort(offset,size-1);
-        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::take_largest_elements_by_abs_value: "<<ippe.error_message()<<"Returning list of dimension 0"<<std::endl;
-        list.resize(0);
-        throw;
-    }
+    Integer offset = size-n;
+    Integer i;
+    vector_dense<Real> input_abs;   // will store the absolute values of input
+    index_list complete_list;
+    list.resize_without_initialization(n);
+    complete_list.resize(size);
+    input_abs.absvalue(*this);                   // make vector containing abs. value of input
+    //input_abs.quicksort(complete_list,0,size-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+    input_abs.sort(complete_list,0,size-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+    // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+    complete_list.quicksort(offset,size-1);
+    for (i=0;i<n;i++) list[i]=complete_list[offset+i];
   }
 
 template<class T> void vector_dense<T>::take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau) const {
-    try {
-        Real norm = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<size;i++) norm += absvalue_squared(data[i]);
-        norm=sqrt(norm);
-        for(i=0;i<size;i++){
-            if(fabs(data[i]) > norm*tau){
-                input_abs.data[number_elements_larger_tau]=fabs(data[i]);
-                complete_list[number_elements_larger_tau]=i;
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+    Real norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<size;i++) norm += absvalue_squared(data[i]);
+    norm=sqrt(norm);
+    for(i=0;i<size;i++){
+        if(fabs(data[i]) > norm*tau){
+            input_abs.data[number_elements_larger_tau]=fabs(data[i]);
+            complete_list[number_elements_larger_tau]=i;
+            number_elements_larger_tau++;
         }
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning list of dimension 0"<<std::endl;
-        list.resize(0);
-        throw;
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
   }
 
 
 template<class T> void vector_dense<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm_input, index_list& list, const index_list& perm, Integer n, Real tau, Integer from, Integer to) const {
-   // list will contain at most n elements of *this having relative absolute value (in 2-norm) of at least tau.
-   // Only those elements indexed by "from" to "to", including "from", excluding "to" are accessed using "perm".
-   // indices in list refer to "perm"; the index of the largest element will always be at the end.
-    try {
-        norm_input = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        Integer pos_larg_element=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-            if(from>to || size==0){
-                std::cerr<<"vector_dense<T>::take_largest_elements_by_abs_value_with_threshold: arguments out of range. Returning empty list."<<std::endl;
-                list.resize_without_initialization(0);
-                return;
-            }
-        #endif
-        if(n==0){
-            list.resize_without_initialization(0);
-            return;
-        }
-        for(i=from;i<to;i++) norm_input += absvalue_squared(data[perm.get(i)]);
-        norm_input=sqrt(norm_input);
-        for(i=from;i<to;i++){
-            if(fabs(data[perm.get(i)]) > norm_input*tau){
-                input_abs.data[number_elements_larger_tau]=fabs(data[perm.get(i)]);
-                complete_list[number_elements_larger_tau]=i; // do not need perm.get(i)
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau==0){
-            list.resize(0);
-            return;
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            pos_larg_element=offset;
-            for(i=offset+1;i<number_elements_larger_tau;i++)
-                if(input_abs.data[i]>input_abs.data[pos_larg_element])
-                    pos_larg_element=i;
-            complete_list.switch_index(pos_larg_element,number_elements_larger_tau-1);
-            //complete_list.quicksort(offset,number_elements_larger_tau-2);  //  not really necessary for most applications, keep largest element at end
-            list.resize_without_initialization(n);
-            for (i=0;i<list.dimension();i++) list[i]=complete_list[offset+i];
-            // pos_larg_element=n-1;
-        } else {
-            pos_larg_element=0;
-            if(number_elements_larger_tau>0)
-                for(i=1;i<number_elements_larger_tau;i++)
-                    if(input_abs[i]>input_abs[pos_larg_element])
-                        pos_larg_element=i;
-            complete_list.switch_index(pos_larg_element,list.dimension()-1);
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-        }  // end if
+    // list will contain at most n elements of *this having relative absolute value (in 2-norm) of at least tau.
+    // Only those elements indexed by "from" to "to", including "from", excluding "to" are accessed using "perm".
+    // indices in list refer to "perm"; the index of the largest element will always be at the end.
+    norm_input = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer pos_larg_element=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(from>to || size==0){
+        std::cerr<<"vector_dense<T>::take_largest_elements_by_abs_value_with_threshold: arguments out of range. Returning empty list."<<std::endl;
+        list.resize_without_initialization(0);
+        return;
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning list of dimension 0"<<std::endl;
+#endif
+    if(n==0){
+        list.resize_without_initialization(0);
+        return;
+    }
+    for(i=from;i<to;i++) norm_input += absvalue_squared(data[perm.get(i)]);
+    norm_input=sqrt(norm_input);
+    for(i=from;i<to;i++){
+        if(fabs(data[perm.get(i)]) > norm_input*tau){
+            input_abs.data[number_elements_larger_tau]=fabs(data[perm.get(i)]);
+            complete_list[number_elements_larger_tau]=i; // do not need perm.get(i)
+            number_elements_larger_tau++;
+        }
+    }
+    if(number_elements_larger_tau==0){
         list.resize(0);
-        throw;
+        return;
     }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        pos_larg_element=offset;
+        for(i=offset+1;i<number_elements_larger_tau;i++)
+            if(input_abs.data[i]>input_abs.data[pos_larg_element])
+                pos_larg_element=i;
+        complete_list.switch_index(pos_larg_element,number_elements_larger_tau-1);
+        //complete_list.quicksort(offset,number_elements_larger_tau-2);  //  not really necessary for most applications, keep largest element at end
+        list.resize_without_initialization(n);
+        for (i=0;i<list.dimension();i++) list[i]=complete_list[offset+i];
+        // pos_larg_element=n-1;
+    } else {
+        pos_larg_element=0;
+        if(number_elements_larger_tau>0)
+            for(i=1;i<number_elements_larger_tau;i++)
+                if(input_abs[i]>input_abs[pos_larg_element])
+                    pos_larg_element=i;
+        complete_list.switch_index(pos_larg_element,list.dimension()-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+    }  // end if
   }
 
 template<class T> void vector_dense<T>::insert_at_end(const vector_dense<T>& v){
@@ -959,19 +806,12 @@ template<class T> void vector_dense<T>::insert_at_end(const vector_dense<T>& v){
 }
 
 template<class T> void vector_dense<T>::insert(const vector_dense<T>& b, Integer position, T value){
-    try {
-        if(non_fatal_error(position<0 || position > b.dimension(),"vector_dense<T>::insert: trying to insert at a position that is not possible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        erase_resize_data_field(b.dimension()+1);
-        Integer i;
-        for(i=0;i<position;i++) set(i) = b.get(i);
-        set(position) = value;
-        for(i=position;i<b.dimension();i++) set(i+1) = b.get(i);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::insert: "<<ippe.error_message()<<" Returning emtpy vector."<<std::endl;
-        erase_resize_data_field(0);
-        throw;
-    }
+    if(non_fatal_error(position<0 || position > b.dimension(),"vector_dense<T>::insert: trying to insert at a position that is not possible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    erase_resize_data_field(b.dimension()+1);
+    Integer i;
+    for(i=0;i<position;i++) set(i) = b.get(i);
+    set(position) = value;
+    for(i=position;i<b.dimension();i++) set(i+1) = b.get(i);
 }
 
 
@@ -986,254 +826,208 @@ template<class T> void vector_dense<T>::permute(const vector_dense<T>& x, const 
 
 template<class T> void vector_dense<T>::permute(const index_list& perm){
     vector_dense<T> H;
-    try {
-        #ifdef DEBUG
-            if(non_fatal_error((size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        H.permute(*this,perm);
-        interchange(H);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::permute: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+#ifdef DEBUG
+    if(non_fatal_error((size!= perm.dimension()), "vector_dense::permute: permutation and vector must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    H.permute(*this,perm);
+    interchange(H);
 }
 
 template<class T> void vector_dense<T>::permute_at_end(const vector_dense<T>& x, const index_list& perm){
     Integer k;
     Integer offset = x.size - perm.dimension();
-    try {
-        #ifdef DEBUG
-            if(non_fatal_error((x.size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        erase_resize_data_field(x.size);
-        for(k=0;k<offset;k++) set(k) = x.get(k); 
-        for(k=0;k<perm.dimension();k++) set(k+offset) = x.get(perm.get(k)+offset);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::permute_at_end: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+#ifdef DEBUG
+    if(non_fatal_error((x.size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    erase_resize_data_field(x.size);
+    for(k=0;k<offset;k++) set(k) = x.get(k); 
+    for(k=0;k<perm.dimension();k++) set(k+offset) = x.get(perm.get(k)+offset);
 
 }
 
 template<class T> void vector_dense<T>::permute_at_end(const index_list& perm){
     vector_dense<T> H;
-    try {
-        #ifdef DEBUG
-            if(non_fatal_error((size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        H.permute_at_end(*this,perm);
-        interchange(H);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense<T>::permute_at_end: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+#ifdef DEBUG
+    if(non_fatal_error((size < perm.dimension()), "vector_dense::permute_at_end: dimension of permutation is too large.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    H.permute_at_end(*this,perm);
+    interchange(H);
 }
 
 
 template<class T> void vector_dense<T>::take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm_input,index_list& list, const index_list& perm, const vector_dense<Real>& weights, Integer n, Real tau, Integer from, Integer to) const {
-   // list will contain at most n elements of *this having relative absolute value (in 2-norm) of at least tau.
-   // Only those elements indexed by "from" to "to", including "from", excluding "to" are accessed using "perm".
-   // indices in list refer to "perm"; the index of the largest element will always be at the end.
-    try {
-       norm_input = 0.0;
-       Real product = 0.0;
-       Integer offset=0;
-       Integer i;
-       Integer number_elements_larger_tau=0;
-       Integer pos_larg_element=0;
-       Real value_larg_element,value;
-       index_list complete_list;
-       vector_dense<Real> input_abs;
-       if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-       if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-       #ifdef DEBUG
-           if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-           if(from>to || size==0){
-               std::cerr<<"vector_dense::take_largest_elements_by_abs_value_with_threshold: arguments out of range: returning empty list"<<std::endl;
-               list.resize_without_initialization(0);
-               return;
-       }
-       #endif
-       if(n==0){
-           list.resize_without_initialization(0);
-           return;
-       }
-       for(i=from;i<to;i++) norm_input += absvalue_squared(weights.read(i)*data[perm.get(i)]);
-       norm_input=sqrt(norm_input);
-       for(i=from;i<to;i++){
-           product = weights.read(i)*fabs(data[perm.get(i)]);
-           if(product > norm_input*tau){
-               input_abs.data[number_elements_larger_tau]=product;
-               complete_list[number_elements_larger_tau]=i; // do not need perm.get(i)
-               number_elements_larger_tau++;
-        }
-       }
-       if(number_elements_larger_tau==0){
-           list.resize(0);
-           return;
-       }
-       if(number_elements_larger_tau > n){
-           offset=number_elements_larger_tau-n;
-           //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-           input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-           //pos_larg_element=complete_list[number_elements_larger_tau-1];
-           //complete_list.quicksort(offset,number_elements_larger_tau-2);  //  not really necessary for most applications, keep largest element at end
-           list.resize_without_initialization(n);
-           for (i=0;i<list.dimension();i++) list[i]=complete_list[offset+i];
-        // pos_larg_element=n-1;
-       } else {
-           list.resize_without_initialization(number_elements_larger_tau);
-           for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-       }  // end if
-       if(list.dimension()>0){
-           pos_larg_element=0;
-           value_larg_element=fabs(data[perm.get(0)]);
-           for(i=1;i<list.dimension();i++){
-               value=fabs(data[perm.get(i)]);
-               if(value>value_larg_element){
-                   pos_larg_element=i;
-                   value_larg_element=value;
-               } // end if
-           } // end for
-           list.switch_index(pos_larg_element,list.dimension()-1);
-        } // end if
-    } // end try
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::take_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
+    // list will contain at most n elements of *this having relative absolute value (in 2-norm) of at least tau.
+    // Only those elements indexed by "from" to "to", including "from", excluding "to" are accessed using "perm".
+    // indices in list refer to "perm"; the index of the largest element will always be at the end.
+    norm_input = 0.0;
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer pos_larg_element=0;
+    Real value_larg_element,value;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(from>to || size==0){
+        std::cerr<<"vector_dense::take_largest_elements_by_abs_value_with_threshold: arguments out of range: returning empty list"<<std::endl;
         list.resize_without_initialization(0);
-        throw;
+        return;
     }
+#endif
+    if(n==0){
+        list.resize_without_initialization(0);
+        return;
+    }
+    for(i=from;i<to;i++) norm_input += absvalue_squared(weights.read(i)*data[perm.get(i)]);
+    norm_input=sqrt(norm_input);
+    for(i=from;i<to;i++){
+        product = weights.read(i)*fabs(data[perm.get(i)]);
+        if(product > norm_input*tau){
+            input_abs.data[number_elements_larger_tau]=product;
+            complete_list[number_elements_larger_tau]=i; // do not need perm.get(i)
+            number_elements_larger_tau++;
+        }
+    }
+    if(number_elements_larger_tau==0){
+        list.resize(0);
+        return;
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        //pos_larg_element=complete_list[number_elements_larger_tau-1];
+        //complete_list.quicksort(offset,number_elements_larger_tau-2);  //  not really necessary for most applications, keep largest element at end
+        list.resize_without_initialization(n);
+        for (i=0;i<list.dimension();i++) list[i]=complete_list[offset+i];
+        // pos_larg_element=n-1;
+    } else {
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+    }  // end if
+    if(list.dimension()>0){
+        pos_larg_element=0;
+        value_larg_element=fabs(data[perm.get(0)]);
+        for(i=1;i<list.dimension();i++){
+            value=fabs(data[perm.get(i)]);
+            if(value>value_larg_element){
+                pos_larg_element=i;
+                value_larg_element=value;
+            } // end if
+        } // end for
+        list.switch_index(pos_larg_element,list.dimension()-1);
+    } // end if
   }
 
 
 template<class T> void vector_dense<T>::take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        Real norm = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        for(i=from;i<to;i++) norm += absvalue_squared(data[i]);
-        norm=sqrt(norm);
-        for(i=from;i<to;i++){
-            if(fabs(data[i]) > norm*tau){
-                input_abs.data[number_elements_larger_tau]=fabs(data[i]);
-                complete_list[number_elements_larger_tau]=i;
-                number_elements_larger_tau++;
-            }
+    Real norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(i=from;i<to;i++) norm += absvalue_squared(data[i]);
+    norm=sqrt(norm);
+    for(i=from;i<to;i++){
+        if(fabs(data[i]) > norm*tau){
+            input_abs.data[number_elements_larger_tau]=fabs(data[i]);
+            complete_list[number_elements_larger_tau]=i;
+            number_elements_larger_tau++;
         }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-        }
-    } // end try
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::take_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
   }
 
 template<class T> void vector_dense<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm,index_list& list, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        norm = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        for(i=from;i<to;i++) norm += absvalue_squared(data[i]);
-        norm=sqrt(norm);
-        for(i=from;i<to;i++){
-            if(fabs(data[i]) > norm*tau){
-                input_abs.data[number_elements_larger_tau]=fabs(data[i]);
-                complete_list[number_elements_larger_tau]=i;
-                number_elements_larger_tau++;
-            }
+    norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(i=from;i<to;i++) norm += absvalue_squared(data[i]);
+    norm=sqrt(norm);
+    for(i=from;i<to;i++){
+        if(fabs(data[i]) > norm*tau){
+            input_abs.data[number_elements_larger_tau]=fabs(data[i]);
+            complete_list[number_elements_larger_tau]=i;
+            number_elements_larger_tau++;
         }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-        }
-    } // end try
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::take_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
   }
 
 template<class T> void vector_dense<T>::take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm,index_list& list, const vector_dense<T>& weight, Integer n, Real tau, Integer from, Integer to) const {
-  try {
-        T product;
-        norm = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        for(i=from;i<to;i++) norm += absvalue_squared(weight.read(i)*data[i]);
-        norm=sqrt(norm);
-        for(i=from;i<to;i++){
-            product=fabs(weight.read(i)*data[i]);
-            if(product > norm*tau){
-                input_abs.data[number_elements_larger_tau]=product;
-                complete_list[number_elements_larger_tau]=i;
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+    T product;
+    norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(i=from;i<to;i++) norm += absvalue_squared(weight.read(i)*data[i]);
+    norm=sqrt(norm);
+    for(i=from;i<to;i++){
+        product=fabs(weight.read(i)*data[i]);
+        if(product > norm*tau){
+            input_abs.data[number_elements_larger_tau]=product;
+            complete_list[number_elements_larger_tau]=i;
+            number_elements_larger_tau++;
         }
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::take_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        //input_abs.quicksort(complete_list,0,number_elements_larger_tau-1);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
     }
   }
 
@@ -1254,49 +1048,25 @@ template<class T> void vector_dense<T>::absvalue(){             // overwrites th
   }
 
 template<class T> void vector_dense<T>::absvalue(const vector_dense<T>& v){   // (*this) contains the absolute values of v elementwise.
-    try {
-        erase_resize_data_field(v.size);
-        for(Integer i=0;i<size;i++) data[i]=fabs(v.data[i]);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::absvalue: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(v.size);
+    for(Integer i=0;i<size;i++) data[i]=fabs(v.data[i]);
 }
 
 
 template<class T> void  vector_dense<T>::absvalue(const vector_dense<T>& v, Integer begin, Integer n){
-    try {
-        if(non_fatal_error((begin+n>v.size),"vector_dense::absvalue: dimensions are  are incompatible")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        erase_resize_data_field(n);
-        for(Integer i=0;i<n;i++) data[i]=fabs(v.data[i+begin]);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::absvalue: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    if(non_fatal_error((begin+n>v.size),"vector_dense::absvalue: dimensions are  are incompatible")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    erase_resize_data_field(n);
+    for(Integer i=0;i<n;i++) data[i]=fabs(v.data[i+begin]);
   }
 
 template<class T> void vector_dense<T>::value(const T* values, Integer begin, Integer n){   // (*this) contains n elements of the field data from begin.
-    try {
-        erase_resize_data_field(n);
-        for(Integer i=begin;i<begin+n;i++) data[i]=values[i];
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::value: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(n);
+    for(Integer i=begin;i<begin+n;i++) data[i]=values[i];
   }
 
 template<class T> void vector_dense<T>::absvalue(const T* values, Integer begin, Integer n){   // (*this) contains n absolute values of the field data from begin.
-    try {
-        erase_resize_data_field(n);
-        for(Integer i=begin;i<begin+n;i++) data[i]=fabs(values[i]);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::absvalue: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(n);
+    for(Integer i=begin;i<begin+n;i++) data[i]=fabs(values[i]);
   }
 
 template<class T> void vector_dense<T>::insert_value(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector){   // (*this) contains n absolute values of the matrix from begin.
@@ -1438,79 +1208,55 @@ template<class T> T vector_dense<T>::min_over_elements_ignore_negative(Integer& 
 
 
 template<class T> void vector_dense<T>::min_rows(const matrix_dense<T>& A){
-  try {
-      if(A.columns() == 0 || A.rows() == 0){
-          std::cerr<<"matrix_dense<T>::min_rows: matrix must have positive dimension"<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      }
-      resize(A.rows());
-      Integer i,j;
-      for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
-      for(i=0;i<A.rows();i++)
-          for(j=0;j<A.columns();j++)
-              if(A.read(i,j) < get(i)) set(i) = A.read(i,j);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::min_rows: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(A.columns() == 0 || A.rows() == 0){
+        std::cerr<<"matrix_dense<T>::min_rows: matrix must have positive dimension"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    resize(A.rows());
+    Integer i,j;
+    for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
+    for(i=0;i<A.rows();i++)
+        for(j=0;j<A.columns();j++)
+            if(A.read(i,j) < get(i)) set(i) = A.read(i,j);
 }
 
 template<class T> void vector_dense<T>::max_rows(const matrix_dense<T>& A){
-  try {
-      if(A.columns() == 0 || A.rows() == 0){
-          std::cerr<<"matrix_dense<T>::max_rows: matrix must have positive dimension"<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      }
-      resize(A.rows());
-      Integer i,j;
-      for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
-      for(i=0;i<A.rows();i++)
-          for(j=0;j<A.columns();j++)
-              if(A.read(i,j) > get(i)) set(i) = A.read(i,j);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::max_rows: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(A.columns() == 0 || A.rows() == 0){
+        std::cerr<<"matrix_dense<T>::max_rows: matrix must have positive dimension"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    resize(A.rows());
+    Integer i,j;
+    for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
+    for(i=0;i<A.rows();i++)
+        for(j=0;j<A.columns();j++)
+            if(A.read(i,j) > get(i)) set(i) = A.read(i,j);
 }
 
 template<class T> void vector_dense<T>::min_columns(const matrix_dense<T>& A){
-  try {
-      if(A.columns() == 0 || A.rows() == 0){
-          std::cerr<<"matrix_dense<T>::min_columns: matrix must have positive dimension"<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      }
-      resize(A.columns());
-      Integer i,j;
-      for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
-      for(j=0;j<A.columns();j++)
-          for(i=0;i<A.rows();i++)
-              if(A.read(i,j) < get(j)) set(j) = A.read(i,j);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::min_columns: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(A.columns() == 0 || A.rows() == 0){
+        std::cerr<<"matrix_dense<T>::min_columns: matrix must have positive dimension"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    resize(A.columns());
+    Integer i,j;
+    for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
+    for(j=0;j<A.columns();j++)
+        for(i=0;i<A.rows();i++)
+            if(A.read(i,j) < get(j)) set(j) = A.read(i,j);
 }
 
 template<class T> void vector_dense<T>::max_columns(const matrix_dense<T>& A){
-  try {
-      if(A.columns() == 0 || A.rows() == 0){
-          std::cerr<<"matrix_dense<T>::max_columns: matrix must have positive dimension"<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      }
-      resize(A.columns());
-      Integer i,j;
-      for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
-      for(j=0;j<A.columns();j++)
-          for(i=0;i<A.rows();i++)
-              if(A.read(i,j) > get(j)) set(j) = A.read(i,j);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::max_columns: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(A.columns() == 0 || A.rows() == 0){
+        std::cerr<<"matrix_dense<T>::max_columns: matrix must have positive dimension"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    resize(A.columns());
+    Integer i,j;
+    for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
+    for(j=0;j<A.columns();j++)
+        for(i=0;i<A.rows();i++)
+            if(A.read(i,j) > get(j)) set(j) = A.read(i,j);
 }
 
 
@@ -1526,27 +1272,15 @@ template<class T> bool vector_dense<T>::zero_check(Integer k){
   }
 
 template<class T> void vector_dense<T>::shortest_vector_point_line(const vector_dense<T>& r, const vector_dense<T>& p, const vector_dense<T>& t){
-    try {
-        *this = p - r;
-        T factor = ((*this)*t) / (t*t);
-        add_scaled(-factor,t);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::shortest_vector_point_line: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    *this = p - r;
+    T factor = ((*this)*t) / (t*t);
+    add_scaled(-factor,t);
 }
 
 template<class T> Real vector_dense<T>::distance_point_to_line(const vector_dense<T>& p, const vector_dense<T>& t) const {
-    try {
-        vector_dense<T> shortest_vector;
-        shortest_vector.shortest_vector_point_line(*this,p,t);
-        return shortest_vector.norm2();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::distance_point_to_line: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    vector_dense<T> shortest_vector;
+    shortest_vector.shortest_vector_point_line(*this,p,t);
+    return shortest_vector.norm2();
 }
 
 
@@ -1657,94 +1391,55 @@ template<class T> void vector_dense<T>::set_natural_numbers(){
   }
 
 template<class T> void vector_dense<T>::resize(Integer newsize){
-     try {
-         erase_resize_data_field(newsize);
-         set_all((T) 0.0);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::resize: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(newsize);
+    set_all((T) 0.0);
   }
 
 template<class T> void vector_dense<T>::resize(Integer newsize, T d){
-     try {
-         erase_resize_data_field(newsize);
-         set_all(d);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::resize: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(newsize);
+    set_all(d);
   }
 
 template<class T> void vector_dense<T>::resize_set_natural_numbers(Integer newsize){
-     try {
-         erase_resize_data_field(newsize);
-         set_natural_numbers();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::resize_set_natural_numbers: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(newsize);
+    set_natural_numbers();
   }
 
 template<class T> void vector_dense<T>::resize_without_initialization(Integer newsize){
-    try {
-        erase_resize_data_field(newsize);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::resize_without_initialization: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    erase_resize_data_field(newsize);
   }
 
 
 template<class T> void vector_dense<T>::norm2_of_dim1(const matrix_sparse<T>& A, orientation_type o) {
-    try {
-        Integer vector_size,i;
-        Integer j;
-        if (o==ROW) vector_size = A.rows();
-        else vector_size = A.columns();
-        resize(vector_size,0.0);
-        if(o==A.orient())
-            for(i=0;i<A.read_pointer_size()-1;i++)
-                for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
-                    data[i]+=absvalue_squared(A.read_data(j));
-        else
-            for(j=0;j<A.read_pointer(A.read_pointer_size()-1);j++)
-              data[A.read_index(j)]+=absvalue_squared(A.read_data(j));
-        for(i=0;i<vector_size;i++) data[i]=sqrt(data[i]);
-    }
-    catch(iluplusplus_error ippe){
-        // strange effect for gcc 4.0.2 and -O3 optimization: make a comment out of the following output and get different numerical results!!!!
-        std::cerr<<"vector_dense::norm2_of_dim1: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-        resize_without_initialization(0);
-        throw;
-    }
+    Integer vector_size,i;
+    Integer j;
+    if (o==ROW) vector_size = A.rows();
+    else vector_size = A.columns();
+    resize(vector_size,0.0);
+    if(o==A.orient())
+        for(i=0;i<A.read_pointer_size()-1;i++)
+            for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
+                data[i]+=absvalue_squared(A.read_data(j));
+    else
+        for(j=0;j<A.read_pointer(A.read_pointer_size()-1);j++)
+            data[A.read_index(j)]+=absvalue_squared(A.read_data(j));
+    for(i=0;i<vector_size;i++) data[i]=sqrt(data[i]);
   }
 
 
 template<class T> void vector_dense<T>::norm1_of_dim1(const matrix_sparse<T>& A, orientation_type o) {
-    try {
-        Integer vector_size,i;
-        Integer j;
-        if (o==ROW) vector_size = A.rows();
-        else vector_size = A.columns();
-        resize(vector_size,0.0);
-        if(o==A.orientation)
-            for(i=0;i<A.read_pointer_size()-1;i++)
-                for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
-                    data[i]+=fabs(A.read_data(j));
-        else
-            for(j=0;j<A.read_pointer(A.read_pointer_size()-1);j++)
-              data[A.read_index(j)]+=fabs(A.read_data(j));
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_dense::norm1_of_dim1: "<<ippe.error_message()<<"Returning vector of dimension 0."<<std::endl;
-        resize_without_initialization(0);
-        throw;
-    }
+    Integer vector_size,i;
+    Integer j;
+    if (o==ROW) vector_size = A.rows();
+    else vector_size = A.columns();
+    resize(vector_size,0.0);
+    if(o==A.orientation)
+        for(i=0;i<A.read_pointer_size()-1;i++)
+            for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
+                data[i]+=fabs(A.read_data(j));
+    else
+        for(j=0;j<A.read_pointer(A.read_pointer_size()-1);j++)
+            data[A.read_index(j)]+=fabs(A.read_data(j));
   }
 
 
@@ -2088,48 +1783,40 @@ template<class T> T vector_sparse_dynamic<T>::scalar_product_pos_factors(const v
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const {
-  try {
     norm = 0.0;
     Integer offset=0;
     Integer i;
     Integer number_elements_larger_tau=0;
     index_list complete_list;
     vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<nnz;i++){
-            norm += absvalue_squared(data[i]);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<nnz;i++){
+        norm += absvalue_squared(data[i]);
+    }
+    norm=sqrt(norm);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i]) > norm*tau){
+            input_abs[number_elements_larger_tau] = std::abs(data[i]);
+            complete_list[number_elements_larger_tau]=pointer[i];
+            number_elements_larger_tau++;
         }
-        norm=sqrt(norm);
-        for(i=0;i<nnz;i++){
-            if(std::abs(data[i]) > norm*tau){
-                input_abs[number_elements_larger_tau] = std::abs(data[i]);
-                complete_list[number_elements_larger_tau]=pointer[i];
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            complete_list.quicksort(0,number_elements_larger_tau-1);
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-        }
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        complete_list.quicksort(0,number_elements_larger_tau-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+    }
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_largest_last(Real& norm, index_list& list, Integer n, Real tau) const {
-  try {
     norm = 0.0;
     Integer offset=0;
     Integer i;
@@ -2138,14 +1825,61 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Real val_larg_el;
     index_list complete_list;
     vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<nnz;i++){
-            norm += absvalue_squared(data[i]);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<nnz;i++){
+        norm += absvalue_squared(data[i]);
+    }
+    norm=sqrt(norm);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i]) > norm*tau){
+            input_abs[number_elements_larger_tau]=std::abs(data[i]);
+            complete_list[number_elements_larger_tau]=pointer[i];
+            number_elements_larger_tau++;
         }
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+        //complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        //complete_list.quicksort(0,number_elements_larger_tau-1);
+        pos_larg_el=0;
+        val_larg_el=0.0;
+        for(i=0;i<number_elements_larger_tau;i++){
+            if(input_abs.read(i)>val_larg_el){
+                pos_larg_el=i;
+                val_larg_el=input_abs.read(i);
+            }
+        }
+        if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+    }
+}
+
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
+    norm = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer pos_larg_el;
+    Real val_larg_el=0.0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
+        norm += absvalue_squared(data[i]);
+    }
+    if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(std::abs(data[i]) > norm*tau){
+            if(std::abs(data[i])> norm*tau){
                 input_abs[number_elements_larger_tau]=std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
@@ -2159,7 +1893,6 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             list.resize_without_initialization(n);
             for (i=0;i<n;i++) list[i]=complete_list[offset+i];
         } else {
-            //complete_list.quicksort(0,number_elements_larger_tau-1);
             pos_larg_el=0;
             val_larg_el=0.0;
             for(i=0;i<number_elements_larger_tau;i++){
@@ -2172,97 +1905,37 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             list.resize_without_initialization(number_elements_larger_tau);
             for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
         }
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_largest_last: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
-}
-
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
-  try {
-    norm = 0.0;
-    Integer offset=0;
-    Integer i;
-    Integer number_elements_larger_tau=0;
-    Integer pos_larg_el;
-    Real val_larg_el=0.0;
-    index_list complete_list;
-    vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<nnz;i++){
-            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
-            norm += absvalue_squared(data[i]);
+    } else {    // don't pivot
+        if(read(pivot_position)==0){
+            list.resize_without_initialization(0);
+            return;
         }
-        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
-            norm=sqrt(norm);
-            for(i=0;i<nnz;i++){
-                if(std::abs(data[i])> norm*tau){
-                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
+        norm=sqrt(norm);
+        for(i=0;i<nnz;i++){
+            if(std::abs(data[i])> norm*tau && pointer[i] != pivot_position){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
             }
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                //complete_list.quicksort(offset,number_elements_larger_tau-1);
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-            } else {
-                pos_larg_el=0;
-                val_larg_el=0.0;
-                for(i=0;i<number_elements_larger_tau;i++){
-                    if(input_abs.read(i)>val_larg_el){
-                        pos_larg_el=i;
-                        val_larg_el=input_abs.read(i);
-                    }
-                }
-                if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-            }
-        } else {    // don't pivot
-            if(read(pivot_position)==0){
-                list.resize_without_initialization(0);
-                return;
-            }
-            norm=sqrt(norm);
-            for(i=0;i<nnz;i++){
-                if(std::abs(data[i])> norm*tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
-            }
-            if(number_elements_larger_tau > n-1){
-                offset=number_elements_larger_tau-n+1;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                list.resize_without_initialization(n);
-                for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
-                list[n-1]=pivot_position;
-            } else {
-                //complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau+1);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-                list[number_elements_larger_tau]=pivot_position;
-            }
-        }  // end if "to pivot or not to pivot"
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
+        }
+        if(number_elements_larger_tau > n-1){
+            offset=number_elements_larger_tau-n+1;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            list.resize_without_initialization(n);
+            for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
+            list[n-1]=pivot_position;
+        } else {
+            //complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau+1);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            list[number_elements_larger_tau]=pivot_position;
+        }
+    }  // end if "to pivot or not to pivot"
 }
 
 
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position) const {
-  try {
     norm = 0.0;
     Integer offset=0;
     Integer i;
@@ -2271,52 +1944,45 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Real val_larg_el=0.0;
     index_list complete_list;
     vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<nnz;i++){
-            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
-            norm += absvalue_squared(data[i]);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
+        norm += absvalue_squared(data[i]);
+    }
+    norm=sqrt(norm);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i])> norm*tau){
+            input_abs[number_elements_larger_tau]=std::abs(data[i]);
+            complete_list[number_elements_larger_tau]=pointer[i];
+            number_elements_larger_tau++;
         }
-        norm=sqrt(norm);
-        for(i=0;i<nnz;i++){
-            if(std::abs(data[i])> norm*tau){
-                input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                complete_list[number_elements_larger_tau]=pointer[i];
-                number_elements_larger_tau++;
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+        //complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        //complete_list.quicksort(0,number_elements_larger_tau-1);
+        pos_larg_el=0;
+        val_larg_el=0.0;
+        for(i=0;i<number_elements_larger_tau;i++){
+            if(input_abs.read(i)>val_larg_el){
+                pos_larg_el=i;
+                val_larg_el=input_abs.read(i);
             }
-         }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                //complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-                //complete_list.quicksort(0,number_elements_larger_tau-1);
-            pos_larg_el=0;
-            val_larg_el=0.0;
-            for(i=0;i<number_elements_larger_tau;i++){
-                if(input_abs.read(i)>val_larg_el){
-                    pos_larg_el=i;
-                    val_larg_el=input_abs.read(i);
-                }
-            }
-            if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
         }
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
+        if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+    }
 }
 
 
 template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, const vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
-  try {
     norm = 0.0;
     Integer offset=0;
     Integer i;
@@ -2326,74 +1992,68 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     Real product;
     index_list complete_list;
     vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
+        norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+    }
+    if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
+        norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
-            norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+            product=std::abs(data[i])*weights.read(pointer[i]);
+            if(product> norm*tau){
+                input_abs[number_elements_larger_tau]=product;
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
+            }
         }
-        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
-            norm=sqrt(norm);
-            for(i=0;i<nnz;i++){
-                product=std::abs(data[i])*weights.read(pointer[i]);
-                if(product> norm*tau){
-                    input_abs[number_elements_larger_tau]=product;
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        } else {
+            pos_larg_el=0;
+            val_larg_el=0.0;
+            for(i=0;i<number_elements_larger_tau;i++){
+                if(input_abs.read(i)>val_larg_el){
+                    pos_larg_el=i;
+                    val_larg_el=input_abs.read(i);
                 }
             }
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-            } else {
-                pos_larg_el=0;
-                val_larg_el=0.0;
-                for(i=0;i<number_elements_larger_tau;i++){
-                    if(input_abs.read(i)>val_larg_el){
-                        pos_larg_el=i;
-                        val_larg_el=input_abs.read(i);
-                    }
-                }
-                if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        }
+    } else {    // don't pivot
+        if(read(pivot_position)==0){
+            list.resize_without_initialization(0);
+            return;
+        }
+        norm=sqrt(norm);
+        for(i=0;i<nnz;i++){
+            if(std::abs(data[i])*weights.read(pointer[i])> norm*tau && pointer[i] != pivot_position){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
             }
-        } else {    // don't pivot
-            if(read(pivot_position)==0){
-                list.resize_without_initialization(0);
-                return;
-            }
-            norm=sqrt(norm);
-            for(i=0;i<nnz;i++){
-                if(std::abs(data[i])*weights.read(pointer[i])> norm*tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
-            }
-            if(number_elements_larger_tau > n-1){
-                offset=number_elements_larger_tau-n+1;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                list.resize_without_initialization(n);
-                for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
-                list[n-1]=pivot_position;
-            } else {
-                //complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau+1);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-                list[number_elements_larger_tau]=pivot_position;
-            }
-        }  // end if "to pivot or not to pivot"
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold_pivot_last: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
+        }
+        if(number_elements_larger_tau > n-1){
+            offset=number_elements_larger_tau-n+1;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+            list.resize_without_initialization(n);
+            for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
+            list[n-1]=pivot_position;
+        } else {
+            //complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau+1);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            list[number_elements_larger_tau]=pivot_position;
+        }
+    }  // end if "to pivot or not to pivot"
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const
@@ -2534,352 +2194,46 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
 
 
 template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, const vector_dense<Real>& weights, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        norm = 0.0;
-        Real product = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        for(i=0;i<nnz;i++){
-            if(from<=pointer[i] && pointer[i]<to)
-                norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+    norm = 0.0;
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    for(i=0;i<nnz;i++){
+        if(from<=pointer[i] && pointer[i]<to)
+            norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+    }
+    norm=sqrt(norm);
+    for(i=0;i<nnz;i++){
+        product = weights.read(pointer[i])* std::abs(data[i]);
+        if(from<=pointer[i] && pointer[i]<to && product > norm*tau){
+            input_abs[number_elements_larger_tau]=product;
+            complete_list[number_elements_larger_tau]=pointer[i];
+            number_elements_larger_tau++;
         }
-        norm=sqrt(norm);
-        for(i=0;i<nnz;i++){
-            product = weights.read(pointer[i])* std::abs(data[i]);
-            if(from<=pointer[i] && pointer[i]<to && product > norm*tau){
-                input_abs[number_elements_larger_tau]=product;
-                complete_list[number_elements_larger_tau]=pointer[i];
-                number_elements_larger_tau++;
-            }
-        }
-        if(number_elements_larger_tau > n){
-            offset=number_elements_larger_tau-n;
-            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-            complete_list.quicksort(offset,number_elements_larger_tau-1);
-            list.resize_without_initialization(n);
-            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-        } else {
-            complete_list.quicksort(0,number_elements_larger_tau-1);
-            list.resize_without_initialization(number_elements_larger_tau);
-            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-        }
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
+    }
+    if(number_elements_larger_tau > n){
+        offset=number_elements_larger_tau-n;
+        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        list.resize_without_initialization(n);
+        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+    } else {
+        complete_list.quicksort(0,number_elements_larger_tau-1);
+        list.resize_without_initialization(number_elements_larger_tau);
+        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
     }
   }
 
 template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        Real product = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        Real sum = 0.0;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        if(IP.get_SUM_DROPPING()){
-            for(i=0;i<nnz;i++){
-                 product = weight * std::abs(data[i]);
-                 input_abs[i]=product;
-                 complete_list[i]=pointer[i];
-            }
-            input_abs.quicksort(complete_list,0,nnz-1);
-            for(i=0;i<nnz;i++){
-                sum += input_abs.read(i);
-                if (sum > tau){
-                    offset = i;
-                    break;
-                }
-            }
-            if(nnz-offset>n) offset=nnz-n;
-            complete_list.quicksort(offset,nnz-1);
-            list.resize_without_initialization(nnz-offset);
-            for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
-        } // end SUM_DROPPING
-        if(IP.get_WEIGHTED_DROPPING()){
-            for(i=0;i<nnz;i++){ // mark elements to be kept
-                product = weight * std::abs(data[i]);
-                if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
-                    input_abs[number_elements_larger_tau]=product;
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
-            } // end marking elements
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                   // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-                complete_list.quicksort(offset,number_elements_larger_tau-1);
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-            } else {
-                complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-            }
-        } // end WEIGHTED_DROPPING
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
-    }
-  }
-
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to) const {
-    try {
-        Real product = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        Integer rejected_number=0;
-        index_list complete_list, complete_rejected_list;
-        vector_dense<Real> input_abs;
-        Real sum = 0.0;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        if(IP.get_SUM_DROPPING()){
-            for(i=0;i<nnz;i++){
-                 product = weight * std::abs(data[i]);
-                 input_abs[i]=product;
-                 complete_list[i]=pointer[i];
-            }
-            input_abs.quicksort(complete_list,0,nnz-1);
-            for(i=0;i<nnz;i++){
-                sum += input_abs.read(i);
-                if (sum > tau){
-                    offset = i;
-                    break;
-                }
-            }
-            if(nnz-offset>n) offset=nnz-n;
-            complete_list.quicksort(offset,nnz-1);
-            complete_list.quicksort(0,offset-1);
-            list.resize_without_initialization(nnz-offset);
-            rejected_list.resize_without_initialization(offset);
-            for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
-            for (i=0;i<offset;i++) rejected_list[i]=complete_list[i];
-        } // end SUM_DROPPING
-        if(IP.get_WEIGHTED_DROPPING()){
-            for(i=0;i<nnz;i++){ // mark elements to be kept
-                if(from<=pointer[i] && pointer[i]<to){  // in the proper range
-                    product = weight * std::abs(data[i]);
-                    if(product >= tau){  // mark to keep
-                        input_abs[number_elements_larger_tau]=product;
-                        complete_list[number_elements_larger_tau]=pointer[i];
-                        number_elements_larger_tau++;
-                    } else { // mark as rejected
-                        complete_rejected_list[rejected_number]=pointer[i];
-                        rejected_number++;
-                    }
-                }  // end in proper range
-            } // end marking elements
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                   // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-                complete_list.quicksort(offset,number_elements_larger_tau-1);
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-                rejected_list.resize_without_initialization(nnz-n); // note: nnz-n >= number_elements_larger_tau-n > 0) (note: nnz = number_elements_larger_tau + rejected_number)
-                for(i=0;i<number_elements_larger_tau-n;i++) rejected_list[i] = complete_list[i];  // copy indices of rejected elements larger than tau
-                for(i=0;i<rejected_number;i++) rejected_list[number_elements_larger_tau-n+i] = complete_rejected_list[i]; // copy indices of rejected elements less than tau
-                rejected_list.quicksort(0,nnz-n-1); // sort all
-            } else {
-                complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-                complete_rejected_list.quicksort(0,rejected_number-1);
-                rejected_list.resize_without_initialization(rejected_number);
-                for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
-            }
-        } // end WEIGHTED_DROPPING
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        rejected_list.resize_without_initialization(0);
-        throw;
-    }
-  }
-
-
-
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const  {
-    try {
-        Real product = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        index_list complete_list;
-        vector_dense<Real> input_abs;
-        Real sum = 0.0;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic:::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        if(IP.get_SUM_DROPPING()){
-            for(i=0;i<nnz;i++){
-                 //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-                 product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
-                 input_abs[i]=product;
-                 complete_list[i]=pointer[i];
-            }
-            input_abs.quicksort(complete_list,0,nnz-1);
-            for(i=0;i<nnz;i++){
-                sum += input_abs.read(i);
-                if (sum > tau){
-                    offset = i;
-                    break;
-                }
-            }
-            if(nnz-offset>n) offset=nnz-n;
-            complete_list.quicksort(offset,nnz-1);
-            list.resize_without_initialization(nnz-offset);
-            for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
-        } // end SUM_DROPPING
-        if(IP.get_WEIGHTED_DROPPING()){
-            for(i=0;i<nnz;i++){ // mark elements to be kept
-                //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-                product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
-                if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
-                    input_abs[number_elements_larger_tau]=product;
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
-            } // end marking elements
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                   // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-                complete_list.quicksort(offset,number_elements_larger_tau-1);
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-            } else {
-                complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-            }
-        } // end WEIGHTED_DROPPING
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>:::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        throw;
-    }
-  }
-
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, index_list& rejected_list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const  {
-    try {
-        #ifdef DEBUG
-            std::cout<<"vector_sparse_dynamic::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: this routine has not been tested.... "<<std::endl<<std::flush;
-        #endif
-        Real product = 0.0;
-        Integer offset=0;
-        Integer i;
-        Integer number_elements_larger_tau=0;
-        Integer rejected_number=0;
-        index_list complete_list, complete_rejected_list;
-        vector_dense<Real> input_abs;
-        Real sum = 0.0;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        #ifdef DEBUG
-            if(non_fatal_error((from<0 || to>size), "take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        #endif
-        if(IP.get_SUM_DROPPING()){
-            for(i=0;i<nnz;i++){
-                 //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-                 product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
-                 input_abs[i]=product;
-                 complete_list[i]=pointer[i];
-            }
-            input_abs.quicksort(complete_list,0,nnz-1);
-            for(i=0;i<nnz;i++){
-                sum += input_abs.read(i);
-                if (sum > tau){
-                    offset = i;
-                    break;
-                }
-            }
-            if(nnz-offset>n) offset=nnz-n;
-            complete_list.quicksort(offset,nnz-1);
-            complete_list.quicksort(0,offset-1);
-            list.resize_without_initialization(nnz-offset);
-            rejected_list.resize_without_initialization(offset);
-            for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
-            for (i=0;i<offset;i++) rejected_list[i]=complete_list[i];
-        } // end SUM_DROPPING
-        if(IP.get_WEIGHTED_DROPPING()){
-            for(i=0;i<nnz;i++){ // mark elements to be kept
-                //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-                product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
-                if(from<=pointer[i] && pointer[i]<to){ // in right range
-                    if(product >= tau){ // mark to keep
-                        input_abs[number_elements_larger_tau]=product;
-                        complete_list[number_elements_larger_tau]=pointer[i];
-                        number_elements_larger_tau++;
-                    } else {  // mark to reject
-                        complete_rejected_list[rejected_number]=pointer[i];
-                        rejected_number++;
-                    }
-                }
-            } // end marking elements
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                   // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-                complete_list.quicksort(offset,number_elements_larger_tau-1);
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-                rejected_list.resize_without_initialization(nnz-n); // note: nnz-n >= number_elements_larger_tau-n > 0) (note: nnz = number_elements_larger_tau + rejected_number)
-                for(i=0;i<number_elements_larger_tau-n;i++) rejected_list[i] = complete_list[i];  // copy indices of rejected elements larger than tau
-                for(i=0;i<rejected_number;i++) rejected_list[number_elements_larger_tau-n+i] = complete_rejected_list[i]; // copy indices of rejected elements less than tau
-                rejected_list.quicksort(0,nnz-n-1); // sort all
-            } else {
-                complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
-                complete_rejected_list.quicksort(0,rejected_number-1);
-                rejected_list.resize_without_initialization(rejected_number);
-                for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
-            }
-        } // end WEIGHTED_DROPPING
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-        list.resize_without_initialization(0);
-        rejected_list.resize_without_initialization(0);
-        throw;
-    }
-  }
-
-
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index, Integer max_pos_drop) const {
-  try {
     Real product = 0.0;
     Integer offset=0;
     Integer i;
@@ -2889,18 +2243,286 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     Real sum = 0.0;
     if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
     if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            product = weight * std::abs(data[i]);
+            input_abs[i]=product;
+            complete_list[i]=pointer[i];
+        }
+        input_abs.quicksort(complete_list,0,nnz-1);
+        for(i=0;i<nnz;i++){
+            sum += input_abs.read(i);
+            if (sum > tau){
+                offset = i;
+                break;
+            }
+        }
+        if(nnz-offset>n) offset=nnz-n;
+        complete_list.quicksort(offset,nnz-1);
+        list.resize_without_initialization(nnz-offset);
+        for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
+    } // end SUM_DROPPING
+    if(IP.get_WEIGHTED_DROPPING()){
+        for(i=0;i<nnz;i++){ // mark elements to be kept
+            product = weight * std::abs(data[i]);
+            if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
+                input_abs[number_elements_larger_tau]=product;
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
+            }
+        } // end marking elements
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            complete_list.quicksort(offset,number_elements_larger_tau-1);
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        } else {
+            complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        }
+    } // end WEIGHTED_DROPPING
+  }
+
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to) const {
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer rejected_number=0;
+    index_list complete_list, complete_rejected_list;
+    vector_dense<Real> input_abs;
+    Real sum = 0.0;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    if(IP.get_SUM_DROPPING()){
+        for(i=0;i<nnz;i++){
+            product = weight * std::abs(data[i]);
+            input_abs[i]=product;
+            complete_list[i]=pointer[i];
+        }
+        input_abs.quicksort(complete_list,0,nnz-1);
+        for(i=0;i<nnz;i++){
+            sum += input_abs.read(i);
+            if (sum > tau){
+                offset = i;
+                break;
+            }
+        }
+        if(nnz-offset>n) offset=nnz-n;
+        complete_list.quicksort(offset,nnz-1);
+        complete_list.quicksort(0,offset-1);
+        list.resize_without_initialization(nnz-offset);
+        rejected_list.resize_without_initialization(offset);
+        for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
+        for (i=0;i<offset;i++) rejected_list[i]=complete_list[i];
+    } // end SUM_DROPPING
+    if(IP.get_WEIGHTED_DROPPING()){
+        for(i=0;i<nnz;i++){ // mark elements to be kept
+            if(from<=pointer[i] && pointer[i]<to){  // in the proper range
+                product = weight * std::abs(data[i]);
+                if(product >= tau){  // mark to keep
+                    input_abs[number_elements_larger_tau]=product;
+                    complete_list[number_elements_larger_tau]=pointer[i];
+                    number_elements_larger_tau++;
+                } else { // mark as rejected
+                    complete_rejected_list[rejected_number]=pointer[i];
+                    rejected_number++;
+                }
+            }  // end in proper range
+        } // end marking elements
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            complete_list.quicksort(offset,number_elements_larger_tau-1);
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+            rejected_list.resize_without_initialization(nnz-n); // note: nnz-n >= number_elements_larger_tau-n > 0) (note: nnz = number_elements_larger_tau + rejected_number)
+            for(i=0;i<number_elements_larger_tau-n;i++) rejected_list[i] = complete_list[i];  // copy indices of rejected elements larger than tau
+            for(i=0;i<rejected_number;i++) rejected_list[number_elements_larger_tau-n+i] = complete_rejected_list[i]; // copy indices of rejected elements less than tau
+            rejected_list.quicksort(0,nnz-n-1); // sort all
+        } else {
+            complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            complete_rejected_list.quicksort(0,rejected_number-1);
+            rejected_list.resize_without_initialization(rejected_number);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+        }
+    } // end WEIGHTED_DROPPING
+  }
+
+
+
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const  {
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    Real sum = 0.0;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic:::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    if(IP.get_SUM_DROPPING()){
+        for(i=0;i<nnz;i++){
+            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            input_abs[i]=product;
+            complete_list[i]=pointer[i];
+        }
+        input_abs.quicksort(complete_list,0,nnz-1);
+        for(i=0;i<nnz;i++){
+            sum += input_abs.read(i);
+            if (sum > tau){
+                offset = i;
+                break;
+            }
+        }
+        if(nnz-offset>n) offset=nnz-n;
+        complete_list.quicksort(offset,nnz-1);
+        list.resize_without_initialization(nnz-offset);
+        for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
+    } // end SUM_DROPPING
+    if(IP.get_WEIGHTED_DROPPING()){
+        for(i=0;i<nnz;i++){ // mark elements to be kept
+            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
+                input_abs[number_elements_larger_tau]=product;
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
+            }
+        } // end marking elements
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            complete_list.quicksort(offset,number_elements_larger_tau-1);
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        } else {
+            complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+        }
+    } // end WEIGHTED_DROPPING
+  }
+
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, index_list& rejected_list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const  {
+#ifdef DEBUG
+    std::cout<<"vector_sparse_dynamic::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: this routine has not been tested.... "<<std::endl<<std::flush;
+#endif
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer rejected_number=0;
+    index_list complete_list, complete_rejected_list;
+    vector_dense<Real> input_abs;
+    Real sum = 0.0;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    if(IP.get_SUM_DROPPING()){
+        for(i=0;i<nnz;i++){
+            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            input_abs[i]=product;
+            complete_list[i]=pointer[i];
+        }
+        input_abs.quicksort(complete_list,0,nnz-1);
+        for(i=0;i<nnz;i++){
+            sum += input_abs.read(i);
+            if (sum > tau){
+                offset = i;
+                break;
+            }
+        }
+        if(nnz-offset>n) offset=nnz-n;
+        complete_list.quicksort(offset,nnz-1);
+        complete_list.quicksort(0,offset-1);
+        list.resize_without_initialization(nnz-offset);
+        rejected_list.resize_without_initialization(offset);
+        for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
+        for (i=0;i<offset;i++) rejected_list[i]=complete_list[i];
+    } // end SUM_DROPPING
+    if(IP.get_WEIGHTED_DROPPING()){
+        for(i=0;i<nnz;i++){ // mark elements to be kept
+            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
+            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            if(from<=pointer[i] && pointer[i]<to){ // in right range
+                if(product >= tau){ // mark to keep
+                    input_abs[number_elements_larger_tau]=product;
+                    complete_list[number_elements_larger_tau]=pointer[i];
+                    number_elements_larger_tau++;
+                } else {  // mark to reject
+                    complete_rejected_list[rejected_number]=pointer[i];
+                    rejected_number++;
+                }
+            }
+        } // end marking elements
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            complete_list.quicksort(offset,number_elements_larger_tau-1);
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+            rejected_list.resize_without_initialization(nnz-n); // note: nnz-n >= number_elements_larger_tau-n > 0) (note: nnz = number_elements_larger_tau + rejected_number)
+            for(i=0;i<number_elements_larger_tau-n;i++) rejected_list[i] = complete_list[i];  // copy indices of rejected elements larger than tau
+            for(i=0;i<rejected_number;i++) rejected_list[number_elements_larger_tau-n+i] = complete_rejected_list[i]; // copy indices of rejected elements less than tau
+            rejected_list.quicksort(0,nnz-n-1); // sort all
+        } else {
+            complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
+            complete_rejected_list.quicksort(0,rejected_number-1);
+            rejected_list.resize_without_initialization(rejected_number);
+            for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
+        }
+    } // end WEIGHTED_DROPPING
+  }
+
+
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index, Integer max_pos_drop) const {
+    Real product = 0.0;
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    index_list complete_list;
+    vector_dense<Real> input_abs;
+    Real sum = 0.0;
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
+    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    if(IP.get_SUM_DROPPING()){
+        for(i=0;i<nnz;i++){
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
-                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
+                product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
+            //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
             //else  product = weight * std::abs(data[i]);
             else  product = weight * std::abs(data[i]);
-             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -2925,7 +2547,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
                 product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
             //else  product = weight * std::abs(data[i]);
             else  product =weight * std::abs(data[i]);
-           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -2935,7 +2557,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         if(number_elements_larger_tau > n){
             offset=number_elements_larger_tau-n;
             input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
             complete_list.quicksort(offset,number_elements_larger_tau-1);
             list.resize_without_initialization(n);
             for (i=0;i<n;i++) list[i]=complete_list[offset+i];
@@ -2945,20 +2567,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
             for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
         }
     } // end WEIGHTED_DROPPING
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
 }
 
 
 template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index, Integer max_pos_drop) const {
-  try {
-    #ifdef DEBUG
-        std::cout<<"vector_sparse_dynamic::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold: note: this routine has not been tested..."<<std::endl<<std::flush;
-    #endif
+#ifdef DEBUG
+    std::cout<<"vector_sparse_dynamic::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold: note: this routine has not been tested..."<<std::endl<<std::flush;
+#endif
     Real product = 0.0;
     Integer offset=0;
     Integer i;
@@ -2970,18 +2585,18 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
     if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
     if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
-                  //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
+                product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size);
+            //product = max(weight,TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size)) * std::abs(data[i]);
             //else  product = weight * std::abs(data[i]);
             else  product = weight * std::abs(data[i]);
-             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3010,7 +2625,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
                     product = weight * std::abs(data[i]) * IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
                 //else  product = weight * std::abs(data[i]);
                 else  product =weight * std::abs(data[i]);
-               //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+                //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
                 if(product >= tau){ // mark to keep
                     input_abs[number_elements_larger_tau]=product;
                     complete_list[number_elements_larger_tau]=pointer[i];
@@ -3024,7 +2639,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         if(number_elements_larger_tau > n){
             offset=number_elements_larger_tau-n;
             input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
             complete_list.quicksort(offset,number_elements_larger_tau-1);
             list.resize_without_initialization(n);
             for (i=0;i<n;i++) list[i]=complete_list[offset+i];
@@ -3041,18 +2656,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
             for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
         }
     } // end WEIGHTED_DROPPING
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      rejected_list.resize_without_initialization(0);
-      throw;
-  }
 }
 
 
 template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index,Integer bandwidth, Integer max_pos_drop) const {
-  try {
     Real product = 0.0;
     Integer offset=0;
     Integer i;
@@ -3062,19 +2669,19 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     Real sum = 0.0;
     if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
     if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+                product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
+            //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
             //else  product = weight * std::abs(data[i]);
             else  product = weight * std::abs(data[i]);
-             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3095,13 +2702,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         for(i=0;i<nnz;i++){ // mark elements to be kept
             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
-                 //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-                 //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
+                product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+            //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+            //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
             //else  product = weight * std::abs(data[i]);
             else  product =weight * std::abs(data[i]);
-           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -3111,7 +2718,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         if(number_elements_larger_tau > n){
             offset=number_elements_larger_tau-n;
             input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
             complete_list.quicksort(offset,number_elements_larger_tau-1);
             list.resize_without_initialization(n);
             for (i=0;i<n;i++) list[i]=complete_list[offset+i];
@@ -3121,19 +2728,12 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
             for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list.read(i);
         }
     }
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      throw;
-  }
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index,Integer bandwidth, Integer max_pos_drop) const {
-  try {
-    #ifdef DEBUG
-        std::cout<<"vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: this routine has not been tested yet..."<<std::endl<<std::flush;
-    #endif
+#ifdef DEBUG
+    std::cout<<"vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: this routine has not been tested yet..."<<std::endl<<std::flush;
+#endif
     Real product = 0.0;
     Integer offset=0;
     Integer i;
@@ -3145,19 +2745,19 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
     if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
     if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
+#ifdef DEBUG
+    if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
+            //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+                product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size);
+            //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
             //else  product = weight * std::abs(data[i]);
             else  product = weight * std::abs(data[i]);
-             //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
@@ -3180,13 +2780,13 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         for(i=0;i<nnz;i++){ // mark elements to be kept
             //product = max(std::abs(data[i]),weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size));
             if(pointer[i]<=max_pos_drop) 
-                  product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
-                  //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
-                 //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
-                 //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
+                product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(pointer[i]-vector_index))/bandwidth);
+            //product = (abs(pointer[i]-vector_index)>bandwidth) ?  0.0 : weight*std::abs(data[i]);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]-vector_index))/size); // Abstand von der Diagonalen
+            //product = weight * std::abs(data[i]) * ; // Abstand von der Diagonalen
             //else  product = weight * std::abs(data[i]);
             else  product =weight * std::abs(data[i]);
-           //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
+            //product = weight * std::abs(data[i]) * TABLE_POSITIONAL_WEIGHTS.get((SIZE_TABLE_POS_WEIGHTS*abs(pointer[i]))/size);
             if((from<=pointer[i] && pointer[i]<to) ){ // in proper range
                 if(product >= tau){ // mark to keep
                     input_abs[number_elements_larger_tau]=product;
@@ -3201,7 +2801,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         if(number_elements_larger_tau > n){
             offset=number_elements_larger_tau-n;
             input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-               // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+            // we need the indices of the largest elements in ascending order. To get this order, we sort here.
             complete_list.quicksort(offset,number_elements_larger_tau-1);
             list.resize_without_initialization(n);
             for (i=0;i<n;i++) list[i]=complete_list[offset+i];
@@ -3218,17 +2818,9 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
             for(i=0;i<rejected_number;i++) rejected_list[i]=complete_rejected_list.read(i);
         }
     } // end WEIGHTED_DROPPING
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list.resize_without_initialization(0);
-      rejected_list.resize_without_initialization(0);
-      throw;
-  }
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const {
-  try {
     norm_input_L = 0.0;
     norm_input_U = 0.0;
     Integer i;
@@ -3244,14 +2836,14 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(size);
     if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(size);
     if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(size);
-    #ifdef DEBUG
-       if(size==0){
-           std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
-           list_L.resize_without_initialization(0);
-           list_U.resize_without_initialization(0);
-           return;
-        }
-    #endif
+#ifdef DEBUG
+    if(size==0){
+        std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
+        list_L.resize_without_initialization(0);
+        list_U.resize_without_initialization(0);
+        return;
+    }
+#endif
     for(i=0;i<nnz;i++)
         if (invperm.get(pointer[i])<mid) norm_input_L += absvalue_squared(data[i]);
         else norm_input_U += absvalue_squared(data[i]);
@@ -3314,18 +2906,10 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             for(i=0;i<number_elements_larger_tau_U;i++) list_U[i]=complete_list_U[i];            
         }  // end if
     } // end if
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list_L.resize_without_initialization(0);
-      list_U.resize_without_initialization(0);
-      throw;
-  }
 }
 
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid, Real piv_tol) const {
-  try {
     norm_input_L = 0.0;
     bool pivoting;
     Real val_larg_element=0.0;
@@ -3347,14 +2931,14 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(size);
     if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(size);
     if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(size);
-    #ifdef DEBUG
-       if(size==0){
-           std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
-           list_L.resize_without_initialization(0);
-           list_U.resize_without_initialization(0);
-           return;
-        }
-    #endif
+#ifdef DEBUG
+    if(size==0){
+        std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
+        list_L.resize_without_initialization(0);
+        list_U.resize_without_initialization(0);
+        return;
+    }
+#endif
     for(i=0;i<nnz;i++){
         fabsdata[i]=std::abs(data[i]);
         if (invperm.get(pointer[i])<mid) norm_input_L += absvalue_squared(data[i]);
@@ -3426,17 +3010,9 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             for(i=0;i<number_elements_larger_tau_U;i++) list_U[i]=complete_list_U[i];
         }  // end if
     } // end if
-  } // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list_L.resize_without_initialization(0);
-      list_U.resize_without_initialization(0);
-      throw;
-  }
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& perm, const index_list& invperm, const vector_dense<Real>& weights_L, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const {
-  try {
     norm_input_L = 0.0;
     norm_input_U = 0.0;
     Integer i;
@@ -3454,14 +3030,14 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(size);
     if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(size);
     if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(size==0){
-            std::cerr<<" vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
-            list_L.resize_without_initialization(0);
-            list_U.resize_without_initialization(0);
-            return;
-        }
-    #endif
+#ifdef DEBUG
+    if(size==0){
+        std::cerr<<" vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
+        list_L.resize_without_initialization(0);
+        list_U.resize_without_initialization(0);
+        return;
+    }
+#endif
     for(i=0;i<nnz;i++)
         if (invperm.get(pointer[i])<mid) norm_input_L += absvalue_squared(weights_L.read(invperm.get(pointer[i]))*data[i]);
         else norm_input_U += absvalue_squared(data[i]);
@@ -3519,22 +3095,15 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     if(list_U.dimension()>0){
         pos_larg_element=0;
         value_larg_element=std::abs(read(list_U.get(0)));
-            for(i=1;i<list_U.dimension();i++){
-                value=std::abs(read(list_U.get(i)));
-                if(value>value_larg_element){
-                    pos_larg_element=i;
-                    value_larg_element=value;
-                } // end if
-            } // end for
+        for(i=1;i<list_U.dimension();i++){
+            value=std::abs(read(list_U.get(i)));
+            if(value>value_larg_element){
+                pos_larg_element=i;
+                value_larg_element=value;
+            } // end if
+        } // end for
         list_U.switch_index(pos_larg_element,list_U.dimension()-1);
     }
-  } // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"vector_sparse_dynamic<T>::take_weighted_largest_elements_by_abs_value_with_threshold: "<<ippe.error_message()<<"Returning empty list."<<std::endl;
-      list_L.resize_without_initialization(0);
-      list_U.resize_without_initialization(0);
-      throw;
-  }
 }
 
 
@@ -3569,18 +3138,12 @@ template<class T> void vector_sparse_dynamic_enhanced<T>::resize(Integer m) {
  }
 
 template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhanced(Integer m) {
-    try {
-        this->size = 0;
-        this->nnz = 0;
-        this->data   = 0;
-        this->occupancy = 0;
-        this->pointer = 0;
-        resize(m);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic_enhanced::vector_sparse_dynamic_enhanced: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    this->size = 0;
+    this->nnz = 0;
+    this->data   = 0;
+    this->occupancy = 0;
+    this->pointer = 0;
+    resize(m);
  }
 
 /*
@@ -3600,43 +3163,31 @@ template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhan
 */
 
 template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhanced(const vector_sparse_dynamic_enhanced& x) {
-    try {
-        Integer i;
-        this->size = 0;
-        this->nnz = 0;
-        this->data   = 0;
-        this->occupancy = 0;
-        this->pointer = 0;
-        resize(x.size);
-        for(Integer i=0;i<this->nnz;i++) this->data[i]=x.data[i];
-        for(Integer i=0;i<this->nnz;i++) this->pointer[i]=x.pointer[i];
-        for(Integer i=0;i<this->nnz;i++) this->occupancy[this->pointer[i]]=x.occupancy[this->pointer[i]];
-        key=x.key;
-        current_position_iter=x.current_position_iter;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic_enhanced::vector_sparse_dynamic_enhanced(vector_sparse_dynamic_enhanced): "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    Integer i;
+    this->size = 0;
+    this->nnz = 0;
+    this->data   = 0;
+    this->occupancy = 0;
+    this->pointer = 0;
+    resize(x.size);
+    for(Integer i=0;i<this->nnz;i++) this->data[i]=x.data[i];
+    for(Integer i=0;i<this->nnz;i++) this->pointer[i]=x.pointer[i];
+    for(Integer i=0;i<this->nnz;i++) this->occupancy[this->pointer[i]]=x.occupancy[this->pointer[i]];
+    key=x.key;
+    current_position_iter=x.current_position_iter;
  }
 
 
 template<class T> vector_sparse_dynamic_enhanced<T>& vector_sparse_dynamic_enhanced<T>::operator =(const vector_sparse_dynamic_enhanced<T>& x){   // Assignment-Operator
-     try {
-          Integer i;
-          if(this == &x) return *this;
-          resize(x.size);
-          for(Integer i=0;i<this->nnz;i++) this->data[i]=x.data[i];
-          for(Integer i=0;i<this->nnz;i++) this->pointer[i]=x.pointer[i];
-          for(Integer i=0;i<this->nnz;i++) this->occupancy[this->pointer[i]]=x.occupancy[this->pointer[i]];
-          key=x.key;
-          current_position_iter=x.current_position_iter;
-          return *this;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"vector_sparse_dynamic_enhanced::operator = : "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    Integer i;
+    if(this == &x) return *this;
+    resize(x.size);
+    for(Integer i=0;i<this->nnz;i++) this->data[i]=x.data[i];
+    for(Integer i=0;i<this->nnz;i++) this->pointer[i]=x.pointer[i];
+    for(Integer i=0;i<this->nnz;i++) this->occupancy[this->pointer[i]]=x.occupancy[this->pointer[i]];
+    key=x.key;
+    current_position_iter=x.current_position_iter;
+    return *this;
   }
 
 template<class T> void vector_sparse_dynamic_enhanced<T>::zero_reset(){
@@ -3827,7 +3378,6 @@ template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data
   }
 
 template<class T> void matrix_sparse<T>::erase_resize_data_fields(Integer new_nnz){
-  try {
     if (nnz != new_nnz){
         if (data    != 0){ delete [] data; data = 0;}
         if (indices != 0){ delete [] indices; indices = 0;}
@@ -3841,18 +3391,9 @@ template<class T> void matrix_sparse<T>::erase_resize_data_fields(Integer new_nn
             nnz = 0;
         }
     }
-  }
-  catch(std::bad_alloc){
-    std::cerr<<"matrix_sparse::erase_resize_data_fields: Error allocating memory. Returning empty fields."<<std::endl<<std::flush;
-    if (data != 0) delete [] data;
-    if (indices != 0) delete [] indices;
-    data = 0; indices = 0; nnz = 0;
-    throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 template<class T> void matrix_sparse<T>::erase_resize_pointer_field(Integer new_pointer_size){
-            try {
     if(new_pointer_size == 0){
         std::cerr<<"matrix_sparse::erase_resize_pointer_field: making pointer field of dimension 0 upon user request. This is likely to cause a segmentation fault."<<std::endl<<std::flush;
     }
@@ -3866,28 +3407,11 @@ template<class T> void matrix_sparse<T>::erase_resize_pointer_field(Integer new_
             pointer_size = 0;
         }
     }
-  }
-  catch(std::bad_alloc){
-      std::cerr<<"matrix_sparse::erase_resize_pointer_field:  Error allocating memory. Returning null pointer."<<std::endl<<std::flush;
-      if (pointer != 0) delete [] pointer;
-      pointer = 0; pointer_size = 0;
-      throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 template<class T> void matrix_sparse<T>::erase_resize_all_fields(Integer new_pointer_size, Integer new_nnz){
-    try {
-        erase_resize_data_fields(new_nnz);
-        erase_resize_pointer_field(new_pointer_size);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_sparse::erase_resize_all_fields: "<<ippe.error_message()<<"Returning empty fields."<<std::endl<<std::flush;
-        if (data != 0) delete [] data;
-        if (indices != 0) delete [] indices;
-        if (pointer != 0) delete [] pointer;
-        data = 0; pointer = 0; indices = 0; pointer_size = 0; nnz = 0;
-        throw;
-    }
+    erase_resize_data_fields(new_nnz);
+    erase_resize_pointer_field(new_pointer_size);
   }
 
 
@@ -3895,30 +3419,18 @@ template<class T> void matrix_sparse<T>::enlarge_fields_keep_data(Integer newnnz
     Integer i;
     Integer* newindices = 0;
     T*       newdata    = 0;
-    try {
-        if (newnnz <= nnz) return;
-        if(newnnz>0) newindices = new Integer[newnnz];
-        for(i=0;i<nnz;i++) newindices[i] = indices[i];
-        if (indices != 0) delete [] indices;
-        indices = newindices;
-        newindices = 0;
-        if(newnnz>0) newdata = new T[newnnz];
-        for(i=0;i<nnz;i++) newdata[i] = data[i];
-        if(data != 0) delete [] data;
-        data = newdata;
-        newdata = 0;
-        nnz = newnnz;        
-    }
-    catch(std::bad_alloc){
-        std::cerr<<"matrix_sparse::enlarge_fields_keep_data:  Error allocating memory. Returning 0x0 matrix."<<std::endl<<std::flush;
-        if (data != 0) delete [] data;
-        if (indices != 0) delete [] indices;
-        if (pointer != 0) delete [] pointer;
-        if (newdata != 0) delete [] newdata;
-        if (newindices != 0) delete [] newindices;
-        data = 0; pointer = 0; indices = 0; pointer_size = 0; nnz = 0; number_rows = 0; number_columns = 0;
-        throw iluplusplus_error(INSUFFICIENT_MEMORY);
-    }
+    if (newnnz <= nnz) return;
+    if(newnnz>0) newindices = new Integer[newnnz];
+    for(i=0;i<nnz;i++) newindices[i] = indices[i];
+    if (indices != 0) delete [] indices;
+    indices = newindices;
+    newindices = 0;
+    if(newnnz>0) newdata = new T[newnnz];
+    for(i=0;i<nnz;i++) newdata[i] = data[i];
+    if(data != 0) delete [] data;
+    data = newdata;
+    newdata = 0;
+    nnz = newnnz;        
 }
 
 
@@ -3969,7 +3481,6 @@ template<class T>  Integer& matrix_sparse<T>::set_pointer(Integer k){
   }
 
 template<class T> void matrix_sparse<T>::reformat(Integer new_number_rows, Integer new_number_columns, Integer new_nnz, orientation_type new_orientation){
-  try {
     Integer new_pointer_size;
     if (new_orientation == ROW) new_pointer_size = new_number_rows+1;
     else new_pointer_size = new_number_columns+1;
@@ -3978,16 +3489,9 @@ template<class T> void matrix_sparse<T>::reformat(Integer new_number_rows, Integ
     number_columns = new_number_columns;
     orientation    = new_orientation;
     for(Integer i=0; i<pointer_size; i++) pointer[i]=0;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::reformat: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-      number_rows = 0; number_columns = 0; orientation = new_orientation;
-      throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix_sparse<T> &X)  {
-  try {
     vector_dense<Integer> counter;
     reformat(X.number_rows,X.number_columns, X.pointer[X.pointer_size-1],other_orientation(X.orientation));
     counter.resize(pointer_size,0);
@@ -3997,18 +3501,13 @@ template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix
     for (i=1;i<pointer_size;i++) pointer[i] += pointer[i-1];
     //for (i=0;i<pointer_size;i++) counter[i]=0;  // already initialized
     for (i=0;i<X.pointer_size-1;i++)
-       for(j=X.pointer[i];j< X.pointer[i+1];j++){
-           l = X.indices[j];
-           k = pointer[l]+counter[l];
-           data[k] = X.data[j];
-           indices[k] = i;
-           counter[l]++;
-       }
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::change_orientation_of_data: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-      throw;
-  }
+        for(j=X.pointer[i];j< X.pointer[i+1];j++){
+            l = X.indices[j];
+            k = pointer[l]+counter[l];
+            data[k] = X.data[j];
+            indices[k] = i;
+            counter[l]++;
+        }
 }
 
 /*
@@ -4033,84 +3532,63 @@ template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix
 */
 
 template<class T> void matrix_sparse<T>::insert(const matrix_sparse<T> &A, const vector_dense<T>& row, const vector_dense<T>& column, T center, Integer pos_row, Integer pos_col, Real threshold){
-    try {
-        if(A.orient()==ROW) insert_orient(A,row,column,center,pos_row,pos_col,threshold);
-        else insert_orient(A,column,row,center,pos_col,pos_row,threshold);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_sparse::insert: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-        reformat(0,0,0,A.orient());
-        throw;
-    }
+    if(A.orient()==ROW) insert_orient(A,row,column,center,pos_row,pos_col,threshold);
+    else insert_orient(A,column,row,center,pos_col,pos_row,threshold);
 }
 
 
 template<class T> void matrix_sparse<T>::insert_orient(const matrix_sparse<T> &A, const vector_dense<T>& along_orient, const vector_dense<T>& against_orient, T center, Integer pos_along_orient, Integer pos_against_orient, Real threshold){
-    try {
-        if(non_fatal_error(A.dim_along_orientation() != against_orient.dimension() || A.dim_against_orientation() != along_orient.dimension()   ,"matrix_sparse<T>::insert_orient: dimensions of vectors to be inserted are not compatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        if(non_fatal_error(pos_along_orient < 0 || pos_against_orient < 0 || pos_along_orient > A.dim_along_orientation() ||  pos_against_orient > A.dim_against_orientation(),"matrix_sparse<T>::insert_orient: insert positions are not available.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        array<bool> selected_along_orient(along_orient.dimension(),false);
-        array<bool> selected_against_orient(against_orient.dimension(),false);
-        Integer number_selected_along_orient = 0;
-        Integer number_selected_against_orient = 0;
-        bool selected_center = (std::abs(center)>threshold);
-        bool not_inserted = true;
-        Integer i,j;
-        Integer counter = 0;
-        for(i=0;i<along_orient.dimension();i++){
-            if(std::abs(along_orient.get(i))>threshold){
-                selected_along_orient.set(i) = true;
-                number_selected_along_orient++;
-            }
+    if(non_fatal_error(A.dim_along_orientation() != against_orient.dimension() || A.dim_against_orientation() != along_orient.dimension()   ,"matrix_sparse<T>::insert_orient: dimensions of vectors to be inserted are not compatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(pos_along_orient < 0 || pos_against_orient < 0 || pos_along_orient > A.dim_along_orientation() ||  pos_against_orient > A.dim_against_orientation(),"matrix_sparse<T>::insert_orient: insert positions are not available.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    array<bool> selected_along_orient(along_orient.dimension(),false);
+    array<bool> selected_against_orient(against_orient.dimension(),false);
+    Integer number_selected_along_orient = 0;
+    Integer number_selected_against_orient = 0;
+    bool selected_center = (std::abs(center)>threshold);
+    bool not_inserted = true;
+    Integer i,j;
+    Integer counter = 0;
+    for(i=0;i<along_orient.dimension();i++){
+        if(std::abs(along_orient.get(i))>threshold){
+            selected_along_orient.set(i) = true;
+            number_selected_along_orient++;
         }
-        for(i=0;i<against_orient.dimension();i++){
-            if(std::abs(against_orient.get(i))>threshold){
-                selected_against_orient.set(i) = true;
-                number_selected_against_orient++;
-            }
+    }
+    for(i=0;i<against_orient.dimension();i++){
+        if(std::abs(against_orient.get(i))>threshold){
+            selected_against_orient.set(i) = true;
+            number_selected_against_orient++;
         }
-        if(selected_center) reformat(A.rows()+1, A.columns()+1, A.non_zeroes()+number_selected_along_orient+number_selected_against_orient+1,A.orient());
-        else reformat(A.rows()+1, A.columns()+1, A.non_zeroes()+number_selected_along_orient+number_selected_against_orient,A.orient());
-        pointer[0] = 0;
-        for(i=0; i< A.dim_along_orientation(); i++){
-            not_inserted = true;
-            if(i == pos_along_orient){
-               for(j=0;j<pos_against_orient;j++){
-                   if(selected_along_orient.get(j)){
-                      data[counter] = along_orient.get(j);
-                      indices[counter] = j;
-                      counter++;
-                   }
-               }
-               if(selected_center){
-                      data[counter] = center;
-                      indices[counter] = j;
-                      counter++;
-               }
-               for(j=pos_against_orient;j<A.dim_against_orientation();j++){
-                   if(selected_along_orient.get(j)){
-                      data[counter] = along_orient.get(j);
-                      indices[counter] = j+1;
-                      counter++;
-                   }
-               }
-               pointer[i+1] = counter;
-            }
-            for(j=A.pointer[i]; j<A.pointer[i+1]; j++){
-                if(pos_against_orient<=A.indices[j] && not_inserted){
-                    if(selected_against_orient.get(i)){
-                        data[counter] = against_orient.get(i);
-                        indices[counter] = pos_against_orient;
-                        counter++;
-                    }
-                    not_inserted = false;
+    }
+    if(selected_center) reformat(A.rows()+1, A.columns()+1, A.non_zeroes()+number_selected_along_orient+number_selected_against_orient+1,A.orient());
+    else reformat(A.rows()+1, A.columns()+1, A.non_zeroes()+number_selected_along_orient+number_selected_against_orient,A.orient());
+    pointer[0] = 0;
+    for(i=0; i< A.dim_along_orientation(); i++){
+        not_inserted = true;
+        if(i == pos_along_orient){
+            for(j=0;j<pos_against_orient;j++){
+                if(selected_along_orient.get(j)){
+                    data[counter] = along_orient.get(j);
+                    indices[counter] = j;
+                    counter++;
                 }
-                data[counter] = A.data[j];
-                if(pos_against_orient<=A.indices[j]) indices[counter] = A.indices[j]+1;
-                else indices[counter] = A.indices[j];
+            }
+            if(selected_center){
+                data[counter] = center;
+                indices[counter] = j;
                 counter++;
             }
-            if(not_inserted){
+            for(j=pos_against_orient;j<A.dim_against_orientation();j++){
+                if(selected_along_orient.get(j)){
+                    data[counter] = along_orient.get(j);
+                    indices[counter] = j+1;
+                    counter++;
+                }
+            }
+            pointer[i+1] = counter;
+        }
+        for(j=A.pointer[i]; j<A.pointer[i+1]; j++){
+            if(pos_against_orient<=A.indices[j] && not_inserted){
                 if(selected_against_orient.get(i)){
                     data[counter] = against_orient.get(i);
                     indices[counter] = pos_against_orient;
@@ -4118,50 +3596,51 @@ template<class T> void matrix_sparse<T>::insert_orient(const matrix_sparse<T> &A
                 }
                 not_inserted = false;
             }
-            if(i<pos_along_orient){
-                pointer[i+1] = counter;
-            } else {
-                pointer[i+2] = counter;
-            }
+            data[counter] = A.data[j];
+            if(pos_against_orient<=A.indices[j]) indices[counter] = A.indices[j]+1;
+            else indices[counter] = A.indices[j];
+            counter++;
         }
-        if(A.dim_along_orientation() == pos_along_orient){
-            for(j=0;j<pos_against_orient;j++){
-                if(selected_along_orient.get(j)){
-                   data[counter] = along_orient.get(j);
-                   indices[counter] = j;
-                   counter++;
-                }
+        if(not_inserted){
+            if(selected_against_orient.get(i)){
+                data[counter] = against_orient.get(i);
+                indices[counter] = pos_against_orient;
+                counter++;
             }
-            if(selected_center){
-                   data[counter] = center;
-                   indices[counter] = j;
-                   counter++;
-            }
-            for(j=pos_against_orient;j<A.dim_against_orientation();j++){
-                if(selected_along_orient.get(j)){
-                   data[counter] = along_orient.get(j);
-                   indices[counter] = j+1;
-                   counter++;
-                }
-            }
-            pointer[A.dim_along_orientation()+1] = counter;
+            not_inserted = false;
+        }
+        if(i<pos_along_orient){
+            pointer[i+1] = counter;
+        } else {
+            pointer[i+2] = counter;
         }
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_sparse::insert_orient: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-        reformat(0,0,0,A.orient());
-        throw;
+    if(A.dim_along_orientation() == pos_along_orient){
+        for(j=0;j<pos_against_orient;j++){
+            if(selected_along_orient.get(j)){
+                data[counter] = along_orient.get(j);
+                indices[counter] = j;
+                counter++;
+            }
+        }
+        if(selected_center){
+            data[counter] = center;
+            indices[counter] = j;
+            counter++;
+        }
+        for(j=pos_against_orient;j<A.dim_against_orientation();j++){
+            if(selected_along_orient.get(j)){
+                data[counter] = along_orient.get(j);
+                indices[counter] = j+1;
+                counter++;
+            }
+        }
+        pointer[A.dim_along_orientation()+1] = counter;
     }
 }
 
 template<class T> void matrix_sparse<T>::change_orientation(const matrix_sparse<T> &X){
-    try {
-        change_orientation_of_data(X);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_sparse::change_orientation: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-        throw;
-    }
+    change_orientation_of_data(X);
   }
 
 template<class T> Integer matrix_sparse<T>::largest_absolute_value_along_orientation(Integer k) const {
@@ -4180,68 +3659,48 @@ template<class T> Integer matrix_sparse<T>::largest_absolute_value_along_orienta
 
 
 template<class T> void matrix_sparse<T>::sum_absolute_values_along_orientation(vector_dense<Real> &v) const {
-   try {
-     v.resize(pointer_size-1,0.0);
-     for(Integer i=0;i<pointer_size-1;i++)
+    v.resize(pointer_size-1,0.0);
+    for(Integer i=0;i<pointer_size-1;i++)
         for(Integer j=pointer[i];j<pointer[i+1];j++)
             v[i]+=std::abs(data[j]);
-  }
-  catch(iluplusplus_error ippe){
-      v.resize(0);
-      std::cerr<<"matrix_sparse::sum_absolute_values_along_orientation: "<<ippe.error_message()<<"Returning empty vector."<<std::endl<<std::flush;
-      throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::sum_absolute_values_against_orientation(vector_dense<Real> &v) const {
-   try {
-     v.resize(dim_against_orientation(),0.0);
-     for(Integer i=0;i<pointer_size-1;i++)
+    v.resize(dim_against_orientation(),0.0);
+    for(Integer i=0;i<pointer_size-1;i++)
         for(Integer j=pointer[i];j<pointer[i+1];j++)
             v[indices[j]]+=std::abs(data[j]);
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::sum_absolute_values_against_orientation: "<<ippe.error_message()<<"Returning empty vector."<<std::endl<<std::flush;
-      v.resize(0);
-      throw;
-  }
 }
 
 
 
 template<class T> void matrix_sparse<T>::generic_matrix_vector_multiplication_addition(matrix_usage_type use, const vector_dense<T>& x, vector_dense<T>& v) const {
-   try {
-     Integer i,j;
-     # ifdef VERYVERBOSE
-          clock_t time_1,time_2;
-          Real time=0.0;
-          time_1 = clock();
-     #endif
-     if ( ( (orientation == ROW)&&(use == ID) ) || ( (orientation == COLUMN)&&(use == TRANSPOSE) )  ){
-         # ifdef VERYVERBOSE
-             std::cout<<"          generic_matrix_vector_multiplication_addition: ROW/ID or COLUMN/TRANSPOSE"<<std::endl;
-         #endif
-         for(i=0;i<pointer_size-1;i++)
-             for(j=pointer[i];j<pointer[i+1];j++)
-                 v.set(i)+=data[j]*x.get(indices[j]);
-      } else {
-         # ifdef VERYVERBOSE
-             std::cout<<"          generic_matrix_vector_multiplication_addition: ROW/TRANSPOSE or COLUMN/ID"<<std::endl;
-         #endif
-         for(i=0;i<pointer_size-1;i++)
-             for(j=pointer[i];j<pointer[i+1];j++)
-                 v.set(indices[j])+=data[j]*x.get(i);
-     }
-     #ifdef VERYVERBOSE
-          time_2 = clock();
-          time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-          std::cout<<std::endl<<"          generic_matrix_vector_multiplication_addition time "<<time<<std::endl<<std::flush;
-     #endif
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::generic_matrix_vector_multiplication_addition: "<<ippe.error_message()<<std::endl<<std::flush;
-      throw;
-  }
+    Integer i,j;
+# ifdef VERYVERBOSE
+    clock_t time_1,time_2;
+    Real time=0.0;
+    time_1 = clock();
+#endif
+    if ( ( (orientation == ROW)&&(use == ID) ) || ( (orientation == COLUMN)&&(use == TRANSPOSE) )  ){
+# ifdef VERYVERBOSE
+        std::cout<<"          generic_matrix_vector_multiplication_addition: ROW/ID or COLUMN/TRANSPOSE"<<std::endl;
+#endif
+        for(i=0;i<pointer_size-1;i++)
+            for(j=pointer[i];j<pointer[i+1];j++)
+                v.set(i)+=data[j]*x.get(indices[j]);
+    } else {
+# ifdef VERYVERBOSE
+        std::cout<<"          generic_matrix_vector_multiplication_addition: ROW/TRANSPOSE or COLUMN/ID"<<std::endl;
+#endif
+        for(i=0;i<pointer_size-1;i++)
+            for(j=pointer[i];j<pointer[i+1];j++)
+                v.set(indices[j])+=data[j]*x.get(i);
+    }
+#ifdef VERYVERBOSE
+    time_2 = clock();
+    time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+    std::cout<<std::endl<<"          generic_matrix_vector_multiplication_addition time "<<time<<std::endl<<std::flush;
+#endif
 }
 
 template<class T> void matrix_sparse<T>::vector_of_matrix_matrix_multiplication(const matrix_sparse<T>& C, Integer i, vector_dense<T>& result, orientation_type o) const {
@@ -4250,7 +3709,6 @@ template<class T> void matrix_sparse<T>::vector_of_matrix_matrix_multiplication(
    }
 
 template<class T> void matrix_sparse<T>::row_of_matrix_matrix_multiplication(const matrix_sparse<T>& C, Integer i, vector_dense<T>& result) const{
-  try {
     // check dimensions and range of argument i.
     if((number_columns == C.number_rows) && (i<number_rows)){
         // a few variables to store intermediate results:
@@ -4269,7 +3727,7 @@ template<class T> void matrix_sparse<T>::row_of_matrix_matrix_multiplication(con
                         ind2 = C.indices[k];
                         result[ind2] += val*C.data[k];
                     }    // end for k
-               }    // end for j
+                }    // end for j
             } else {
                 // orientation==ROW, C.orientation==COLUMN
                 result.resize(C.number_columns,0.0);
@@ -4282,11 +3740,11 @@ template<class T> void matrix_sparse<T>::row_of_matrix_matrix_multiplication(con
                     while ((ind1<ind1max) && (ind2<ind2max)){
                         if (indices[ind1] < C.indices[ind2]) ind1++;
                         else if (indices[ind1] > C.indices[ind2]) ind2++;
-                             else {
-                                 result[j] += data[ind1]*C.data[ind2];
-                                 ind1++;
-                                 ind2++;
-                             }
+                        else {
+                            result[j] += data[ind1]*C.data[ind2];
+                            ind1++;
+                            ind2++;
+                        }
                     } // end while
                 } // end for j
             }    // end if
@@ -4299,21 +3757,15 @@ template<class T> void matrix_sparse<T>::row_of_matrix_matrix_multiplication(con
             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         }
     } else {
-    std::cerr << "matrix_sparse::row_of_matrix_matrix_multiplication:"<<std::endl;
-    std::cerr << "      matrix dimensions are incompatible or row number is too large."<<std::endl;
-    std::cerr << "      row number is "<<i<<std::endl;
-    std::cerr << "      dimensions of arguments are (should be equal and larger than row number) "<<number_rows<<" "<<C.number_rows<<std::endl;
-    throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+        std::cerr << "matrix_sparse::row_of_matrix_matrix_multiplication:"<<std::endl;
+        std::cerr << "      matrix dimensions are incompatible or row number is too large."<<std::endl;
+        std::cerr << "      row number is "<<i<<std::endl;
+        std::cerr << "      dimensions of arguments are (should be equal and larger than row number) "<<number_rows<<" "<<C.number_rows<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::row_of_matrix_matrix_multiplication: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-      throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::column_of_matrix_matrix_multiplication(const matrix_sparse<T>& C, Integer i, vector_dense<T>& result) const {
-  try {
     // check compatibility of dimensions and argument i:
     if((number_columns == C.number_rows)&&(i<C.number_columns)){
         // a few variables to store intermediate results:
@@ -4331,7 +3783,7 @@ template<class T> void matrix_sparse<T>::column_of_matrix_matrix_multiplication(
                 std::cerr << "      Try changing the second factor to a column matrix with change_orientation()."<<std::endl;
                 throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
             } else {
-            //  orientation==ROW, C.orientation==COLUMN
+                //  orientation==ROW, C.orientation==COLUMN
                 result.resize(number_rows,0.0);
                 // calculate the i-th column of B*C store result in col_res
                 for (j=0; j<number_rows;j++){
@@ -4342,11 +3794,11 @@ template<class T> void matrix_sparse<T>::column_of_matrix_matrix_multiplication(
                     while ((ind1<ind1max) && (ind2<ind2max)){
                         if (C.indices[ind1] < indices[ind2]) ind1++;
                         else if (C.indices[ind1] > indices[ind2]) ind2++;
-                             else {
-                                  result[j] += C.data[ind1]*data[ind2];
-                                  ind1++;
-                                  ind2++;
-                              }
+                        else {
+                            result[j] += C.data[ind1]*data[ind2];
+                            ind1++;
+                            ind2++;
+                        }
                     } // end while
                 } // end for j
             }
@@ -4373,184 +3825,161 @@ template<class T> void matrix_sparse<T>::column_of_matrix_matrix_multiplication(
             }
         }
     } else {
-    std::cerr << "matrix_sparse::column_of_matrix_matrix_multiplication:"<<std::endl;
-    std::cerr << "      matrix dimension are incompatible or column number is too large."<<std::endl;
-    std::cerr << "      column number is "<<i<<std::endl;
-    std::cerr << "      dimensions of arguments are (should be equal and larger than column number) "<<number_columns<<" "<<C.number_columns<<std::endl;
-    throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+        std::cerr << "matrix_sparse::column_of_matrix_matrix_multiplication:"<<std::endl;
+        std::cerr << "      matrix dimension are incompatible or column number is too large."<<std::endl;
+        std::cerr << "      column number is "<<i<<std::endl;
+        std::cerr << "      dimensions of arguments are (should be equal and larger than column number) "<<number_columns<<" "<<C.number_columns<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"matrix_sparse::column_of_matrix_matrix_multiplication: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-      throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::matrix_matrix_multiplication(T beta, const matrix_sparse<T>& B, const matrix_sparse<T>& C, orientation_type result_orientation, Real matrix_density){
-    try {
-        // check compatibility of dimensions:
-        if(B.number_columns != C.number_rows){
-            std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
-            std::cerr << "      matrix formats are incompatible."<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-        // check if sparse matrices can be multiplied:
-        if((result_orientation == ROW) && (B.orientation != ROW)){
-            std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
-            std::cerr << "      if the result is to have row format, then the first factor must have row format as well."<<std::endl;
-            std::cerr << "      the first factor is however a column matrix."<<std::endl;
-            std::cerr << "      Try changing the first factor to a row matrix with change_orientation()."<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-        if((result_orientation == COLUMN) && (C.orientation != COLUMN)){
-            std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
-            std::cerr << "      if the result is to have column format, then the second factor must have column format as well."<<std::endl;
-            std::cerr << "      the second factor is however a row matrix."<<std::endl;
-            std::cerr << "      Try changing the second factor to a column matrix with change_orientation()."<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-        // a few variables to store intermediate results:
-        Integer i,offset;
-        // the values of the following variables, which will determine the size of the fields in the result, depends on the orientation of the result, i.e. of A.
-        // if matrix_density is larger than 1, no dropping will occur. This is implemented using a negative density:
-        if (matrix_density >= 1.0) matrix_density = -1.0;
-        Integer new_nnz_per_direction;
-        Integer new_nnz;
-        Integer iterative_dimension; // is number of columns, if multiplication is done column-wise, same for rows.
-        Integer orientation_dimension; // the other dimension, i.e. the size of intermediate results, i.e the size of the columns if multiplication is done column-wise
-        if (result_orientation == ROW) {
-            if (matrix_density <= 0.0)
-                new_nnz_per_direction = C.number_columns;
-            else
-                new_nnz_per_direction = (Integer) ceil(C.number_columns * matrix_density);
-            new_nnz = new_nnz_per_direction * B.number_rows;
-            iterative_dimension = B.number_rows;
-            orientation_dimension = C.number_columns;
-        } else {
-            if (matrix_density <= 0.0)
-                new_nnz_per_direction = B.number_rows;
-            else
-                new_nnz_per_direction = (Integer) ceil(B.number_rows * matrix_density);
-            new_nnz = new_nnz_per_direction * C.number_columns;
-            iterative_dimension = C.number_columns;
-            orientation_dimension = B.number_rows;
-        }
-        index_list list(new_nnz_per_direction);
-        vector_dense<T> res(orientation_dimension);
-        // the format of the matrix D=beta*B*C is (B.number_columns x C.number_rows).
-        reformat(B.number_rows, C.number_columns, new_nnz, result_orientation);
-        // begin calculating the product allowing for the maximum density indicated above.
-        // 1.) the entries are calculated by row/column,
-        // 2.) dropping is performed by row/column to ensure the overall density requirements are met.
-        for (i=0; i<iterative_dimension; i++){
-            offset = i*new_nnz_per_direction;
-            pointer[i] = offset;
-            // calculate the i-th row of B*C store result in row_res
-            B.vector_of_matrix_matrix_multiplication(C,i,res,orientation);
-            // multiply the i-th row of B*C with beta
-            res.scale(beta);
-            // do dropping if needed
-            if (new_nnz_per_direction != orientation_dimension){
-                list.init();
-                res.take_largest_elements_by_abs_value(list, new_nnz_per_direction);                                            // initialize list 0,1,2...,number_columns-1
-            }
-            // copy data from row_res to the i-th row of D (copy new_nnz_per_direction elements)
-            insert_data(res,list,offset);
-        }   // end for i
-        pointer[iterative_dimension]=iterative_dimension*new_nnz_per_direction;
+    // check compatibility of dimensions:
+    if(B.number_columns != C.number_rows){
+        std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
+        std::cerr << "      matrix formats are incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_matrix_multiplication::column_of_matrix_matrix_multiplication: "<<ippe.error_message()<<" Returning 0x0 matrix."<<std::endl<<std::flush;
-        throw;
+    // check if sparse matrices can be multiplied:
+    if((result_orientation == ROW) && (B.orientation != ROW)){
+        std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
+        std::cerr << "      if the result is to have row format, then the first factor must have row format as well."<<std::endl;
+        std::cerr << "      the first factor is however a column matrix."<<std::endl;
+        std::cerr << "      Try changing the first factor to a row matrix with change_orientation()."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
+    if((result_orientation == COLUMN) && (C.orientation != COLUMN)){
+        std::cerr << "matrix_sparse::generic_matrix_matrix_multiplication:"<<std::endl;
+        std::cerr << "      if the result is to have column format, then the second factor must have column format as well."<<std::endl;
+        std::cerr << "      the second factor is however a row matrix."<<std::endl;
+        std::cerr << "      Try changing the second factor to a column matrix with change_orientation()."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    // a few variables to store intermediate results:
+    Integer i,offset;
+    // the values of the following variables, which will determine the size of the fields in the result, depends on the orientation of the result, i.e. of A.
+    // if matrix_density is larger than 1, no dropping will occur. This is implemented using a negative density:
+    if (matrix_density >= 1.0) matrix_density = -1.0;
+    Integer new_nnz_per_direction;
+    Integer new_nnz;
+    Integer iterative_dimension; // is number of columns, if multiplication is done column-wise, same for rows.
+    Integer orientation_dimension; // the other dimension, i.e. the size of intermediate results, i.e the size of the columns if multiplication is done column-wise
+    if (result_orientation == ROW) {
+        if (matrix_density <= 0.0)
+            new_nnz_per_direction = C.number_columns;
+        else
+            new_nnz_per_direction = (Integer) ceil(C.number_columns * matrix_density);
+        new_nnz = new_nnz_per_direction * B.number_rows;
+        iterative_dimension = B.number_rows;
+        orientation_dimension = C.number_columns;
+    } else {
+        if (matrix_density <= 0.0)
+            new_nnz_per_direction = B.number_rows;
+        else
+            new_nnz_per_direction = (Integer) ceil(B.number_rows * matrix_density);
+        new_nnz = new_nnz_per_direction * C.number_columns;
+        iterative_dimension = C.number_columns;
+        orientation_dimension = B.number_rows;
+    }
+    index_list list(new_nnz_per_direction);
+    vector_dense<T> res(orientation_dimension);
+    // the format of the matrix D=beta*B*C is (B.number_columns x C.number_rows).
+    reformat(B.number_rows, C.number_columns, new_nnz, result_orientation);
+    // begin calculating the product allowing for the maximum density indicated above.
+    // 1.) the entries are calculated by row/column,
+    // 2.) dropping is performed by row/column to ensure the overall density requirements are met.
+    for (i=0; i<iterative_dimension; i++){
+        offset = i*new_nnz_per_direction;
+        pointer[i] = offset;
+        // calculate the i-th row of B*C store result in row_res
+        B.vector_of_matrix_matrix_multiplication(C,i,res,orientation);
+        // multiply the i-th row of B*C with beta
+        res.scale(beta);
+        // do dropping if needed
+        if (new_nnz_per_direction != orientation_dimension){
+            list.init();
+            res.take_largest_elements_by_abs_value(list, new_nnz_per_direction);                                            // initialize list 0,1,2...,number_columns-1
+        }
+        // copy data from row_res to the i-th row of D (copy new_nnz_per_direction elements)
+        insert_data(res,list,offset);
+    }   // end for i
+    pointer[iterative_dimension]=iterative_dimension*new_nnz_per_direction;
   }
 
 template<class T> void matrix_sparse<T>::matrix_addition(T alpha, const matrix_sparse<T>& A, const matrix_sparse<T>& B){
-    try {
-        if((A.number_rows != B.number_rows)||(A.number_columns != B.number_columns)||(A.orientation != B.orientation)){
-            std::cerr << "matrix_sparse::matrix_addition: The dimensions and/or orientations of the arguments are incompatible."<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-        reformat(A.number_rows, A.number_columns, min(A.number_rows*A.number_columns, A.nnz+B.nnz), A.orientation);
-        Integer j, ind1, ind2, ind1max, ind2max;
-        Integer counter = 0;
-        pointer[0] = 0;
-        for (j=0; j < A.dim_along_orientation(); j++){
-            ind1    = A.pointer[j];
-            ind2    = B.pointer[j];
-            ind1max = A.pointer[j+1];
-            ind2max = B.pointer[j+1];
-            while ((ind1 < ind1max)&&(ind2 < ind2max)){
-                if(A.indices[ind1] == B.indices[ind2]){
+    if((A.number_rows != B.number_rows)||(A.number_columns != B.number_columns)||(A.orientation != B.orientation)){
+        std::cerr << "matrix_sparse::matrix_addition: The dimensions and/or orientations of the arguments are incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    reformat(A.number_rows, A.number_columns, min(A.number_rows*A.number_columns, A.nnz+B.nnz), A.orientation);
+    Integer j, ind1, ind2, ind1max, ind2max;
+    Integer counter = 0;
+    pointer[0] = 0;
+    for (j=0; j < A.dim_along_orientation(); j++){
+        ind1    = A.pointer[j];
+        ind2    = B.pointer[j];
+        ind1max = A.pointer[j+1];
+        ind2max = B.pointer[j+1];
+        while ((ind1 < ind1max)&&(ind2 < ind2max)){
+            if(A.indices[ind1] == B.indices[ind2]){
+                indices[counter] = A.indices[ind1];
+                data[counter] = (alpha*A.data[ind1]) + B.data[ind2];
+                ind1++;
+                ind2++;
+                counter++;
+            } else {
+                if (A.indices[ind1] < B.indices[ind2]){
                     indices[counter] = A.indices[ind1];
-                    data[counter] = (alpha*A.data[ind1]) + B.data[ind2];
+                    data[counter] = alpha*A.data[ind1];
                     ind1++;
-                    ind2++;
                     counter++;
                 } else {
-                    if (A.indices[ind1] < B.indices[ind2]){
-                        indices[counter] = A.indices[ind1];
-                        data[counter] = alpha*A.data[ind1];
-                        ind1++;
-                        counter++;
-                    } else {
-                        indices[counter]=B.indices[ind2];
-                        data[counter]=B.data[ind2];
-                        ind2++;
-                        counter++;
-                    }
-                }
-            } // end while
-            if(ind1 == ind1max)
-                while(ind2 < ind2max){
                     indices[counter]=B.indices[ind2];
                     data[counter]=B.data[ind2];
                     ind2++;
                     counter++;
                 }
-            if(ind2 == ind2max)
-                while(ind1 < ind1max){
-                    indices[counter]=A.indices[ind1];
-                    data[counter]=alpha*A.data[ind1];
-                    ind1++;
-                    counter++;
-                }
-            pointer[j+1]=counter;
-        } // end for j
-        compress();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_sparse::matrix_addition: "<<ippe.error_message()<<std::endl<<std::flush;
-        throw;
-    }
+            }
+        } // end while
+        if(ind1 == ind1max)
+            while(ind2 < ind2max){
+                indices[counter]=B.indices[ind2];
+                data[counter]=B.data[ind2];
+                ind2++;
+                counter++;
+            }
+        if(ind2 == ind2max)
+            while(ind1 < ind1max){
+                indices[counter]=A.indices[ind1];
+                data[counter]=alpha*A.data[ind1];
+                ind1++;
+                counter++;
+            }
+        pointer[j+1]=counter;
+    } // end for j
+    compress();
   }
 
 
 template<class T> void matrix_sparse<T>::keepFillin(const matrix_sparse<T> &m, Integer fillin,  matrix_sparse<T>& n) const {
-      try {
-          vector_dense<T> absvalue;
-          index_list list;
-          Integer i;
-          if(fillin>m.pointer[1]){
-              n=m;
-              return;
-          }
-          absvalue.resize(m.pointer[1]);
-          list.resize(m.pointer[1]);
-          for(i=0;i<m.pointer[1];i++) absvalue[i]=std::abs(m.data[i]);
-          absvalue.quicksort(list,0,m.pointer[1]-1);
-          list.quicksort(m.pointer[1]-fillin,m.pointer[1]-1);
-          if(n.nnz<fillin) n.reformat(m.number_rows,1,fillin,COLUMN);
-          for(i=0;i<fillin;i++){
-              n.data[i]=m.data[list[m.pointer[1]-fillin+i]];
-              n.indices[i]=m.indices[list[m.pointer[1]-fillin+i]];
-          }
-          n.pointer[1]=fillin;
-      }
-      catch(iluplusplus_error ippe){
-          std::cerr<<" matrix_sparse<T>::keepFillin: "<<ippe.error_message()<<std::endl<<std::flush;
-          throw;
-      }
+    vector_dense<T> absvalue;
+    index_list list;
+    Integer i;
+    if(fillin>m.pointer[1]){
+        n=m;
+        return;
+    }
+    absvalue.resize(m.pointer[1]);
+    list.resize(m.pointer[1]);
+    for(i=0;i<m.pointer[1];i++) absvalue[i]=std::abs(m.data[i]);
+    absvalue.quicksort(list,0,m.pointer[1]-1);
+    list.quicksort(m.pointer[1]-fillin,m.pointer[1]-1);
+    if(n.nnz<fillin) n.reformat(m.number_rows,1,fillin,COLUMN);
+    for(i=0;i<fillin;i++){
+        n.data[i]=m.data[list[m.pointer[1]-fillin+i]];
+        n.indices[i]=m.indices[list[m.pointer[1]-fillin+i]];
+    }
+    n.pointer[1]=fillin;
   }
 
 
@@ -4561,49 +3990,31 @@ template<class T> void matrix_sparse<T>::keepFillin(const matrix_sparse<T> &m, I
 
 
 template<class T> matrix_sparse<T>::matrix_sparse(){
-   try {
-     nnz            = 0;
-     pointer_size   = 0;
-     data           = 0;
-     indices        = 0;
-     pointer        = 0;
-     reformat(0,0,0,ROW);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::matrix_sparse: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    nnz            = 0;
+    pointer_size   = 0;
+    data           = 0;
+    indices        = 0;
+    pointer        = 0;
+    reformat(0,0,0,ROW);
 }
 
 
 template<class T> matrix_sparse<T>::matrix_sparse(orientation_type o, Integer m, Integer n){
-   try {
-     nnz            = 0;
-     pointer_size   = 0;
-     data           = 0;
-     indices        = 0;
-     pointer        = 0;
-     reformat(m,n,0,o);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::matrix_sparse: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    nnz            = 0;
+    pointer_size   = 0;
+    data           = 0;
+    indices        = 0;
+    pointer        = 0;
+    reformat(m,n,0,o);
  }
 
 template<class T> matrix_sparse<T>::matrix_sparse(orientation_type o, Integer m, Integer n, Integer nz){
-   try {
-     nnz            = 0;
-     pointer_size   = 0;
-     data           = 0;
-     indices        = 0;
-     pointer        = 0;
-     reformat(m,n,nz,ROW);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::matrix_sparse: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    nnz            = 0;
+    pointer_size   = 0;
+    data           = 0;
+    indices        = 0;
+    pointer        = 0;
+    reformat(m,n,nz,ROW);
  }
 
 template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, Integer* _pointer,
@@ -4624,22 +4035,16 @@ template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, I
 
 
 template<class T> matrix_sparse<T>::matrix_sparse(const matrix_sparse& X){
-   try {
-     nnz            = 0;
-     pointer_size   = 0;
-     data           = 0;
-     indices        = 0;
-     pointer        = 0;
-     reformat(X.number_rows,X.number_columns,X.nnz,X.orientation);
-     Integer i;
-     for (i=0;i<nnz;i++) data[i] = X.data[i];
-     for (i=0;i<nnz;i++) indices[i] = X.indices[i];
-     for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr <<"matrix_sparse::matrix_sparse(const matrix_sparse &): "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    nnz            = 0;
+    pointer_size   = 0;
+    data           = 0;
+    indices        = 0;
+    pointer        = 0;
+    reformat(X.number_rows,X.number_columns,X.nnz,X.orientation);
+    Integer i;
+    for (i=0;i<nnz;i++) data[i] = X.data[i];
+    for (i=0;i<nnz;i++) indices[i] = X.indices[i];
+    for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
   }
 
 
@@ -4656,29 +4061,17 @@ template<class T> matrix_sparse<T>::~matrix_sparse() { // std::cout<<"matrixdest
 //***********************************************************************************************************************
 
 template<class T> void matrix_sparse<T>::matrix_vector_multiplication_add(matrix_usage_type use, const vector_dense<T>& x, vector_dense<T>& v) const {
- try {
     if(non_fatal_error(((use==ID)&&((columns() != x.size)||(rows() != v.size)) ), "matrix_sparse::matrix_vector_multiplication_add: incompatible dimensions."  )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(((use==TRANSPOSE)&&((rows() != x.size)||(columns() != v.size)) ), "matrix_sparse::matrix_vector_multiplication_add: incompatible dimensions."  )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     generic_matrix_vector_multiplication_addition(use,x,v);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr <<"matrix_sparse::matrix_vector_multiplication_add: "<<ippe.error_message() << std::endl;
-      throw;
-   }
   }
 
 template<class T> void matrix_sparse<T>::matrix_vector_multiplication(matrix_usage_type use, const vector_dense<T>& x, vector_dense<T>& v) const {
-  try {
     if(non_fatal_error(((use==ID)&&(columns() != x.dimension()) ), "matrix_sparse::matrix_vector_multiplication: incompatible dimensions."  )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(((use==TRANSPOSE)&&(rows() != x.dimension()) ), "matrix_sparse::matrix_vector_multiplication: incompatible dimensions."  )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(use == ID) v.resize(rows(),0.0);
     else v.resize(columns(),0.0);
     generic_matrix_vector_multiplication_addition(use,x,v);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr <<"matrix_sparse::matrix_vector_multiplication: "<<ippe.error_message() << std::endl;
-      throw;
-   }
   }
 
 
@@ -4754,25 +4147,19 @@ template<class T> void matrix_sparse<T>::scale(const vector_dense<T>& v, orienta
 
 
 template<class T> void matrix_sparse<T>::scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o){
-    try {
-        if(non_fatal_error( (((o==ROW)&&(v.dimension() != A.number_rows))||((o==COLUMN)&&(v.dimension() != A.number_columns))), "matrix_sparse::scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        reformat(A.number_rows,A.number_columns,A.actual_non_zeroes(), A.orientation);
-        Integer i;
-        Integer j;
-        if(o==orientation)
-            for(i=0;i<pointer_size-1;i++)
-                for(j=pointer[i];j<pointer[i+1];j++)
-                    data[j] = A.data[j]*v.read_data(i);
-        else
-            for(j=0;j<nnz;j++)
-              data[j]  = A.data[j]* v.read_data(A.indices[j]);
-        for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
-        for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::scale: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    if(non_fatal_error( (((o==ROW)&&(v.dimension() != A.number_rows))||((o==COLUMN)&&(v.dimension() != A.number_columns))), "matrix_sparse::scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    reformat(A.number_rows,A.number_columns,A.actual_non_zeroes(), A.orientation);
+    Integer i;
+    Integer j;
+    if(o==orientation)
+        for(i=0;i<pointer_size-1;i++)
+            for(j=pointer[i];j<pointer[i+1];j++)
+                data[j] = A.data[j]*v.read_data(i);
+    else
+        for(j=0;j<nnz;j++)
+            data[j]  = A.data[j]* v.read_data(A.indices[j]);
+    for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
+    for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
   }
 
 
@@ -4791,25 +4178,19 @@ template<class T> void matrix_sparse<T>::inverse_scale(const vector_dense<T>& v,
   }
 
 template<class T> void matrix_sparse<T>::inverse_scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o){
-    try {
-        if(non_fatal_error( (((o==ROW)&&(v.dimension() != A.number_rows))||((o==COLUMN)&&(v.dimension() != A.number_columns))), "matrix_sparse::inverse_scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        reformat(A.number_rows,A.number_columns,A.actual_non_zeroes(), A.orientation);
-        Integer i;
-        Integer j;
-        if(o==orientation)
-            for(i=0;i<pointer_size-1;i++)
-                for(j=pointer[i];j<pointer[i+1];j++)
-                    data[j] = A.data[j]/v.read_data(i);
-        else
-            for(j=0;j<A.actual_non_zeroes();j++)
-              data[j] = A.data[j]/v.read_data(A.indices[j]);
-        for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
-        for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::inverse_scale: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    if(non_fatal_error( (((o==ROW)&&(v.dimension() != A.number_rows))||((o==COLUMN)&&(v.dimension() != A.number_columns))), "matrix_sparse::inverse_scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    reformat(A.number_rows,A.number_columns,A.actual_non_zeroes(), A.orientation);
+    Integer i;
+    Integer j;
+    if(o==orientation)
+        for(i=0;i<pointer_size-1;i++)
+            for(j=pointer[i];j<pointer[i+1];j++)
+                data[j] = A.data[j]/v.read_data(i);
+    else
+        for(j=0;j<A.actual_non_zeroes();j++)
+            data[j] = A.data[j]/v.read_data(A.indices[j]);
+    for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
+    for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
   }
 
 template<class T> void matrix_sparse<T>::inverse_scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2){
@@ -4828,93 +4209,51 @@ template<class T> void matrix_sparse<T>::inverse_scale(const vector_dense<T>& D1
 
 
 template<class T> void matrix_sparse<T>::normalize_columns(vector_dense<T>& D_r){
-    try {
-        D_r.norm2_of_dim1(*this,COLUMN);
-        inverse_scale(D_r,COLUMN);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize_columns: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_r.norm2_of_dim1(*this,COLUMN);
+    inverse_scale(D_r,COLUMN);
   }
 
 template<class T> void matrix_sparse<T>::normalize_rows(vector_dense<T>& D_l){
-    try {
-        D_l.norm2_of_dim1(*this,ROW);
-        inverse_scale(D_l,ROW);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize_rows: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_l.norm2_of_dim1(*this,ROW);
+    inverse_scale(D_l,ROW);
   }
 
 
 template<class T> void matrix_sparse<T>::normalize(){
-    try {
-        vector_dense<T> D_l, D_r;
-        D_r.norm2_of_dim1(*this,COLUMN);
-        inverse_scale(D_r,COLUMN);
-        D_l.norm2_of_dim1(*this,ROW);
-        inverse_scale(D_l,ROW);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    vector_dense<T> D_l, D_r;
+    D_r.norm2_of_dim1(*this,COLUMN);
+    inverse_scale(D_r,COLUMN);
+    D_l.norm2_of_dim1(*this,ROW);
+    inverse_scale(D_l,ROW);
   }
 
 
 template<class T> void matrix_sparse<T>::normalize(vector_dense<T>& D_l, vector_dense<T>& D_r){
-    try {
-        D_r.norm2_of_dim1(*this,COLUMN);
-        inverse_scale(D_r,COLUMN);
-        D_l.norm2_of_dim1(*this,ROW);
-        inverse_scale(D_l,ROW);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_r.norm2_of_dim1(*this,COLUMN);
+    inverse_scale(D_r,COLUMN);
+    D_l.norm2_of_dim1(*this,ROW);
+    inverse_scale(D_l,ROW);
   }
 
 
 
 template<class T> void matrix_sparse<T>::normalize_columns(const matrix_sparse<T>& A, vector_dense<T>& D_r){
-   try {
-        D_r.norm2_of_dim1(A,COLUMN);
-        inverse_scale(A,D_r,COLUMN);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize_columns: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_r.norm2_of_dim1(A,COLUMN);
+    inverse_scale(A,D_r,COLUMN);
   }
 
 template<class T> void matrix_sparse<T>::normalize_rows(const matrix_sparse<T>& A, vector_dense<T>& D_l){
-    try {
-        D_l.norm2_of_dim1(A,ROW);
-        inverse_scale(A,D_l,ROW);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize_rows: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_l.norm2_of_dim1(A,ROW);
+    inverse_scale(A,D_l,ROW);
   }
 
 
 
 template<class T> void matrix_sparse<T>::normalize(const matrix_sparse<T>& A, vector_dense<T>& D_l, vector_dense<T>& D_r){
-    try {
-        D_r.norm2_of_dim1(A,COLUMN);
-        inverse_scale(A,D_r,COLUMN);
-        D_l.norm2_of_dim1(*this,ROW);
-        inverse_scale(D_l,ROW);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normalize: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    D_r.norm2_of_dim1(A,COLUMN);
+    inverse_scale(A,D_r,COLUMN);
+    D_l.norm2_of_dim1(*this,ROW);
+    inverse_scale(D_l,ROW);
   }
 
 template<class T> bool matrix_sparse<T>::numerical_zero_check(Real threshold) const {
@@ -4935,118 +4274,82 @@ template<class T> bool matrix_sparse<T>::numerical_zero_check(Real threshold) co
 //***********************************************************************************************************************
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::operator *(T d) const {
-    try {
-         matrix_sparse<T> A(*this);
-         A.scalar_multiply(d);
-         return A;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::operator *: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    matrix_sparse<T> A(*this);
+    A.scalar_multiply(d);
+    return A;
   }
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::reorder(const index_list& invperm){
-    try {
-        Integer k,j;
-        Integer needed_storage = max_one_dim_size();
-        index_list used_indices;
-        vector_dense<T> stored_data;
-        index_list list;
-        used_indices.resize_without_initialization(needed_storage);
-        stored_data.resize_without_initialization(needed_storage);
-        list.resize_without_initialization(needed_storage);
-        for(k=0;k<pointer_size-1;k++){
-            list.init();
-            for(j=pointer[k];j<pointer[k+1];j++)
-                used_indices[j-pointer[k]]=indices[j];
-            for(j=pointer[k];j<pointer[k+1];j++)
-                stored_data[j-pointer[k]]=data[j];
-            quicksort(used_indices,list,invperm,0,pointer[k+1]-pointer[k]-1);
-            for(j=pointer[k];j<pointer[k+1];j++){
-                indices[j]=used_indices[j-pointer[k]];
-            }
-            for(j=pointer[k];j<pointer[k+1];j++)
-                data[j]=stored_data[list[j-pointer[k]]];
-        }  // end for k
-        return *this;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::reorder: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    Integer k,j;
+    Integer needed_storage = max_one_dim_size();
+    index_list used_indices;
+    vector_dense<T> stored_data;
+    index_list list;
+    used_indices.resize_without_initialization(needed_storage);
+    stored_data.resize_without_initialization(needed_storage);
+    list.resize_without_initialization(needed_storage);
+    for(k=0;k<pointer_size-1;k++){
+        list.init();
+        for(j=pointer[k];j<pointer[k+1];j++)
+            used_indices[j-pointer[k]]=indices[j];
+        for(j=pointer[k];j<pointer[k+1];j++)
+            stored_data[j-pointer[k]]=data[j];
+        quicksort(used_indices,list,invperm,0,pointer[k+1]-pointer[k]-1);
+        for(j=pointer[k];j<pointer[k+1];j++){
+            indices[j]=used_indices[j-pointer[k]];
+        }
+        for(j=pointer[k];j<pointer[k+1];j++)
+            data[j]=stored_data[list[j-pointer[k]]];
+    }  // end for k
+    return *this;
   }
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::normal_order(){
-    try {
-        Integer k,j;
-        Integer needed_storage = max_one_dim_size();
-        index_list used_indices;
-        vector_dense<T> stored_data;
-        index_list list;
-        used_indices.resize_without_initialization(needed_storage);
-        stored_data.resize_without_initialization(needed_storage);
-        list.resize_without_initialization(needed_storage);
-        for(k=0;k<pointer_size-1;k++){
-            list.init();
-            for(j=pointer[k];j<pointer[k+1];j++)
-                used_indices[j-pointer[k]]=indices[j];
-            for(j=pointer[k];j<pointer[k+1];j++)
-                stored_data[j-pointer[k]]=data[j];
-            used_indices.quicksort(list,0,pointer[k+1]-pointer[k]-1);
-            for(j=pointer[k];j<pointer[k+1];j++){
-                indices[j]=used_indices[j-pointer[k]];
-            }
-            for(j=pointer[k];j<pointer[k+1];j++)
-                data[j]=stored_data[list[j-pointer[k]]];
-        }  // end for k
-        return *this;
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::normal_order: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    Integer k,j;
+    Integer needed_storage = max_one_dim_size();
+    index_list used_indices;
+    vector_dense<T> stored_data;
+    index_list list;
+    used_indices.resize_without_initialization(needed_storage);
+    stored_data.resize_without_initialization(needed_storage);
+    list.resize_without_initialization(needed_storage);
+    for(k=0;k<pointer_size-1;k++){
+        list.init();
+        for(j=pointer[k];j<pointer[k+1];j++)
+            used_indices[j-pointer[k]]=indices[j];
+        for(j=pointer[k];j<pointer[k+1];j++)
+            stored_data[j-pointer[k]]=data[j];
+        used_indices.quicksort(list,0,pointer[k+1]-pointer[k]-1);
+        for(j=pointer[k];j<pointer[k+1];j++){
+            indices[j]=used_indices[j-pointer[k]];
+        }
+        for(j=pointer[k];j<pointer[k+1];j++)
+            data[j]=stored_data[list[j-pointer[k]]];
+    }  // end for k
+    return *this;
   }
 
 
 
 template<class T> void matrix_sparse<T>::transp(const matrix_sparse<T>& X) {
-    try {
-        change_orientation_of_data(X);
-        transpose_in_place();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::transp: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    change_orientation_of_data(X);
+    transpose_in_place();
   }
 
 
 template<class T> void matrix_sparse<T>::transpose(const matrix_sparse<T>& X) {
-    try {
-        change_orientation_of_data(X);
-        transpose_in_place();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::transp: "<<ippe.error_message() << std::endl;
-        throw;
-    }
+    change_orientation_of_data(X);
+    transpose_in_place();
   }
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::operator = (const matrix_sparse<T>& X){
-  try {
-     if(this==&X) return *this;
-     reformat(X.number_rows,X.number_columns,X.nnz,X.orientation);
-     Integer i;
-     for (i=0;i<nnz;i++) data[i] = X.data[i];
-     for (i=0;i<nnz;i++) indices[i] = X.indices[i];
-     for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
-     return *this;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr <<"matrix_sparse::operator = : "<<ippe.error_message()<< std::endl;
-     throw;
-  }
+    if(this==&X) return *this;
+    reformat(X.number_rows,X.number_columns,X.nnz,X.orientation);
+    Integer i;
+    for (i=0;i<nnz;i++) data[i] = X.data[i];
+    for (i=0;i<nnz;i++) indices[i] = X.indices[i];
+    for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
+    return *this;
 }
 
 template<class T> void matrix_sparse<T>::setup(Integer m, Integer n, Integer nonzeroes, T* data_array, Integer* indices_array, Integer* pointer_array, orientation_type O){
@@ -5099,30 +4402,24 @@ template<class T> void matrix_sparse<T>::null_matrix_keep_data(){
 }
 
 template<class T> void matrix_sparse<T>::copy_and_destroy(matrix_sparse<T>& A){
-     try {
-          number_columns = A.number_columns;
-          A.number_columns = 0;
-          number_rows = A.number_rows;
-          A.number_rows = 0;
-          nnz = A.nnz;
-          A.nnz = 0;
-          pointer_size = A.pointer_size;
-          A.pointer_size = 0;
-          orientation = A.orientation;
-          if(data != 0) delete [] data;
-          data = A.data;
-          A.data = 0;
-          if(indices != 0) delete [] indices;
-          indices = A.indices;
-          A.indices = 0;
-          if(pointer != 0) delete [] pointer;
-          pointer = A.pointer;
-          A.pointer = 0;
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::copy_and_destroy: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+    number_columns = A.number_columns;
+    A.number_columns = 0;
+    number_rows = A.number_rows;
+    A.number_rows = 0;
+    nnz = A.nnz;
+    A.nnz = 0;
+    pointer_size = A.pointer_size;
+    A.pointer_size = 0;
+    orientation = A.orientation;
+    if(data != 0) delete [] data;
+    data = A.data;
+    A.data = 0;
+    if(indices != 0) delete [] indices;
+    indices = A.indices;
+    A.indices = 0;
+    if(pointer != 0) delete [] pointer;
+    pointer = A.pointer;
+    A.pointer = 0;
 }
 
 template<class T> void matrix_sparse<T>::interchange(matrix_sparse<T>& A){
@@ -5172,20 +4469,14 @@ template<class T> void matrix_sparse<T>::interchange(T*& Adata, Integer*& Aindic
 //***********************************************************************************************************************
 
 template<class T> vector_dense<T> matrix_sparse<T>::operator*(const vector_dense<T>& x) const {
-     try {
-         vector_dense<T> v;
-         v.resize_without_initialization(number_rows);
-         if (number_columns != x.dimension()){
-             std::cerr<<"matrix_sparse::operator *(vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         } else
-             matrix_vector_multiplication(ID,x,v);
-         return v;
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::operator *: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+    vector_dense<T> v;
+    v.resize_without_initialization(number_rows);
+    if (number_columns != x.dimension()){
+        std::cerr<<"matrix_sparse::operator *(vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else
+        matrix_vector_multiplication(ID,x,v);
+    return v;
   }
 
 //***********************************************************************************************************************
@@ -5292,20 +4583,13 @@ template<class T> Integer matrix_sparse<T>::max_one_dim_size() const {
   }
 
 template<class T> Real matrix_sparse<T>::norm1() const {
-     vector_dense<T> v;
-     try {
-         if (orientation == ROW) sum_absolute_values_against_orientation(v);
-         else sum_absolute_values_along_orientation(v);
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::norm1: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
-     return v.norm_max();
+    vector_dense<T> v;
+    if (orientation == ROW) sum_absolute_values_against_orientation(v);
+    else sum_absolute_values_along_orientation(v);
+    return v.norm_max();
   }
 
 template<class T> Real matrix_sparse<T>::norm_prod() const {
-  try {
     vector_dense<T> col_res;
     vector_dense<T> col_res_abs;
     vector_dense<T> abs_values;
@@ -5325,12 +4609,12 @@ template<class T> Real matrix_sparse<T>::norm_prod() const {
             ind2max = pointer[j+1];
             while ((ind1<ind1max) && (ind2<ind2max)){
                 if (indices[ind1] < indices[ind2]) ind1++;
-                    else if (indices[ind1] > indices[ind2]) ind2++;
-                        else {
-                            col_res[j] += data[ind1]*data[ind2];
-                            ind1++;
-                            ind2++;
-                        }
+                else if (indices[ind1] > indices[ind2]) ind2++;
+                else {
+                    col_res[j] += data[ind1]*data[ind2];
+                    ind1++;
+                    ind2++;
+                }
             } // end while
         } // end for j
         // now col_res contains the i-th column
@@ -5339,15 +4623,9 @@ template<class T> Real matrix_sparse<T>::norm_prod() const {
     } // end for i
     norm = abs_values.max_over_elements();  // return the largest of the column sums
     return norm;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr <<"matrix_sparse::norm_prod: "<<ippe.error_message()<< std::endl;
-     throw;
-  }
 }
 
 template<class T> Real norm1_prod (const matrix_sparse<T>& B, const matrix_sparse<T>& C) {
-  try {
     if ((B.orientation == ROW) && (C.orientation == COLUMN)){
         if (B.number_columns == C.number_rows){
             vector_dense<T> col_res(B.number_rows);
@@ -5364,15 +4642,15 @@ template<class T> Real norm1_prod (const matrix_sparse<T>& B, const matrix_spars
                     ind2 = B.pointer[j];
                     ind1max = C.pointer[i+1];
                     ind2max = B.pointer[j+1];
-                     while ((ind1<ind1max) && (ind2<ind2max)){
-                         if (C.indices[ind1] < B.indices[ind2]) ind1++;
-                             else if (C.indices[ind1] > B.indices[ind2]) ind2++;
-                                 else {
-                                     col_res[j] += C.data[ind1]*B.data[ind2];
-                                     ind1++;
-                                     ind2++;
-                                 }
-                     } // end while
+                    while ((ind1<ind1max) && (ind2<ind2max)){
+                        if (C.indices[ind1] < B.indices[ind2]) ind1++;
+                        else if (C.indices[ind1] > B.indices[ind2]) ind2++;
+                        else {
+                            col_res[j] += C.data[ind1]*B.data[ind2];
+                            ind1++;
+                            ind2++;
+                        }
+                    } // end while
                 } // end for j
                 // now col_res contains the i-th column
                 col_res_abs.absvalue(col_res);  // make vector containing abs. value of the i-th column
@@ -5390,11 +4668,6 @@ template<class T> Real norm1_prod (const matrix_sparse<T>& B, const matrix_spars
         std::cerr << "     the first argument must be in ROW, the second in COLUMN format! "<<std::endl;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr <<"matrix_sparse::norm1_prod: "<<ippe.error_message()<< std::endl;
-     throw;
-  }
 }
 
 template<class T> Real matrix_sparse<T>::normF() const {
@@ -5413,16 +4686,10 @@ template<class T> Integer matrix_sparse<T>::bandwidth() const {
 
 
 template<class T> Real matrix_sparse<T>::norm_max() const {
-     try {
-         vector_dense<T> v;
-         if (orientation == ROW) sum_absolute_values_along_orientation(v);
-         else sum_absolute_values_against_orientation(v);
-         return v.norm_max();
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::norm_max: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+    vector_dense<T> v;
+    if (orientation == ROW) sum_absolute_values_along_orientation(v);
+    else sum_absolute_values_against_orientation(v);
+    return v.norm_max();
   }
 
 template<class T> T matrix_sparse<T>::scalar_product_along_orientation(Integer m, Integer n) const{
@@ -5458,84 +4725,71 @@ template<class T> T matrix_sparse<T>::scalar_product_along_orientation(Integer m
 //***********************************************************************************************************************
 
 template<class T> matrix_dense<T> matrix_sparse<T>::expand() const {
-      try {
-          #ifdef DEBUG
-              if(non_fatal_error(!check_consistency(),"matrix_sparse::expand(): matrix is inconsistent.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-          #endif
-          Integer i;
-          Integer j;
-          matrix_dense<T> A;
-          A.resize(number_rows,number_columns);
-          A.set_all(0.0);
-          if (orientation == ROW){
-              for(i=0;i<pointer_size-1;i++){ // std::cout<<"i schleife i="<<i<<"pointer[i]= "<<pointer[i]<< "pointer[i+1]= "<<pointer[i+1]<<std::endl;
-                  for(j=pointer[i];j<pointer[i+1];j++){
-                   //std::cout<<"expand:j scheife "<<i<<" "<<indices[j]<<"j "<<j;
-                       A.data[i][indices[j]]+=data[j];
-                        //std::cout<<" erledigt"<<std::endl;
-                 }
-              }
-          } else {
-              for(i=0;i<pointer_size-1;i++){
-                  for(j=pointer[i];j<pointer[i+1];j++){
-                      //std::cout<<"expand:j scheife "<<i<<" "<<indices[j]<<"j "<<j<<std::flush;
-                      A.data[indices[j]][i]+=data[j];
-                      //std::cout<<" erledigt"<<std::endl;
-                  }
-              }
-          }
-          return A;
-      }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::expand: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+#ifdef DEBUG
+    if(non_fatal_error(!check_consistency(),"matrix_sparse::expand(): matrix is inconsistent.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    Integer i;
+    Integer j;
+    matrix_dense<T> A;
+    A.resize(number_rows,number_columns);
+    A.set_all(0.0);
+    if (orientation == ROW){
+        for(i=0;i<pointer_size-1;i++){ // std::cout<<"i schleife i="<<i<<"pointer[i]= "<<pointer[i]<< "pointer[i+1]= "<<pointer[i+1]<<std::endl;
+            for(j=pointer[i];j<pointer[i+1];j++){
+                //std::cout<<"expand:j scheife "<<i<<" "<<indices[j]<<"j "<<j;
+                A.data[i][indices[j]]+=data[j];
+                //std::cout<<" erledigt"<<std::endl;
+            }
+        }
+    } else {
+        for(i=0;i<pointer_size-1;i++){
+            for(j=pointer[i];j<pointer[i+1];j++){
+                //std::cout<<"expand:j scheife "<<i<<" "<<indices[j]<<"j "<<j<<std::flush;
+                A.data[indices[j]][i]+=data[j];
+                //std::cout<<" erledigt"<<std::endl;
+            }
+        }
+    }
+    return A;
   }
 
 template<class T> void matrix_sparse<T>::compress(const matrix_dense<T>& A, orientation_type o, double threshold){
-     try {
-         Integer counter=0;
-         Integer i,j;
-         number_rows=A.rows();
-         number_columns=A.columns();
-         for(i=0;i<A.rows();i++)
+    Integer counter=0;
+    Integer i,j;
+    number_rows=A.rows();
+    number_columns=A.columns();
+    for(i=0;i<A.rows();i++)
+        for(j=0;j<A.columns();j++)
+            if (std::abs(A.read(i,j)) > threshold) counter++;
+    reformat(number_rows, number_columns,counter,o);
+    counter = 0;
+    if(o == ROW){
+        for(i=0;i<A.rows();i++){
+            pointer[i]=counter;
             for(j=0;j<A.columns();j++)
-                if (std::abs(A.read(i,j)) > threshold) counter++;
-         reformat(number_rows, number_columns,counter,o);
-         counter = 0;
-         if(o == ROW){
-             for(i=0;i<A.rows();i++){
-                 pointer[i]=counter;
-                 for(j=0;j<A.columns();j++)
-                     if(std::abs(A.read(i,j)) > threshold) {
-                         indices[counter] = j;
-                         data[counter] = A.read(i,j);
-                         counter++;
-                 }
-             }
-             pointer[A.rows()]=counter;
-         } else {
-             for(j=0;j<A.columns();j++){
-                 pointer[j]=counter;
-                 for(i=0;i<A.rows();i++)
-                     if (std::abs(A.read(i,j)) > threshold) {
-                         indices[counter] = i;
-                         data[counter] = A.read(i,j);
-                         counter++;
-                     }
-             }
-             pointer[A.columns()]=counter;
-         }
-     }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::expand: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+                if(std::abs(A.read(i,j)) > threshold) {
+                    indices[counter] = j;
+                    data[counter] = A.read(i,j);
+                    counter++;
+                }
+        }
+        pointer[A.rows()]=counter;
+    } else {
+        for(j=0;j<A.columns();j++){
+            pointer[j]=counter;
+            for(i=0;i<A.rows();i++)
+                if (std::abs(A.read(i,j)) > threshold) {
+                    indices[counter] = i;
+                    data[counter] = A.read(i,j);
+                    counter++;
+                }
+        }
+        pointer[A.columns()]=counter;
+    }
   }
 
 
 template<class T> void matrix_sparse<T>::compress(double threshold){
-  try {
     // need a few variables:
     Integer i,j;
     Integer k;
@@ -5552,10 +4806,10 @@ template<class T> void matrix_sparse<T>::compress(double threshold){
     for (i=0; i<pointer_size-1; i++){
         for (j=pointer[i]; j<pointer[i+1]; j++){
             if (std::abs(data[j]) >threshold){
-               new_data[counter]=data[j];
-               new_indices[counter]=indices[j];
-               counter++;
-           }
+                new_data[counter]=data[j];
+                new_indices[counter]=indices[j];
+                counter++;
+            }
         }
         new_pointer[i+1]=counter;
     }
@@ -5564,16 +4818,10 @@ template<class T> void matrix_sparse<T>::compress(double threshold){
     for (k=0; k<nnz;k++) data[k]=new_data[k];
     for (k=0; k<nnz;k++) indices[k]=new_indices[k];
     for (k=0; k<pointer_size;k++) pointer[k]=new_pointer[k];
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::compress: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_precond_parameter& IP, double threshold){
-  try {
     // need a few variables:
     Integer i,j;
     Integer k;
@@ -5591,10 +4839,10 @@ template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_p
     for (i=0; i<pointer_size-1; i++){
         for (j=pointer[i]; j<pointer[i+1]; j++){
             if (std::abs(data[j])*IP.get_TABLE_POSITIONAL_WEIGHTS((IP.get_SIZE_TABLE_POS_WEIGHTS()*abs(indices[j]-i))/size) >threshold){
-               new_data[counter]=data[j];
-               new_indices[counter]=indices[j];
-               counter++;
-           }
+                new_data[counter]=data[j];
+                new_indices[counter]=indices[j];
+                counter++;
+            }
         }
         new_pointer[i+1]=counter;
     }
@@ -5603,11 +4851,6 @@ template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_p
     for (k=0; k<nnz;k++) data[k]=new_data[k];
     for (k=0; k<nnz;k++) indices[k]=new_indices[k];
     for (k=0; k<pointer_size;k++) pointer[k]=new_pointer[k];
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::compress: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
 }
 
 
@@ -5641,55 +4884,36 @@ template<class T> std::ostream& operator << (std::ostream& os, const matrix_spar
 //***********************************************************************************************************************
 
 template<class T> void matrix_sparse<T>::diag(T d){
-  try {
-     Integer smallerdim = min(number_rows,number_columns);
-     erase_resize_data_fields(smallerdim);
-     Integer i;
-     for(i=0;i<smallerdim;i++) data[i]    = d;
-     for(i=0;i<smallerdim;i++) indices[i] = i;
-     for(i=0;i<smallerdim;i++) pointer[i] = i;
-     for(i=smallerdim;i<pointer_size;i++) pointer[i]= smallerdim;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::diag: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
+    Integer smallerdim = min(number_rows,number_columns);
+    erase_resize_data_fields(smallerdim);
+    Integer i;
+    for(i=0;i<smallerdim;i++) data[i]    = d;
+    for(i=0;i<smallerdim;i++) indices[i] = i;
+    for(i=0;i<smallerdim;i++) pointer[i] = i;
+    for(i=smallerdim;i<pointer_size;i++) pointer[i]= smallerdim;
 }
 
 template<class T> void matrix_sparse<T>::diag(Integer m, Integer n, T d, orientation_type o){
-  try {
-     Integer smallerdim = min(m,n);
-     reformat(m,n,smallerdim,o);
-     Integer i;
-     for(i=0;i<smallerdim;i++) data[i]    = d;
-     for(i=0;i<smallerdim;i++) indices[i] = i;
-     for(i=0;i<smallerdim;i++) pointer[i] = i;
-     for(i=smallerdim;i<pointer_size;i++) pointer[i]= smallerdim;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::diag: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
+    Integer smallerdim = min(m,n);
+    reformat(m,n,smallerdim,o);
+    Integer i;
+    for(i=0;i<smallerdim;i++) data[i]    = d;
+    for(i=0;i<smallerdim;i++) indices[i] = i;
+    for(i=0;i<smallerdim;i++) pointer[i] = i;
+    for(i=smallerdim;i<pointer_size;i++) pointer[i]= smallerdim;
 }
 
 
 template<class T> void matrix_sparse<T>::square_diag(Integer n, T d, orientation_type o){
-  try {
-     reformat(n,n,n,o);
-     Integer i;
-     for(i=0;i<n;i++) data[i]    = d;
-     for(i=0;i<n;i++) indices[i] = i;
-     for(i=0;i<=n;i++) pointer[i] = i;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::square_diag: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
+    reformat(n,n,n,o);
+    Integer i;
+    for(i=0;i<n;i++) data[i]    = d;
+    for(i=0;i<n;i++) indices[i] = i;
+    for(i=0;i<=n;i++) pointer[i] = i;
 }
 
 
 template<class T> void matrix_sparse<T>::read_binary(std::string filename){
-  try {
     std::ifstream the_file(filename.c_str(), std::ios::binary);
     Integer new_pointer_size;
     Integer new_nnz;
@@ -5712,38 +4936,26 @@ template<class T> void matrix_sparse<T>::read_binary(std::string filename){
     the_file.read((char*) data,            sizeof(T)*nnz);
     if(non_fatal_error(!the_file.good(),"matrix_sparse::read_binary: error reading file.")) throw iluplusplus_error(FILE_ERROR);
     the_file.close();
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::read_binary: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::write_mtx(std::string filename) const {
-    try {
-        Integer i,j;
-        std::ofstream the_file(filename.c_str());
-        if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-        //the_file<<rows()<<" "<<columns()<<" "<<non_zeroes()<<std::endl;
-        if(orient() == ROW){
-            for(i=0; i<pointer_size-1; i++) 
-                for(j=pointer[i]; j<pointer[i+1]; j++)
-                    the_file<<i+1<<" "<<indices[j]+1<<" "<<data[j]<<std::endl;
-        } else {
-            for(i=0; i<pointer_size-1; i++) 
-                for(j=pointer[i]; j<pointer[i+1]; j++)
-                    the_file<<indices[j]+1<<" "<<i+1<<" "<<data[j]<<std::endl;
-        }
-        if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
+    Integer i,j;
+    std::ofstream the_file(filename.c_str());
+    if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
+    //the_file<<rows()<<" "<<columns()<<" "<<non_zeroes()<<std::endl;
+    if(orient() == ROW){
+        for(i=0; i<pointer_size-1; i++) 
+            for(j=pointer[i]; j<pointer[i+1]; j++)
+                the_file<<i+1<<" "<<indices[j]+1<<" "<<data[j]<<std::endl;
+    } else {
+        for(i=0; i<pointer_size-1; i++) 
+            for(j=pointer[i]; j<pointer[i+1]; j++)
+                the_file<<indices[j]+1<<" "<<i+1<<" "<<data[j]<<std::endl;
     }
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse::write_mtx: "<<ippe.error_message()<< std::endl;
-        throw;
-    }
+    if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
 }
 
 template<class T> void matrix_sparse<T>::write_binary(std::string filename) const {
-  try {
     std::ofstream the_file(filename.c_str(), std::ios::binary);
     if(non_fatal_error(!the_file.good(),"matrix_sparse::write_binary: error writing file.")) throw iluplusplus_error(FILE_ERROR);
     the_file.write((char*) &number_rows,    sizeof(Integer));
@@ -5763,131 +4975,96 @@ template<class T> void matrix_sparse<T>::write_binary(std::string filename) cons
     the_file.write((char*) data,            sizeof(T)*nnz);
     if(non_fatal_error(!the_file.good(),"matrix_sparse::write_binary: error writing file.")) throw iluplusplus_error(FILE_ERROR);
     the_file.close();
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse::write_binary: "<<ippe.error_message()<< std::endl;
-      throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::random(Integer m, Integer n, orientation_type O, Integer min_nnz, Integer max_nnz){
-     try {
-         Integer j,k,r,index,number_elements;
-         bool index_is_not_new;
-         Integer iter_dim = ((O==ROW) ? m : n);
-         Integer length = ((O==ROW) ? n : m);
-         if(max_nnz<min_nnz) max_nnz = min_nnz;
-         //srand(time(0)); // if you initialize the seed in every call, calls in succession (less than 1 second apart) use the same seed an produce the same matrix.
-         reformat(m,n,length*max_nnz,O);
-         for(k=0; k<iter_dim; k++){
-             number_elements = rand()%(max_nnz - min_nnz + 1) + min_nnz;
-             for(j=0; j<number_elements; j++){
-                 index_is_not_new = true;
-                 while(index_is_not_new){
-                     index = rand()%length;
-                     index_is_not_new = false;
-                     for(r=pointer[k];r<pointer[k]+j;r++) index_is_not_new = index_is_not_new || (index == indices[r]);
-                 } // end while
-                 indices[pointer[k]+j] = index;
-                 data[pointer[k]+j] =  2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0;
-             } // end for j
-             pointer[k+1] = pointer[k] + number_elements;
-         }  // end for k
-         //compress(COMPARE_EPS); 
-         normal_order();
-     }
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse::random: "<<ippe.error_message()<< std::endl;
-        throw;
-    }
+    Integer j,k,r,index,number_elements;
+    bool index_is_not_new;
+    Integer iter_dim = ((O==ROW) ? m : n);
+    Integer length = ((O==ROW) ? n : m);
+    if(max_nnz<min_nnz) max_nnz = min_nnz;
+    //srand(time(0)); // if you initialize the seed in every call, calls in succession (less than 1 second apart) use the same seed an produce the same matrix.
+    reformat(m,n,length*max_nnz,O);
+    for(k=0; k<iter_dim; k++){
+        number_elements = rand()%(max_nnz - min_nnz + 1) + min_nnz;
+        for(j=0; j<number_elements; j++){
+            index_is_not_new = true;
+            while(index_is_not_new){
+                index = rand()%length;
+                index_is_not_new = false;
+                for(r=pointer[k];r<pointer[k]+j;r++) index_is_not_new = index_is_not_new || (index == indices[r]);
+            } // end while
+            indices[pointer[k]+j] = index;
+            data[pointer[k]+j] =  2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0;
+        } // end for j
+        pointer[k+1] = pointer[k] + number_elements;
+    }  // end for k
+    //compress(COMPARE_EPS); 
+    normal_order();
 }
 
 
 template<class T> void matrix_sparse<T>::random_perturbed_projection_matrix(Integer n, Integer EV1, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps){
-     try {
-         matrix_sparse<T> A,B;
-         Integer i;
-         if(EV1<0) EV1 = 0;
-         if(EV1>n) EV1 = n;
-         A.random(n,n,O,min_nnz,max_nnz);
-         B.reformat(n,n,EV1,O);
-         for(i=0;i<EV1;i++) B.pointer[i] = i;
-         for(i=EV1;i<=n;i++) B.pointer[i] = EV1;
-         for(i=0;i<EV1;i++) B.indices[i] = i;
-         for(i=0;i<EV1;i++) B.data[i] = 1.0;
-         matrix_addition(eps/A.normF(),A,B);
-     }
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse::random_diagonally_dominant_I_matrix: "<<ippe.error_message()<< std::endl;
-        throw;
-    }
+    matrix_sparse<T> A,B;
+    Integer i;
+    if(EV1<0) EV1 = 0;
+    if(EV1>n) EV1 = n;
+    A.random(n,n,O,min_nnz,max_nnz);
+    B.reformat(n,n,EV1,O);
+    for(i=0;i<EV1;i++) B.pointer[i] = i;
+    for(i=EV1;i<=n;i++) B.pointer[i] = EV1;
+    for(i=0;i<EV1;i++) B.indices[i] = i;
+    for(i=0;i<EV1;i++) B.data[i] = 1.0;
+    matrix_addition(eps/A.normF(),A,B);
 }
 
 
 template<class T> void matrix_sparse<T>::random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity) {
-     try {
-         matrix_dense<T> A;
-         A.random_multiplicatively_perturbed_projection_matrix(n,rank,min_nnz,max_nnz,O,eps_EV,eps_similarity);
-         compress(A,O,-1.0);
-     }
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse::random_multiplicatively_perturbed_projection_matrix: "<<ippe.error_message()<< std::endl;
-        throw;
-    }
+    matrix_dense<T> A;
+    A.random_multiplicatively_perturbed_projection_matrix(n,rank,min_nnz,max_nnz,O,eps_EV,eps_similarity);
+    compress(A,O,-1.0);
 }
 
 
 template<class T> void matrix_sparse<T>::tridiag(T a, T b, T c){
-  try {
-     if (number_rows != number_columns) {
-          std::cerr << "Error in matrix_sparse::tridiag: This function requires square matrices."<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-     Integer dimension = number_rows;
-     Integer i;
-     reformat(dimension,dimension,3*dimension-2,orientation);
-     pointer[0]=0;
-     for (i=1;i<dimension;i++) pointer[i] = 3*i-1;
-     pointer[dimension]=nnz;
-     for (i=0;i<dimension;i++)indices[3*i]=i;
-     for (i=1;i<dimension;i++)indices[3*i-2]=i;
-     for (i=0;i<dimension-1;i++)indices[3*i+2]=i;
-     for (i=0;i<dimension;i++)data[3*i]=b;
-     if (orientation == ROW){
-         for (i=1;i<dimension;i++)data[3*i-2]=c;
-         for (i=0;i<dimension-1;i++)data[3*i+2]=a;
-     } else {
-         for (i=1;i<dimension;i++)data[3*i-2]=a;
-         for (i=0;i<dimension-1;i++)data[3*i+2]=c;
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr << "matrix_sparse::matrix_sparse: "<<ippe.error_message() << std::endl;
-     throw;
-  }
+    if (number_rows != number_columns) {
+        std::cerr << "Error in matrix_sparse::tridiag: This function requires square matrices."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+    Integer dimension = number_rows;
+    Integer i;
+    reformat(dimension,dimension,3*dimension-2,orientation);
+    pointer[0]=0;
+    for (i=1;i<dimension;i++) pointer[i] = 3*i-1;
+    pointer[dimension]=nnz;
+    for (i=0;i<dimension;i++)indices[3*i]=i;
+    for (i=1;i<dimension;i++)indices[3*i-2]=i;
+    for (i=0;i<dimension-1;i++)indices[3*i+2]=i;
+    for (i=0;i<dimension;i++)data[3*i]=b;
+    if (orientation == ROW){
+        for (i=1;i<dimension;i++)data[3*i-2]=c;
+        for (i=0;i<dimension-1;i++)data[3*i+2]=a;
+    } else {
+        for (i=1;i<dimension;i++)data[3*i-2]=a;
+        for (i=0;i<dimension-1;i++)data[3*i+2]=c;
+    }
 }
 
 template<class T> void matrix_sparse<T>::extract(const matrix_sparse<T> &A, Integer m, Integer n){
-    try {
-        Integer i;
-        if(non_fatal_error( (m+n>A.pointer_size || n<0 || m<0),"matrix_sparse<T>::extract: arguments out of range.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        if(A.orientation==ROW){
-            reformat(n,A.number_columns,A.pointer[m+n]-A.pointer[m],ROW);
-        } else {
-            reformat(A.number_rows,n,A.pointer[m+n]-A.pointer[m],COLUMN);
-        }
-        for(i=0;i<=n;i++) pointer[i]=A.pointer[m+i]-A.pointer[m];
-        for(i=0;i<pointer[n];i++){
-           indices[i]=A.indices[A.pointer[m]+i];
-           data[i]=A.data[A.pointer[m]+i];
-        }
-        nnz=pointer[n];
-        }
-    catch(iluplusplus_error ippe){
-       std::cerr << " matrix_sparse::extract: "<<ippe.error_message() << std::endl;
-       throw;
+    Integer i;
+    if(non_fatal_error( (m+n>A.pointer_size || n<0 || m<0),"matrix_sparse<T>::extract: arguments out of range.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(A.orientation==ROW){
+        reformat(n,A.number_columns,A.pointer[m+n]-A.pointer[m],ROW);
+    } else {
+        reformat(A.number_rows,n,A.pointer[m+n]-A.pointer[m],COLUMN);
     }
+    for(i=0;i<=n;i++) pointer[i]=A.pointer[m+i]-A.pointer[m];
+    for(i=0;i<pointer[n];i++){
+        indices[i]=A.indices[A.pointer[m]+i];
+        data[i]=A.data[A.pointer[m]+i];
+    }
+    nnz=pointer[n];
   }
 
 
@@ -6029,211 +5206,192 @@ template<class T> Real matrix_sparse<T>::degree_of_symmetry() const {
 
 
 template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const{
-  try {
     if(non_fatal_error(!(square_check()),"matrix_sparse::triangular_solve: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(x.dimension() != number_rows, "matrix_sparse::triangular_solve: size of rhs is incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer j,k;
-     # ifdef VERYVERBOSE
-          clock_t time_1,time_2;
-          Real time=0.0;
-          time_1 = clock();
-     #endif
+# ifdef VERYVERBOSE
+    clock_t time_1,time_2;
+    Real time=0.0;
+    time_1 = clock();
+#endif
     if ( ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==ID)) ||
-         ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==TRANSPOSE)) )
+            ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,ROW,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,ROW,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
+#endif
         for(k=0;k<number_rows;k++){
             for(j=pointer[k];j<pointer[k+1]-1;j++) x[k]-= data[j]*x[indices[j]];
             //non_fatal_error(data[pointer[k+1]-1]==0,"matrix_sparse::triangular_solve: pivot must be non-zero.");
             x[k] /= data[pointer[k+1]-1];
         }   // end for k
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     } // end if
     if ( ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==ID)) ||
-         ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
+            ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
 
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
+#endif
         Integer k,j;
         for(k=0;k<number_columns;k++){
             x[k] /= data[pointer[k]];
             for(j=pointer[k]+1;j<pointer[k+1];j++) x[indices[j]] -= data[j]*x[k];
         }
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     if ( ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==ID)) ||
-         ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
+            ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,ROW,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,ROW,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
+#endif
         for(k=number_rows-1;k>=0;k--){
             for(j=pointer[k]+1;j<pointer[k+1];j++) x[k]-= data[j]*x[indices[j]];
             x[k] /= data[pointer[k]];
         }   // end for k
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     if ( ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==ID)) ||
-         ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)))
+            ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)))
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,COLUMN,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve: using: UPPER_TRIANGULAR,COLUMN,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve: using: LOWER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
+#endif
         Integer k,j;
         for(k=number_columns-1;k>=0;k--){
             x[k] /= data[pointer[k+1]-1];
             for(j=pointer[k];j<pointer[k+1]-1;j++) x[indices[j]] -= data[j]*x[k];
         }
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     std::cerr<<"matrix_sparse::triangular_solve: unknown matrix usage"<<std::endl;
     throw(OTHER_ERROR);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr << "matrix_sparse::triangular_solve: "<<ippe.error_message() << std::endl;
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const vector_dense<T>& b, vector_dense<T>& x) const {
-    try {
-        x=b;
-        triangular_solve(form,use,x);
-    }
-    catch(iluplusplus_error ippe){
-       std::cerr << "matrix_sparse::triangular_solve: "<<ippe.error_message() << std::endl;
-       throw;
-    }
+    x=b;
+    triangular_solve(form,use,x);
   }
 
 
 template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const{
-  try {
     if(non_fatal_error(!(square_check()),"matrix_sparse::triangular_solve: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer j,k;
     Integer offset = x.dimension()-number_rows;
-     # ifdef VERYVERBOSE
-          clock_t time_1,time_2;
-          Real time=0.0;
-          time_1 = clock();
-     #endif
+# ifdef VERYVERBOSE
+    clock_t time_1,time_2;
+    Real time=0.0;
+    time_1 = clock();
+#endif
     if ( ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==ID)) ||
-         ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==TRANSPOSE)) )
+            ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,ROW,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,ROW,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
+#endif
         for(k=0;k<number_rows;k++){
             for(j=pointer[k];j<pointer[k+1]-1;j++) x[k+offset]-= data[j]*x[indices[j]+offset];
             //non_fatal_error(data[pointer[k+1]-1]==0,"matrix_sparse::triangular_solve: pivot must be non-zero.");
             x[k+offset] /= data[pointer[k+1]-1];
         }   // end for k
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     } // end if
     if ( ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==ID)) ||
-         ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
+            ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
 
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
+#endif
         for(k=0;k<number_columns;k++){
             x[k+offset] /= data[pointer[k]];
             for(j=pointer[k]+1;j<pointer[k+1];j++) x[indices[j]+offset] -= data[j]*x[k+offset];
         }
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     if ( ((form==UPPER_TRIANGULAR) && (orientation==ROW) && (use==ID)) ||
-         ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
+            ((form==LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,ROW,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,ROW,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
+#endif
         for(k=number_rows-1;k>=0;k--){
             for(j=pointer[k]+1;j<pointer[k+1];j++) x[k+offset]-= data[j]*x[indices[j]+offset];
             x[k+offset] /= data[pointer[k]];
         }   // end for k
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     if ( ((form==UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==ID)) ||
-         ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)))
+            ((form==LOWER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)))
     {
-        # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,COLUMN,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
-        #endif
+# ifdef VERYVERBOSE
+        if (use==ID )std::cout<<"      triangular_solve_with_smaller_matrix: using: UPPER_TRIANGULAR,COLUMN,ID"<<std::endl;
+        else         std::cout<<"      triangular_solve_with_smaller_matrix: using: LOWER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
+#endif
         for(k=number_columns-1;k>=0;k--){
             x[k+offset] /= data[pointer[k+1]-1];
             for(j=pointer[k];j<pointer[k+1]-1;j++) x[indices[j]+offset] -= data[j]*x[k+offset];
         }
-        #ifdef VERYVERBOSE
-             time_2 = clock();
-             time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-             std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
-        #endif
+#ifdef VERYVERBOSE
+        time_2 = clock();
+        time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+        std::cout<<std::endl<<"          triangular_solve_with_smaller_matrix time: "<<time<<std::endl<<std::flush;
+#endif
         return;
     }  // end if
     std::cerr<<"matrix_sparse::triangular_solve_with_smaller_matrix: unknown matrix usage"<<std::endl;
     throw iluplusplus_error(OTHER_ERROR);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr << "matrix_sparse::triangular_solve_with_smaller_matrix: "<<ippe.error_message() << std::endl;
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_first(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const{
-  try {
-    #ifdef DEBUG
-        if(non_fatal_error(perm.dimension() != rows(),"matrix_sparse::triangular_solve_with_smaller_matrix_permute_first: permutation must have same dimension as number of rows of matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
+#ifdef DEBUG
+    if(non_fatal_error(perm.dimension() != rows(),"matrix_sparse::triangular_solve_with_smaller_matrix_permute_first: permutation must have same dimension as number of rows of matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
     vector_dense<T> w;
     Integer i;
     Integer offset = x.dimension()-number_rows;
@@ -6241,28 +5399,17 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_pe
     for(i=0;i<number_rows;i++) w[i]=x[offset+i];
     for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
     triangular_solve_with_smaller_matrix(form,use,x);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr << "matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_first: "<<ippe.error_message() << std::endl;
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_last(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const{
-    try {
-        vector_dense<T> w;
-        Integer i;
-        Integer offset = x.dimension()-number_rows;
-        w.resize_without_initialization(number_rows);
-        triangular_solve_with_smaller_matrix(form,use,x);
-        for(i=0;i<number_rows;i++) w[i]=x[offset+i];
-        for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
-    }
-    catch(iluplusplus_error ippe){
-       std::cerr << "matrix_sparse<T>::triangular_solve_with_smaller_matrix_permute_last: "<<ippe.error_message() << std::endl;
-       throw;
-    }
+    vector_dense<T> w;
+    Integer i;
+    Integer offset = x.dimension()-number_rows;
+    w.resize_without_initialization(number_rows);
+    triangular_solve_with_smaller_matrix(form,use,x);
+    for(i=0;i<number_rows;i++) w[i]=x[offset+i];
+    for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
 }
 
 template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const{
@@ -6383,331 +5530,279 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
 
 
 template<class T> void matrix_sparse<T>::expand_kernel(const matrix_sparse<T>& A, const vector_dense<T>& b, const vector_dense<T>& c, T beta, T gamma, Integer row_pos, Integer col_pos){
-    try {
-        if(non_fatal_error(A.columns() != b.dimension() || A.rows() != c.dimension(),"matrix_sparse<T>::expand_kernel: arguments have incompatible dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        if(non_fatal_error(beta == 0.0 || gamma == 0.0,"matrix_sparse<T>::expand_kernel: beta and gamma must be non-zero.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        vector_dense<T> x,y;
-        T delta,z;
-        A.matrix_vector_multiplication(ID,b,x);
-        delta = c*x; // scalar multiplication ( delta = (c^T)*A*b
-        z = delta/(beta*gamma);
-        x.scale(-1.0/beta);
-        A.matrix_vector_multiplication(TRANSPOSE,c,y);
-        y.scale(-1.0/gamma);
-        insert(A,y,x,z,row_pos,col_pos,-1.0);
-    }  // end try
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse<T>::expand_kernel: "<<ippe.error_message() << " Returning empty matrix."<<std::endl;
-        reformat(0,0,0,A.orient());
-        throw;
-    }
+    if(non_fatal_error(A.columns() != b.dimension() || A.rows() != c.dimension(),"matrix_sparse<T>::expand_kernel: arguments have incompatible dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(beta == 0.0 || gamma == 0.0,"matrix_sparse<T>::expand_kernel: beta and gamma must be non-zero.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    vector_dense<T> x,y;
+    T delta,z;
+    A.matrix_vector_multiplication(ID,b,x);
+    delta = c*x; // scalar multiplication ( delta = (c^T)*A*b
+    z = delta/(beta*gamma);
+    x.scale(-1.0/beta);
+    A.matrix_vector_multiplication(TRANSPOSE,c,y);
+    y.scale(-1.0/gamma);
+    insert(A,y,x,z,row_pos,col_pos,-1.0);
 }
 
 template<class T> void matrix_sparse<T>::expand_kernel(const matrix_sparse<T>& A, const vector_dense<T>& b, const vector_dense<T>& c, T beta, T gamma, Integer row_pos, Integer col_pos, vector_dense<T>& bnew, vector_dense<T>& cnew){
-    try {
-        expand_kernel(A,b,c,beta,gamma,row_pos,col_pos);
-        bnew.insert(b,col_pos,beta);
-        cnew.insert(c,row_pos,gamma);
-    }  // end try
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse<T>::expand_kernel: "<<ippe.error_message() << " Returning empty matrix."<<std::endl;
-        reformat(0,0,0,A.orient());
-        throw;
-    }
+    expand_kernel(A,b,c,beta,gamma,row_pos,col_pos);
+    bnew.insert(b,col_pos,beta);
+    cnew.insert(c,row_pos,gamma);
 }
 
 template<class T> void matrix_sparse<T>::regularize(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos){
-   try {
-        insert(A,c,b,d,row_pos,col_pos,-1.0);
-    }  // end try
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse<T>::regularize: "<<ippe.error_message() << " Returning empty matrix."<<std::endl;
-        reformat(0,0,0,A.orient());
-        throw;
-    }
+    insert(A,c,b,d,row_pos,col_pos,-1.0);
 }
 
 template<class T> void matrix_sparse<T>::regularize_with_rhs(const matrix_sparse<T>& A,const vector_dense<T>& b, const vector_dense<T>& c, T d,Integer row_pos, Integer col_pos, const vector_dense<T>& old_rhs, vector_dense<T>& new_rhs){
-   try {
-        vector_dense<T> h;
-        regularize(A,b,c,d,row_pos,col_pos);
-        h.vector_addition(old_rhs,b);
-        new_rhs.insert(h,row_pos,d);
-    }  // end try
-    catch(iluplusplus_error ippe){
-        std::cerr << "matrix_sparse<T>::regularize: "<<ippe.error_message() << " Returning empty matrix."<<std::endl;
-        reformat(0,0,0,A.orient());
-        throw;
-    }
+    vector_dense<T> h;
+    regularize(A,b,c,d,row_pos,col_pos);
+    h.vector_addition(old_rhs,b);
+    new_rhs.insert(h,row_pos,d);
 }
 
 
 
 
 template<class T> void matrix_sparse<T>::triangular_drop(special_matrix_type form, const matrix_sparse<T>& M, Integer max_fill_in, Real tau){
-    try {
-      //fatal_error(!(square_check()),"matrix_sparse::triangular_drop: matrix needs to be square.");
-      Integer k,i;
-      vector_dense<T> w(M.dim_along_orientation());
-      index_list list;
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>M.dim_along_orientation()) max_fill_in = M.dim_along_orientation();
-      Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (M.columns()-max_fill_in)*max_fill_in;
-      if (tau > 500) tau = 0.0;
-      else tau=-log10(tau);
-      reformat(M.rows(),M.columns(),reserved_memory,M.orient());
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
-          )
-      { // begin if
-          for(k=0;k<M.dim_against_orientation();k++){
-              // copy data to w
-              for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                  w[i]=M.data[M.pointer[k]+i];
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
-              // copy elements to *this
-              for(i=0;i<list.dimension();i++){
-                  data[pointer[k]+i]=M.data[M.pointer[k]+list[i]];
-                  indices[pointer[k]+i]=M.indices[M.pointer[k]+list[i]];
-              }
-              // copy pivot
-              data[pointer[k]+list.dimension()]=M.data[M.pointer[k+1]-1];
-              indices[pointer[k]+list.dimension()]=M.indices[M.pointer[k+1]-1];
-              // do pointer
-              pointer[k+1]=pointer[k]+list.dimension()+1;
-          } // end for k
-          compress();
-          return;
-      } // end if
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
-          )
-      { // begin if
-          for(k=0;k<M.dim_against_orientation();k++){
-              // copy data to w
-              for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                  w[i]=M.data[M.pointer[k]+1+i];
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
-              // copy elements to *this
-              for(i=0;i<list.dimension();i++){
-                  data[pointer[k]+1+i]=M.data[M.pointer[k]+1+list[i]];
-                  indices[pointer[k]+1+i]=M.indices[M.pointer[k]+1+list[i]];
-              }
-              // copy pivot
-              data[pointer[k]]=M.data[M.pointer[k]];
-              indices[pointer[k]]=M.indices[M.pointer[k]];
-              // do pointer
-              pointer[k+1]=pointer[k]+list.dimension()+1;
-          } // end for k
-          compress();
-          return;
-      } // end if
-      // default case, i.e. no triangular matrix
-      std::cerr<<"matrix_sparse<T>::triangular_drop: matrix is not triangular. *this is the same as M."<<std::endl;
-      *this=M;
-      return;
-    }
-    catch(iluplusplus_error ippe){
-       std::cerr << "matrix_sparse<T>::triangular_drop: "<<ippe.error_message() << std::endl;
-       throw;
-    }
+    //fatal_error(!(square_check()),"matrix_sparse::triangular_drop: matrix needs to be square.");
+    Integer k,i;
+    vector_dense<T> w(M.dim_along_orientation());
+    index_list list;
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>M.dim_along_orientation()) max_fill_in = M.dim_along_orientation();
+    Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (M.columns()-max_fill_in)*max_fill_in;
+    if (tau > 500) tau = 0.0;
+    else tau=-log10(tau);
+    reformat(M.rows(),M.columns(),reserved_memory,M.orient());
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
+       )
+    { // begin if
+        for(k=0;k<M.dim_against_orientation();k++){
+            // copy data to w
+            for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
+                w[i]=M.data[M.pointer[k]+i];
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
+            // copy elements to *this
+            for(i=0;i<list.dimension();i++){
+                data[pointer[k]+i]=M.data[M.pointer[k]+list[i]];
+                indices[pointer[k]+i]=M.indices[M.pointer[k]+list[i]];
+            }
+            // copy pivot
+            data[pointer[k]+list.dimension()]=M.data[M.pointer[k+1]-1];
+            indices[pointer[k]+list.dimension()]=M.indices[M.pointer[k+1]-1];
+            // do pointer
+            pointer[k+1]=pointer[k]+list.dimension()+1;
+        } // end for k
+        compress();
+        return;
+    } // end if
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
+       )
+    { // begin if
+        for(k=0;k<M.dim_against_orientation();k++){
+            // copy data to w
+            for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
+                w[i]=M.data[M.pointer[k]+1+i];
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
+            // copy elements to *this
+            for(i=0;i<list.dimension();i++){
+                data[pointer[k]+1+i]=M.data[M.pointer[k]+1+list[i]];
+                indices[pointer[k]+1+i]=M.indices[M.pointer[k]+1+list[i]];
+            }
+            // copy pivot
+            data[pointer[k]]=M.data[M.pointer[k]];
+            indices[pointer[k]]=M.indices[M.pointer[k]];
+            // do pointer
+            pointer[k+1]=pointer[k]+list.dimension()+1;
+        } // end for k
+        compress();
+        return;
+    } // end if
+    // default case, i.e. no triangular matrix
+    std::cerr<<"matrix_sparse<T>::triangular_drop: matrix is not triangular. *this is the same as M."<<std::endl;
+    *this=M;
+    return;
 }
 
 
 template<class T> void matrix_sparse<T>::weighted_triangular_drop_along_orientation(special_matrix_type form, const matrix_sparse<T>& M, const vector_dense<T> weights, Integer max_fill_in, Real tau){
-   try {
-      Integer size=M.rows();
-      #ifdef DEBUG
-          if(non_fatal_error(!(square_check()),"matrix_sparse::weighted_triangular_drop_along_orientation: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-          if(non_fatal_error((weights.dimension() != size),"matrix_sparse::weighted_triangular_drop_along_orientation: weights must have same size as matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      #endif
-      Integer k,i;
-      vector_dense<T> w(size);
-      index_list list;
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>size) max_fill_in = size;
-      Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (size-max_fill_in)*max_fill_in;
-      if (tau > 500) tau = 0.0;
-      else tau=-log10(tau);
-      reformat(size,size,reserved_memory,M.orient());
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
-          )
-      { // begin if
-          for(k=0;k<M.dim_against_orientation();k++){
-              // copy data to w
-              for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                  w[i]=M.data[M.pointer[k]+i]*weights.read(M.indices[M.pointer[k]+i]);
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
-              // copy elements to *this
-              for(i=0;i<list.dimension();i++){
-                  data[pointer[k]+i]=M.data[M.pointer[k]+list[i]];
-                  indices[pointer[k]+i]=M.indices[M.pointer[k]+list[i]];
-              }
-              // copy pivot
-              data[pointer[k]+list.dimension()]=M.data[M.pointer[k+1]-1];
-              indices[pointer[k]+list.dimension()]=M.indices[M.pointer[k+1]-1];
-              // do pointer
-              pointer[k+1]=pointer[k]+list.dimension()+1;
-          } // end for k
-          compress();
-          return;
-      } // end if
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
-          )
-      { // begin if
-          for(k=0;k<M.dim_against_orientation();k++){
-              // copy data to w
-              for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                  w[i]=M.data[M.pointer[k]+1+i]*weights.read(M.indices[pointer[k]+1+i]);
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
-              // copy elements to *this
-              for(i=0;i<list.dimension();i++){
-                  data[pointer[k]+1+i]=M.data[M.pointer[k]+1+list[i]];
-                  indices[pointer[k]+1+i]=M.indices[M.pointer[k]+1+list[i]];
-              }
-              // copy pivot
-              data[pointer[k]]=M.data[M.pointer[k]];
-              indices[pointer[k]]=M.indices[M.pointer[k]];
-              // do pointer
-              pointer[k+1]=pointer[k]+list.dimension()+1;
-          } // end for k
-          compress();
-          return;
-      } // end if
-      // default case, i.e. no triangular matrix
-      std::cerr<<"matrix_sparse<T>::weighted_triangular_drop_along_orientation: matrix is not triangular. *this is the same as M."<<std::endl;
-      *this=M;
-      return;
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse<T>::weighted_triangular_drop_along_orientation: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    Integer size=M.rows();
+#ifdef DEBUG
+    if(non_fatal_error(!(square_check()),"matrix_sparse::weighted_triangular_drop_along_orientation: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error((weights.dimension() != size),"matrix_sparse::weighted_triangular_drop_along_orientation: weights must have same size as matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    Integer k,i;
+    vector_dense<T> w(size);
+    index_list list;
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>size) max_fill_in = size;
+    Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (size-max_fill_in)*max_fill_in;
+    if (tau > 500) tau = 0.0;
+    else tau=-log10(tau);
+    reformat(size,size,reserved_memory,M.orient());
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
+       )
+    { // begin if
+        for(k=0;k<M.dim_against_orientation();k++){
+            // copy data to w
+            for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
+                w[i]=M.data[M.pointer[k]+i]*weights.read(M.indices[M.pointer[k]+i]);
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
+            // copy elements to *this
+            for(i=0;i<list.dimension();i++){
+                data[pointer[k]+i]=M.data[M.pointer[k]+list[i]];
+                indices[pointer[k]+i]=M.indices[M.pointer[k]+list[i]];
+            }
+            // copy pivot
+            data[pointer[k]+list.dimension()]=M.data[M.pointer[k+1]-1];
+            indices[pointer[k]+list.dimension()]=M.indices[M.pointer[k+1]-1];
+            // do pointer
+            pointer[k+1]=pointer[k]+list.dimension()+1;
+        } // end for k
+        compress();
+        return;
+    } // end if
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
+       )
+    { // begin if
+        for(k=0;k<M.dim_against_orientation();k++){
+            // copy data to w
+            for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
+                w[i]=M.data[M.pointer[k]+1+i]*weights.read(M.indices[pointer[k]+1+i]);
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
+            // copy elements to *this
+            for(i=0;i<list.dimension();i++){
+                data[pointer[k]+1+i]=M.data[M.pointer[k]+1+list[i]];
+                indices[pointer[k]+1+i]=M.indices[M.pointer[k]+1+list[i]];
+            }
+            // copy pivot
+            data[pointer[k]]=M.data[M.pointer[k]];
+            indices[pointer[k]]=M.indices[M.pointer[k]];
+            // do pointer
+            pointer[k+1]=pointer[k]+list.dimension()+1;
+        } // end for k
+        compress();
+        return;
+    } // end if
+    // default case, i.e. no triangular matrix
+    std::cerr<<"matrix_sparse<T>::weighted_triangular_drop_along_orientation: matrix is not triangular. *this is the same as M."<<std::endl;
+    *this=M;
+    return;
   }
 
 
 template<class T> void matrix_sparse<T>::weighted_triangular_drop_against_orientation(special_matrix_type form, const matrix_sparse<T>& M, const vector_dense<T> weights, Integer max_fill_in, Real tau){
-   try {
-      Integer size=M.rows();
-      #ifdef DEBUG
-         if(non_fatal_error(!(square_check()),"matrix_sparse::weighted_triangular_drop_against_orientation: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         if(non_fatal_error((weights.dimension() != size),"matrix_sparse::weighted_triangular_drop_against_orientation: weights must have same size as matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      #endif
-      Integer k,i,number_elements_in_column,index_of_examined_element;
-      Integer current_column=0; // notation for M being a ROW matrix and M needing to be read by columns
-      vector_dense<T> w(size);
-      index_list list;
-      index_list position_in_matrix_list;
-      index_list marker;
-      position_in_matrix_list.resize_without_initialization(size);
-      marker.resize_without_initialization(size);
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>size) max_fill_in = size;
-      if (tau > 500) tau = 0.0;
-      else tau=-log10(tau);
-      reformat(M.rows(),M.columns(),M.non_zeroes(),M.orient());
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
-          )
-      { // begin if
-          // make *this a zero matrix.
-          for (i=0;i<M.nnz;i++) data[i] = 0.0;
-          for (i=0;i<M.nnz;i++) indices[i] = M.indices[i];
-          for (i=0;i<M.pointer_size;i++) pointer[i] = M.pointer[i];
-          for (i=0;i<M.pointer_size-1;i++) data[M.pointer[i+1]-1]=M.data[M.pointer[i+1]-1]; // copy pivots
-          // copy current column to w (weighted);
-          // copy the corresponding positions in the matrix to "position_in_matrix_list"
-          // update marker and number_elements_in_column if an element is found
-          for(k=0;k<size;k++) marker[k]=pointer[k];
-          for(k=0;k<size;k++){
-              current_column=M.indices[M.pointer[k+1]-1]; // pivot
-              number_elements_in_column=0;
-              // copy data to w
-              for(i=k+1;i<size;i++){ // starting at k+1, i.e. skipping pivot
-                  index_of_examined_element=M.indices[marker[i]];
-                  if(index_of_examined_element==current_column && marker[i]<M.pointer[i+1]){ // i.e. marker indicates an element found in the column
-                      w[number_elements_in_column]=M.data[marker[i]]*weights.get(i);
-                      position_in_matrix_list[number_elements_in_column]=marker[i];
-                      number_elements_in_column++;
-                      marker[i]++;
-                  }  // end if
-              }  // end for i
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0,number_elements_in_column);
-              // list contains elements to be kept, so zero the rest
-              for(i=0;i<list.dimension();i++) data[position_in_matrix_list[list[i]]]=M.data[position_in_matrix_list[list[i]]];
-          } // end for k
-          compress();
-          return;
-      } // end if
-      if (
-           (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
-           (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
-          )
-      { // begin if
-          // make *this a zero matrix.
-          for (i=0;i<M.nnz;i++) data[i] = 0.0;
-          for (i=0;i<M.nnz;i++) indices[i] = M.indices[i];
-          for (i=0;i<M.pointer_size;i++) pointer[i] = M.pointer[i];
-          for (i=0;i<M.pointer_size-1;i++) data[M.pointer[i]]=M.data[M.pointer[i]]; // copy pivots
-          // copy current column to w (weighted);
-          // copy the corresponding positions in the matrix to "position_in_matrix_list"
-          // update marker and number_elements_in_column if an element is found
-          for(k=0;k<size;k++){
-              current_column=M.indices[M.pointer[k]];
-              marker[k]=M.pointer[k]+1; // skip the pivot, which is located in M.pointer[k]
-              number_elements_in_column=0;
-              // copy data to w
-              for(i=0;i<k;i++){
-                  index_of_examined_element=M.indices[marker[i]];
-                  if(index_of_examined_element==current_column && marker[i]<M.pointer[i+1]){ // i.e. marker indicates an element found in the column
-                      w[number_elements_in_column]=M.data[marker[i]]*weights.get(i);
-                      position_in_matrix_list[number_elements_in_column]=marker[i];
-                      number_elements_in_column++;
-                      marker[i]++;  
-                  }  // end if
-              }  // end for i   
-              // take largest elements of w, store result in list
-              w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0,number_elements_in_column);
-              // list contains elements to be kept, so zero the rest
-              for(i=0;i<list.dimension();i++) data[position_in_matrix_list[list[i]]]=M.data[position_in_matrix_list[list[i]]]; 
-          } // end for k
-          compress();
-          return;
-      } // end if
-      // default case, i.e. no triangular matrix
-      std::cerr<<"matrix_sparse<T>::weighted_triangular_drop_against_orientation: matrix is not triangular. *this is the same as M."<<std::endl;
-      *this=M;
-      return;
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse<T>::weighted_triangular_drop_against_orientation: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    Integer size=M.rows();
+#ifdef DEBUG
+    if(non_fatal_error(!(square_check()),"matrix_sparse::weighted_triangular_drop_against_orientation: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error((weights.dimension() != size),"matrix_sparse::weighted_triangular_drop_against_orientation: weights must have same size as matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    Integer k,i,number_elements_in_column,index_of_examined_element;
+    Integer current_column=0; // notation for M being a ROW matrix and M needing to be read by columns
+    vector_dense<T> w(size);
+    index_list list;
+    index_list position_in_matrix_list;
+    index_list marker;
+    position_in_matrix_list.resize_without_initialization(size);
+    marker.resize_without_initialization(size);
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>size) max_fill_in = size;
+    if (tau > 500) tau = 0.0;
+    else tau=-log10(tau);
+    reformat(M.rows(),M.columns(),M.non_zeroes(),M.orient());
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==ROW) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==COLUMN)
+       )
+    { // begin if
+        // make *this a zero matrix.
+        for (i=0;i<M.nnz;i++) data[i] = 0.0;
+        for (i=0;i<M.nnz;i++) indices[i] = M.indices[i];
+        for (i=0;i<M.pointer_size;i++) pointer[i] = M.pointer[i];
+        for (i=0;i<M.pointer_size-1;i++) data[M.pointer[i+1]-1]=M.data[M.pointer[i+1]-1]; // copy pivots
+        // copy current column to w (weighted);
+        // copy the corresponding positions in the matrix to "position_in_matrix_list"
+        // update marker and number_elements_in_column if an element is found
+        for(k=0;k<size;k++) marker[k]=pointer[k];
+        for(k=0;k<size;k++){
+            current_column=M.indices[M.pointer[k+1]-1]; // pivot
+            number_elements_in_column=0;
+            // copy data to w
+            for(i=k+1;i<size;i++){ // starting at k+1, i.e. skipping pivot
+                index_of_examined_element=M.indices[marker[i]];
+                if(index_of_examined_element==current_column && marker[i]<M.pointer[i+1]){ // i.e. marker indicates an element found in the column
+                    w[number_elements_in_column]=M.data[marker[i]]*weights.get(i);
+                    position_in_matrix_list[number_elements_in_column]=marker[i];
+                    number_elements_in_column++;
+                    marker[i]++;
+                }  // end if
+            }  // end for i
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0,number_elements_in_column);
+            // list contains elements to be kept, so zero the rest
+            for(i=0;i<list.dimension();i++) data[position_in_matrix_list[list[i]]]=M.data[position_in_matrix_list[list[i]]];
+        } // end for k
+        compress();
+        return;
+    } // end if
+    if (
+            (((form==LOWER_TRIANGULAR)||(form==PERMUTED_LOWER_TRIANGULAR))&& M.orient()==COLUMN) ||
+            (((form==UPPER_TRIANGULAR)||(form==PERMUTED_UPPER_TRIANGULAR))&& M.orient()==ROW)
+       )
+    { // begin if
+        // make *this a zero matrix.
+        for (i=0;i<M.nnz;i++) data[i] = 0.0;
+        for (i=0;i<M.nnz;i++) indices[i] = M.indices[i];
+        for (i=0;i<M.pointer_size;i++) pointer[i] = M.pointer[i];
+        for (i=0;i<M.pointer_size-1;i++) data[M.pointer[i]]=M.data[M.pointer[i]]; // copy pivots
+        // copy current column to w (weighted);
+        // copy the corresponding positions in the matrix to "position_in_matrix_list"
+        // update marker and number_elements_in_column if an element is found
+        for(k=0;k<size;k++){
+            current_column=M.indices[M.pointer[k]];
+            marker[k]=M.pointer[k]+1; // skip the pivot, which is located in M.pointer[k]
+            number_elements_in_column=0;
+            // copy data to w
+            for(i=0;i<k;i++){
+                index_of_examined_element=M.indices[marker[i]];
+                if(index_of_examined_element==current_column && marker[i]<M.pointer[i+1]){ // i.e. marker indicates an element found in the column
+                    w[number_elements_in_column]=M.data[marker[i]]*weights.get(i);
+                    position_in_matrix_list[number_elements_in_column]=marker[i];
+                    number_elements_in_column++;
+                    marker[i]++;  
+                }  // end if
+            }  // end for i   
+            // take largest elements of w, store result in list
+            w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0,number_elements_in_column);
+            // list contains elements to be kept, so zero the rest
+            for(i=0;i<list.dimension();i++) data[position_in_matrix_list[list[i]]]=M.data[position_in_matrix_list[list[i]]]; 
+        } // end for k
+        compress();
+        return;
+    } // end if
+    // default case, i.e. no triangular matrix
+    std::cerr<<"matrix_sparse<T>::weighted_triangular_drop_against_orientation: matrix is not triangular. *this is the same as M."<<std::endl;
+    *this=M;
+    return;
   }
 
 template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix_type form, const matrix_sparse<T>& M, const vector_dense<T> weights, orientation_type o, Integer max_fill_in, Real tau){
-   try {
-        if (o == M.orient())
-            weighted_triangular_drop_along_orientation(form,M,weights,max_fill_in,tau);
-        else
-            weighted_triangular_drop_against_orientation(form,M,weights,max_fill_in,tau);
-   }
-   catch(iluplusplus_error ippe){
-      std::cerr << "matrix_sparse<T>::weighted_triangular_drop: "<<ippe.error_message() << std::endl;
-      throw;
-   }
+    if (o == M.orient())
+        weighted_triangular_drop_along_orientation(form,M,weights,max_fill_in,tau);
+    else
+        weighted_triangular_drop_against_orientation(form,M,weights,max_fill_in,tau);
   }
 
 //***********************************************************************************************************************
@@ -6717,2156 +5812,2111 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop(special_matrix
  // we use linked list for L and A, A is only needed in column format and we perform column pivoting
  // U is stored with a companion structure 
 template<class T> bool matrix_sparse<T>::ILUCP4(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor){
-  try {
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      if (threshold > 500.0) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      if (perm_tol > 500.0) perm_tol=0.0;
-      else perm_tol=std::exp(-perm_tol*std::log(10.0));
-      #ifdef VERBOSE
-          clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
-          Real time_init=0.0;
-          Real time_read=0.0;
-          Real time_calc_L=0.0;
-          Real time_scu_L=0.0;  // sorting, copying, updating access information
-          Real time_calc_U=0.0;
-          Real time_scu_U=0.0;
-          Real time_zeroset=0.0;
-          Real time_compress=0.0;
-          Real time_resort=0.0;
-          time_0 = clock();
-      #endif
-      if(non_fatal_error(!Acol.square_check(),"matrix_sparse::ILUCP4: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer n = Acol.columns();
-      Integer k,i,j,p,current_row_col_U;
-      Integer h,pos;
-      T current_data_col_U;
-      zero_pivots=0;
-      Real norm_L,norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-      vector_sparse_dynamic<T> w, z;
-      vector_dense<bool> non_pivot;
-      index_list list_L, list_U;
-      index_list inverse_perm;
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>n) max_fill_in = n;
-      Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
-      array<Integer> firstL, listL, firstA, listA, headA, linkU, rowU, startU;
-      firstL.erase_resize_data_field(n);
-      listL.erase_resize_data_field(n);
-      firstA.erase_resize_data_field(n);
-      listA.erase_resize_data_field(n);
-      headA.erase_resize_data_field(n);
-      linkU.erase_resize_data_field(reserved_memory);
-      rowU.erase_resize_data_field(reserved_memory);
-      startU.erase_resize_data_field(n);
-      U.reformat(n,n,reserved_memory,ROW);
-      reformat(n,n,reserved_memory,COLUMN);
-      perm.resize(n);
-      w.resize(n);
-      z.resize(n);
-      non_pivot.resize(n,true);
-      inverse_perm.resize(n);
-      initialize_triangular_fields(n,listL);
-      initialize_sparse_matrix_fields(n,Acol.pointer,Acol.indices,listA,headA,firstA);
-      for(k=0;k<n;k++) startU[k]=-1;
-      // (1.) begin for k
-      #ifdef VERBOSE
-          time_1 = clock();
-          time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-      #endif
-      for(k=0;k<n;k++){
-          #ifdef VERBOSE
-              time_2=clock();
-          #endif
-          if (k == rp) perm_tol = 1.0;  // permute always
-          // (2.) initialize z
-          z.zero_reset();
-          #ifdef VERBOSE
-              time_3=clock();
-              time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read row of A
-          h=headA[k];
-          while(h!=-1){
-              if(non_pivot[h]) z[h]=Acol.data[firstA[h]];
-              h=listA[h];
-          }
-          #ifdef VERBOSE
-              time_4=clock();
-              time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (3.) begin while
-          h=listL[k];
-          while(h!=-1){
-              // h is current column index of k-th row of L
-              for(j=U.pointer[h];j<U.pointer[h+1];j++){
-                      if(non_pivot[U.indices[j]]){
-                         z[U.indices[j]] -= data[firstL[h]]*U.data[j];
-                      } // end if
-              } // end for
-             h=listL[h];
-          } // end while (5.) 
-          #ifdef VERBOSE
-              time_5=clock();
-              time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (6.) sort and copy data to U; update information for accessing columns of U
-          z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm.get(k),perm_tol);
-              // dropping too stringent?
-          if(list_U.dimension()==0){
-              if(threshold>0.0)
-                  #ifdef VERBOSE
-                      std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
-                  #endif
-                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm.get(k),perm_tol);
-          }
-          // still no non-zero elements?
-          if(list_U.dimension()==0){
-              #ifdef VERBOSE
-                 std::cout<<"Obtained a zero row, setting an arbitrary element to 1."<<std::endl;
-              #endif
-              zero_pivots++;
-              z[perm.get(k)]=1.0;
-              list_U.resize(1);
-              list_U[0]=perm.get(k);
-          } // end if
-          if(U.pointer[k]+list_U.dimension()>reserved_memory){
-              std::cerr<<"sparse_matrix::ILUCP4: Insufficient Memory. Returning 0x0 matrix"<<std::endl<<std::flush;
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-         // copy data, update access information.
-          // copy pivot
-          U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
-          U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
-          for(j=1;j<list_U.dimension();j++){
-              pos=U.pointer[k]+j;
-              U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
-              U.indices[pos]=list_U[list_U.dimension()-1-j];
-              h=startU[U.indices[pos]];
-              startU[U.indices[pos]]=pos;
-              linkU[pos]=h;
-              rowU[pos]=k;
-          }
-          U.pointer[k+1]=U.pointer[k]+list_U.dimension();
-          if(U.data[U.pointer[k]]==0){
-              std::cerr<<"matrix_sparse::ILUCP4: Pivot is zero, because pivoting was not permitted. Preconditioner does not exist."<<std::endl;
-              std::cout<<"dim list_U "<<list_U.dimension()<<std::endl;
-              std::cout<<"last element corresponding to pivot: "<<z[perm.get(k)]<<std::endl;
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-          // store positions of columns of U, but without pivot
-          // update non-pivots.
-          // (7.) update permutations
-          p=inverse_perm.get(U.indices[U.pointer[k]]);
-          inverse_perm.switch_index(perm.get(k),U.indices[U.pointer[k]]);
-          perm.switch_index(k,p);
-          non_pivot[U.indices[U.pointer[k]]]=false;
-          #ifdef VERBOSE
-              time_6=clock();
-              time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
-          #endif
-           // (8.) read w
-          w.zero_reset();
-          #ifdef VERBOSE
-              time_7=clock();
-              time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read column of A
-          /* // works fine as alternative, but not really faster
-          for(i=firstA[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++)
-              w[Acol.indices[i]] = Acol.data[i];               
+    clock_t time_begin, time_end;
+    time_begin=clock();
+    if (threshold > 500.0) threshold=0.0;
+    else threshold=std::exp(-threshold*std::log(10.0));
+    if (perm_tol > 500.0) perm_tol=0.0;
+    else perm_tol=std::exp(-perm_tol*std::log(10.0));
+#ifdef VERBOSE
+    clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
+    Real time_init=0.0;
+    Real time_read=0.0;
+    Real time_calc_L=0.0;
+    Real time_scu_L=0.0;  // sorting, copying, updating access information
+    Real time_calc_U=0.0;
+    Real time_scu_U=0.0;
+    Real time_zeroset=0.0;
+    Real time_compress=0.0;
+    Real time_resort=0.0;
+    time_0 = clock();
+#endif
+    if(non_fatal_error(!Acol.square_check(),"matrix_sparse::ILUCP4: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n = Acol.columns();
+    Integer k,i,j,p,current_row_col_U;
+    Integer h,pos;
+    T current_data_col_U;
+    zero_pivots=0;
+    Real norm_L,norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    vector_sparse_dynamic<T> w, z;
+    vector_dense<bool> non_pivot;
+    index_list list_L, list_U;
+    index_list inverse_perm;
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+    Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
+    array<Integer> firstL, listL, firstA, listA, headA, linkU, rowU, startU;
+    firstL.erase_resize_data_field(n);
+    listL.erase_resize_data_field(n);
+    firstA.erase_resize_data_field(n);
+    listA.erase_resize_data_field(n);
+    headA.erase_resize_data_field(n);
+    linkU.erase_resize_data_field(reserved_memory);
+    rowU.erase_resize_data_field(reserved_memory);
+    startU.erase_resize_data_field(n);
+    U.reformat(n,n,reserved_memory,ROW);
+    reformat(n,n,reserved_memory,COLUMN);
+    perm.resize(n);
+    w.resize(n);
+    z.resize(n);
+    non_pivot.resize(n,true);
+    inverse_perm.resize(n);
+    initialize_triangular_fields(n,listL);
+    initialize_sparse_matrix_fields(n,Acol.pointer,Acol.indices,listA,headA,firstA);
+    for(k=0;k<n;k++) startU[k]=-1;
+    // (1.) begin for k
+#ifdef VERBOSE
+    time_1 = clock();
+    time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
+#endif
+    for(k=0;k<n;k++){
+#ifdef VERBOSE
+        time_2=clock();
+#endif
+        if (k == rp) perm_tol = 1.0;  // permute always
+        // (2.) initialize z
+        z.zero_reset();
+#ifdef VERBOSE
+        time_3=clock();
+        time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read row of A
+        h=headA[k];
+        while(h!=-1){
+            if(non_pivot[h]) z[h]=Acol.data[firstA[h]];
+            h=listA[h];
+        }
+#ifdef VERBOSE
+        time_4=clock();
+        time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (3.) begin while
+        h=listL[k];
+        while(h!=-1){
+            // h is current column index of k-th row of L
+            for(j=U.pointer[h];j<U.pointer[h+1];j++){
+                if(non_pivot[U.indices[j]]){
+                    z[U.indices[j]] -= data[firstL[h]]*U.data[j];
+                } // end if
+            } // end for
+            h=listL[h];
+        } // end while (5.) 
+#ifdef VERBOSE
+        time_5=clock();
+        time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (6.) sort and copy data to U; update information for accessing columns of U
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm.get(k),perm_tol);
+        // dropping too stringent?
+        if(list_U.dimension()==0){
+            if(threshold>0.0)
+#ifdef VERBOSE
+                std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
+#endif
+            z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm.get(k),perm_tol);
+        }
+        // still no non-zero elements?
+        if(list_U.dimension()==0){
+#ifdef VERBOSE
+            std::cout<<"Obtained a zero row, setting an arbitrary element to 1."<<std::endl;
+#endif
+            zero_pivots++;
+            z[perm.get(k)]=1.0;
+            list_U.resize(1);
+            list_U[0]=perm.get(k);
+        } // end if
+        if(U.pointer[k]+list_U.dimension()>reserved_memory){
+            std::cerr<<"sparse_matrix::ILUCP4: Insufficient Memory. Returning 0x0 matrix"<<std::endl<<std::flush;
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // copy data, update access information.
+        // copy pivot
+        U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
+        U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
+        for(j=1;j<list_U.dimension();j++){
+            pos=U.pointer[k]+j;
+            U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+            U.indices[pos]=list_U[list_U.dimension()-1-j];
+            h=startU[U.indices[pos]];
+            startU[U.indices[pos]]=pos;
+            linkU[pos]=h;
+            rowU[pos]=k;
+        }
+        U.pointer[k+1]=U.pointer[k]+list_U.dimension();
+        if(U.data[U.pointer[k]]==0){
+            std::cerr<<"matrix_sparse::ILUCP4: Pivot is zero, because pivoting was not permitted. Preconditioner does not exist."<<std::endl;
+            std::cout<<"dim list_U "<<list_U.dimension()<<std::endl;
+            std::cout<<"last element corresponding to pivot: "<<z[perm.get(k)]<<std::endl;
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // store positions of columns of U, but without pivot
+        // update non-pivots.
+        // (7.) update permutations
+        p=inverse_perm.get(U.indices[U.pointer[k]]);
+        inverse_perm.switch_index(perm.get(k),U.indices[U.pointer[k]]);
+        perm.switch_index(k,p);
+        non_pivot[U.indices[U.pointer[k]]]=false;
+#ifdef VERBOSE
+        time_6=clock();
+        time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (8.) read w
+        w.zero_reset();
+#ifdef VERBOSE
+        time_7=clock();
+        time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read column of A
+        /* // works fine as alternative, but not really faster
+           for(i=firstA[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++)
+           w[Acol.indices[i]] = Acol.data[i];               
            */
-          for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
-              if(Acol.indices[i]>k)
-                  w[Acol.indices[i]] = Acol.data[i];
-          }     // end for i
-          #ifdef VERBOSE
-              time_8=clock();
-              time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (9.) begin while
-          h=startU[perm.get(k)];
-          while(h!=-1){
-              current_row_col_U=rowU[h];
-              current_data_col_U=U.data[h];
-              h=linkU[h];
-              // (10.) w = w - U(i,perm(k))*l_i
-              for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
-                  w[indices[j]] -= current_data_col_U*data[j];
-              } // end for
-          }   // (11.) end while
-         #ifdef VERBOSE
-              time_9=clock();
-              time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (12.) sort and copy data to L
-          // sort
-          w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,k+1,n);
-          if(pointer[k]+list_L.dimension()+1>reserved_memory){
-              std::cerr<<"sparse_matrix::ILUCP4: Insufficient memory. Returning 0x0 matrix"<<std::endl<<std::flush;
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-          // copy data
-          data[pointer[k]]=1.0;
-          indices[pointer[k]]=k;
-          for(j=0;j<list_L.dimension();j++){
-              data[pointer[k]+j+1] = w.read(list_L[j])/U.data[U.pointer[k]];
-              indices[pointer[k]+j+1] = list_L[j];
-          } // end for j
-          pointer[k+1]=pointer[k]+list_L.dimension()+1;
-          update_sparse_matrix_fields(k, Acol.pointer,Acol.indices,listA,headA,firstA);
-          update_triangular_fields(k, pointer,indices,listL,firstL);
-          #ifdef VERBOSE
-              time_0=clock();
-              time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
-          #endif
-      }  // (13.) end for k
-      #ifdef VERBOSE
-          time_2 = clock();
-      #endif
-      compress();
-      U.compress();
-      #ifdef VERBOSE
-          time_3=clock();
-          time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-      #endif
-      #ifdef VERBOSE
-          time_4=clock();
-          time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"    ILUCP4-Times: "<<std::endl;
-          std::cout<<"        initialization:                           "<<time_init<<std::endl;
-          std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
-          std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
-          std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
-          std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
-          std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
-          std::cout<<"        compressing:                              "<<time_compress<<std::endl;
-          std::cout<<"        resorting:                                "<<time_resort<<std::endl;
-          std::cout<<"      Total times:"<<std::endl;
-          std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
-          std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
-      #endif
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-      return true;
-  }   // end try, not indented
-  catch(iluplusplus_error ippe){
-      std::cerr<<"sparse_matrix::ILUCP4: "<<ippe.error_message()<<"Returning 0x0 matrix"<<std::endl<<std::flush;
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      return false;
-  }
+        for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
+            if(Acol.indices[i]>k)
+                w[Acol.indices[i]] = Acol.data[i];
+        }     // end for i
+#ifdef VERBOSE
+        time_8=clock();
+        time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (9.) begin while
+        h=startU[perm.get(k)];
+        while(h!=-1){
+            current_row_col_U=rowU[h];
+            current_data_col_U=U.data[h];
+            h=linkU[h];
+            // (10.) w = w - U(i,perm(k))*l_i
+            for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
+                w[indices[j]] -= current_data_col_U*data[j];
+            } // end for
+        }   // (11.) end while
+#ifdef VERBOSE
+        time_9=clock();
+        time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (12.) sort and copy data to L
+        // sort
+        w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,k+1,n);
+        if(pointer[k]+list_L.dimension()+1>reserved_memory){
+            std::cerr<<"sparse_matrix::ILUCP4: Insufficient memory. Returning 0x0 matrix"<<std::endl<<std::flush;
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // copy data
+        data[pointer[k]]=1.0;
+        indices[pointer[k]]=k;
+        for(j=0;j<list_L.dimension();j++){
+            data[pointer[k]+j+1] = w.read(list_L[j])/U.data[U.pointer[k]];
+            indices[pointer[k]+j+1] = list_L[j];
+        } // end for j
+        pointer[k+1]=pointer[k]+list_L.dimension()+1;
+        update_sparse_matrix_fields(k, Acol.pointer,Acol.indices,listA,headA,firstA);
+        update_triangular_fields(k, pointer,indices,listL,firstL);
+#ifdef VERBOSE
+        time_0=clock();
+        time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
+#endif
+    }  // (13.) end for k
+#ifdef VERBOSE
+    time_2 = clock();
+#endif
+    compress();
+    U.compress();
+#ifdef VERBOSE
+    time_3=clock();
+    time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+#ifdef VERBOSE
+    time_4=clock();
+    time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+    std::cout<<"    ILUCP4-Times: "<<std::endl;
+    std::cout<<"        initialization:                           "<<time_init<<std::endl;
+    std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
+    std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
+    std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
+    std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
+    std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
+    std::cout<<"        compressing:                              "<<time_compress<<std::endl;
+    std::cout<<"        resorting:                                "<<time_resort<<std::endl;
+    std::cout<<"      Total times:"<<std::endl;
+    std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
+    std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
+#endif
+    time_end=clock();
+    time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+    return true;
 }
 
 
 template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol,  Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor){
-  try {
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      if (threshold > 500.0) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      if (perm_tol > 500.0) perm_tol=0.0;
-      else perm_tol=std::exp(-perm_tol*std::log(10.0));
-      #ifdef VERBOSE
-          clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
-          Real time_init=0.0;
-          Real time_read=0.0;
-          Real time_calc_L=0.0;
-          Real time_scu_L=0.0;  // sorting, copying, updating access information
-          Real time_calc_U=0.0;
-          Real time_scu_U=0.0;
-          Real time_zeroset=0.0;
-          Real time_compress=0.0;
-          Real time_resort=0.0;
-          time_0 = clock();
-      #endif
-      if(non_fatal_error(!Arow.square_check(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      if(non_fatal_error(!Acol.square_check(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      if(non_fatal_error(Acol.rows()!=Arow.rows(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer n = Acol.columns();
-      Integer a,b,k,i,j,p,current_row_col_U,current_col_row_L;
-      Integer h,pos, selected_row;
-      T current_data_row_L,current_data_col_U;
-      zero_pivots=0;
-      Real norm_L,norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-      vector_sparse_dynamic<T> w, z;
-      vector_dense<bool> non_pivot, unused_rows;
-      vector_dense<Integer> numb_el_row_L, pointer_num_el_row_L;
-      index_list list_L, list_U;
-      index_list inverse_perm, inverse_permrows;
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>n) max_fill_in = n;
-      Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
-      array<Integer> linkU, rowU, startU, linkL, colL, startL;
-      linkU.erase_resize_data_field(reserved_memory);
-      rowU.erase_resize_data_field(reserved_memory);
-      startU.erase_resize_data_field(n);
-      linkL.erase_resize_data_field(reserved_memory);
-      colL.erase_resize_data_field(reserved_memory);
-      startL.erase_resize_data_field(n);
-      U.reformat(n,n,reserved_memory,ROW);
-      reformat(n,n,reserved_memory,COLUMN);
-      perm.resize(n);
-      permrows.resize(n);
-      inverse_perm.resize(n);
-      inverse_permrows.resize(n);
-      non_pivot.resize(n,true); 
-      unused_rows.resize(n,true);
-      numb_el_row_L.resize(n,0);
-      pointer_num_el_row_L.resize(n+2,n);
-      w.resize(n);
-      z.resize(n);
-      pointer_num_el_row_L.set(0)=0;
-      for(k=0;k<n;k++) startU[k]=-1;
-      for(k=0;k<n;k++) startL[k]=-1;
-      // (1.) begin for k
-      #ifdef VERBOSE
-          time_1 = clock();
-          time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-      #endif
-      for(k=0;k<n;k++){
-          if (k == bpr) perm_tol = 1.0;  // permute always
-          //if (k == bpr) threshold = 0.0;
-          //if (k == bpr) threshold *= (0.1>threshold) ? 0.1 : threshold;
-          #ifdef VERBOSE
-              time_2=clock();
-          #endif
-          // (2.) initialize z
-          selected_row = permrows.get(k);
-          unused_rows.set(selected_row)=false;
-          z.zero_reset();
-          #ifdef VERBOSE
-              time_3=clock();
-              time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read row of A
-          for(i=Arow.pointer[selected_row];i<Arow.pointer[selected_row+1];i++){
-              if(non_pivot[Arow.indices[i]]) z[Arow.indices[i]] = Arow.data[i];
-          }     // end for i
-          #ifdef VERBOSE
-              time_4=clock();
-              time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (3.) begin while
-          h=startL[selected_row]; // h=startL[permrows.get(k)];
-          while(h!=-1){
-              current_col_row_L=colL[h];
-              current_data_row_L=data[h];
-              h=linkL[h];
-              for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
-                  if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
-              } // end for
-          }   // (5.) end while
-          #ifdef VERBOSE
-              time_5=clock();
-              time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (6.) sort and copy data to U; update information for accessing columns of U
-          z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm.get(k),perm_tol);
-              // dropping too stringent?
-          if(list_U.dimension()==0){
-              if(threshold>0.0)
-                  #ifdef VERBOSE
-                      std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
-                  #endif
-                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm.get(k),perm_tol);
-          }
-          // still no non-zero elements?
-          if(list_U.dimension()==0){
-              #ifdef VERBOSE
-                 std::cout<<"Obtained a zero row, setting an arbitrary element to 1."<<std::endl;
-              #endif
-              zero_pivots++;
-              z[perm.get(k)]=1.0;
-              list_U.resize(1);
-              list_U[0]=perm.get(k);
-          } // end if
-          if(U.pointer[k]+list_U.dimension()>reserved_memory){
-              std::cerr<<"matrix_sparse::ILUCDP: memory reserved was insufficient. Returning 0x0 matrices and permutations of dimension 0."<<std::endl;
-              perm.resize(0);
-              permrows.resize(0);
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-          // copy data, update access information.
-          // copy pivot
-          U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
-          U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
-          for(j=1;j<list_U.dimension();j++){
-              pos=U.pointer[k]+j;
-              U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
-              U.indices[pos]=list_U[list_U.dimension()-1-j];
-              h=startU[U.indices[pos]];
-              startU[U.indices[pos]]=pos;
-              linkU[pos]=h;
-              rowU[pos]=k;
-          }
-          U.pointer[k+1]=U.pointer[k]+list_U.dimension();
-          if(U.data[U.pointer[k]]==0){
-              std::cerr<<"matrix_sparse::ILUCDP: Pivot is zero, because pivoting was not permitted. Preconditioner does not exist.Returning 0x0 matrices and permutations of dimension 0. "<<std::endl;
-              std::cout<<"dim list_U "<<list_U.dimension()<<std::endl;
-              std::cout<<"last element corresponding to pivot: "<<z[perm.get(k)]<<std::endl;
-              perm.resize(0);
-              permrows.resize(0);
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-          // store positions of columns of U, but without pivot
-          // update non-pivots.
-          // (7.) update permutations
-          p=inverse_perm.get(U.indices[U.pointer[k]]);
-          inverse_perm.switch_index(perm.get(k),U.indices[U.pointer[k]]);
-          perm.switch_index(k,p);
-          non_pivot[U.indices[U.pointer[k]]]=false;
-          #ifdef VERBOSE
-              time_6=clock();
-              time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
-          #endif
-           // (8.) read w
-          w.zero_reset();
-          #ifdef VERBOSE
-              time_7=clock();
-              time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read column of A
-          for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
-              if(unused_rows[Acol.indices[i]])
-                  w[Acol.indices[i]] = Acol.data[i];
-          }     // end for i
-          #ifdef VERBOSE
-              time_8=clock();
-              time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (9.) begin while
-          h=startU[perm.get(k)];
-          while(h!=-1){
-              current_row_col_U=rowU[h];
-              current_data_col_U=U.data[h];
-              h=linkU[h];
-             // (10.) w = w - U(i,perm(k))*l_i
-              for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
-                  if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U*data[j];
-              } // end for
-          }   // (11.) end while
-         #ifdef VERBOSE
-              time_9=clock();
-              time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (12.) sort and copy data to L
-          // sort
-          w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,0,n);
-          if(pointer[k]+list_L.dimension()+1>reserved_memory){
-              std::cerr<<"matrix_sparse::ILUCDP: memory reserved was insufficient. Returning 0x0 matrices and permutations of dimension 0."<<std::endl;
-              perm.resize(0);
-              permrows.resize(0);
-              reformat(0,0,0,COLUMN);
-              U.reformat(0,0,0,ROW);
-              return false;
-          }
-          // copy data
-          data[pointer[k]]=1.0;
-          indices[pointer[k]]=selected_row;
-          for(j=0;j<list_L.dimension();j++){
-              pos = pointer[k]+j+1;
-              data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
-              b = indices[pos] = list_L[j];
-              h=startL[b];
-              startL[b]=pos;
-              linkL[pos]=h;
-              colL[pos]=k;
-              // begin updating fields for number elements of row of L
-              if (b > bpr) {
-                  b = inverse_permrows.get(b);
-                  a = --pointer_num_el_row_L[++numb_el_row_L[b]];
-                  inverse_permrows.switch_index(permrows.get(a),permrows.get(b));
-                  permrows.switch_index(a,b);
-                  numb_el_row_L.switch_entry(a,b);
-              }
-              // end updating fields
-          } // end for j
-          // sort permrows if necessary, i.e. if num_el_row_L increases at next iteration.
-              if(pointer_num_el_row_L[numb_el_row_L[k]+1] == k+1){ 
-                  permrows.quicksort_with_inverse(inverse_permrows,pointer_num_el_row_L[numb_el_row_L[k]+1],pointer_num_el_row_L[numb_el_row_L[k]+2]-1);}
-          // end sorting
-          pointer[k+1]=pointer[k]+list_L.dimension()+1;
-          #ifdef VERBOSE
-              time_0=clock();
-              time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
-          #endif
-      }  // (13.) end for k
-      #ifdef VERBOSE
-          time_2 = clock();
-      #endif
-      compress();
-      U.compress();
-      #ifdef VERBOSE
-          time_3=clock();
-          time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-      #endif
-      #ifdef VERBOSE
-          time_4=clock();
-          time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"    ILUCDP-Times: "<<std::endl;
-          std::cout<<"        initialization:                           "<<time_init<<std::endl;
-          std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
-          std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
-          std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
-          std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
-          std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
-          std::cout<<"        compressing:                              "<<time_compress<<std::endl;
-          std::cout<<"        resorting:                                "<<time_resort<<std::endl;
-          std::cout<<"      Total times:"<<std::endl;
-          std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
-          std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
-      #endif
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-      return true;
-  }  // end try
-  catch(iluplusplus_error ippe){
-      std::cerr<<"sparse_matrix::ILUCDP: "<<ippe.error_message()<<"Returning 0x0 matrices and permutations of dimension 0."<<std::endl<<std::flush;
-      perm.resize(0);
-      permrows.resize(0);
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      return false;
-  }
+    clock_t time_begin, time_end;
+    time_begin=clock();
+    if (threshold > 500.0) threshold=0.0;
+    else threshold=std::exp(-threshold*std::log(10.0));
+    if (perm_tol > 500.0) perm_tol=0.0;
+    else perm_tol=std::exp(-perm_tol*std::log(10.0));
+#ifdef VERBOSE
+    clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
+    Real time_init=0.0;
+    Real time_read=0.0;
+    Real time_calc_L=0.0;
+    Real time_scu_L=0.0;  // sorting, copying, updating access information
+    Real time_calc_U=0.0;
+    Real time_scu_U=0.0;
+    Real time_zeroset=0.0;
+    Real time_compress=0.0;
+    Real time_resort=0.0;
+    time_0 = clock();
+#endif
+    if(non_fatal_error(!Arow.square_check(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(!Acol.square_check(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(Acol.rows()!=Arow.rows(),"matrix_sparse::ILUCDP: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n = Acol.columns();
+    Integer a,b,k,i,j,p,current_row_col_U,current_col_row_L;
+    Integer h,pos, selected_row;
+    T current_data_row_L,current_data_col_U;
+    zero_pivots=0;
+    Real norm_L,norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    vector_sparse_dynamic<T> w, z;
+    vector_dense<bool> non_pivot, unused_rows;
+    vector_dense<Integer> numb_el_row_L, pointer_num_el_row_L;
+    index_list list_L, list_U;
+    index_list inverse_perm, inverse_permrows;
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+    Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
+    array<Integer> linkU, rowU, startU, linkL, colL, startL;
+    linkU.erase_resize_data_field(reserved_memory);
+    rowU.erase_resize_data_field(reserved_memory);
+    startU.erase_resize_data_field(n);
+    linkL.erase_resize_data_field(reserved_memory);
+    colL.erase_resize_data_field(reserved_memory);
+    startL.erase_resize_data_field(n);
+    U.reformat(n,n,reserved_memory,ROW);
+    reformat(n,n,reserved_memory,COLUMN);
+    perm.resize(n);
+    permrows.resize(n);
+    inverse_perm.resize(n);
+    inverse_permrows.resize(n);
+    non_pivot.resize(n,true); 
+    unused_rows.resize(n,true);
+    numb_el_row_L.resize(n,0);
+    pointer_num_el_row_L.resize(n+2,n);
+    w.resize(n);
+    z.resize(n);
+    pointer_num_el_row_L.set(0)=0;
+    for(k=0;k<n;k++) startU[k]=-1;
+    for(k=0;k<n;k++) startL[k]=-1;
+    // (1.) begin for k
+#ifdef VERBOSE
+    time_1 = clock();
+    time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
+#endif
+    for(k=0;k<n;k++){
+        if (k == bpr) perm_tol = 1.0;  // permute always
+        //if (k == bpr) threshold = 0.0;
+        //if (k == bpr) threshold *= (0.1>threshold) ? 0.1 : threshold;
+#ifdef VERBOSE
+        time_2=clock();
+#endif
+        // (2.) initialize z
+        selected_row = permrows.get(k);
+        unused_rows.set(selected_row)=false;
+        z.zero_reset();
+#ifdef VERBOSE
+        time_3=clock();
+        time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read row of A
+        for(i=Arow.pointer[selected_row];i<Arow.pointer[selected_row+1];i++){
+            if(non_pivot[Arow.indices[i]]) z[Arow.indices[i]] = Arow.data[i];
+        }     // end for i
+#ifdef VERBOSE
+        time_4=clock();
+        time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (3.) begin while
+        h=startL[selected_row]; // h=startL[permrows.get(k)];
+        while(h!=-1){
+            current_col_row_L=colL[h];
+            current_data_row_L=data[h];
+            h=linkL[h];
+            for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
+                if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
+            } // end for
+        }   // (5.) end while
+#ifdef VERBOSE
+        time_5=clock();
+        time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (6.) sort and copy data to U; update information for accessing columns of U
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm.get(k),perm_tol);
+        // dropping too stringent?
+        if(list_U.dimension()==0){
+            if(threshold>0.0)
+#ifdef VERBOSE
+                std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
+#endif
+            z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm.get(k),perm_tol);
+        }
+        // still no non-zero elements?
+        if(list_U.dimension()==0){
+#ifdef VERBOSE
+            std::cout<<"Obtained a zero row, setting an arbitrary element to 1."<<std::endl;
+#endif
+            zero_pivots++;
+            z[perm.get(k)]=1.0;
+            list_U.resize(1);
+            list_U[0]=perm.get(k);
+        } // end if
+        if(U.pointer[k]+list_U.dimension()>reserved_memory){
+            std::cerr<<"matrix_sparse::ILUCDP: memory reserved was insufficient. Returning 0x0 matrices and permutations of dimension 0."<<std::endl;
+            perm.resize(0);
+            permrows.resize(0);
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // copy data, update access information.
+        // copy pivot
+        U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
+        U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
+        for(j=1;j<list_U.dimension();j++){
+            pos=U.pointer[k]+j;
+            U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+            U.indices[pos]=list_U[list_U.dimension()-1-j];
+            h=startU[U.indices[pos]];
+            startU[U.indices[pos]]=pos;
+            linkU[pos]=h;
+            rowU[pos]=k;
+        }
+        U.pointer[k+1]=U.pointer[k]+list_U.dimension();
+        if(U.data[U.pointer[k]]==0){
+            std::cerr<<"matrix_sparse::ILUCDP: Pivot is zero, because pivoting was not permitted. Preconditioner does not exist.Returning 0x0 matrices and permutations of dimension 0. "<<std::endl;
+            std::cout<<"dim list_U "<<list_U.dimension()<<std::endl;
+            std::cout<<"last element corresponding to pivot: "<<z[perm.get(k)]<<std::endl;
+            perm.resize(0);
+            permrows.resize(0);
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // store positions of columns of U, but without pivot
+        // update non-pivots.
+        // (7.) update permutations
+        p=inverse_perm.get(U.indices[U.pointer[k]]);
+        inverse_perm.switch_index(perm.get(k),U.indices[U.pointer[k]]);
+        perm.switch_index(k,p);
+        non_pivot[U.indices[U.pointer[k]]]=false;
+#ifdef VERBOSE
+        time_6=clock();
+        time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (8.) read w
+        w.zero_reset();
+#ifdef VERBOSE
+        time_7=clock();
+        time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read column of A
+        for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
+            if(unused_rows[Acol.indices[i]])
+                w[Acol.indices[i]] = Acol.data[i];
+        }     // end for i
+#ifdef VERBOSE
+        time_8=clock();
+        time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (9.) begin while
+        h=startU[perm.get(k)];
+        while(h!=-1){
+            current_row_col_U=rowU[h];
+            current_data_col_U=U.data[h];
+            h=linkU[h];
+            // (10.) w = w - U(i,perm(k))*l_i
+            for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
+                if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U*data[j];
+            } // end for
+        }   // (11.) end while
+#ifdef VERBOSE
+        time_9=clock();
+        time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (12.) sort and copy data to L
+        // sort
+        w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,0,n);
+        if(pointer[k]+list_L.dimension()+1>reserved_memory){
+            std::cerr<<"matrix_sparse::ILUCDP: memory reserved was insufficient. Returning 0x0 matrices and permutations of dimension 0."<<std::endl;
+            perm.resize(0);
+            permrows.resize(0);
+            reformat(0,0,0,COLUMN);
+            U.reformat(0,0,0,ROW);
+            return false;
+        }
+        // copy data
+        data[pointer[k]]=1.0;
+        indices[pointer[k]]=selected_row;
+        for(j=0;j<list_L.dimension();j++){
+            pos = pointer[k]+j+1;
+            data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
+            b = indices[pos] = list_L[j];
+            h=startL[b];
+            startL[b]=pos;
+            linkL[pos]=h;
+            colL[pos]=k;
+            // begin updating fields for number elements of row of L
+            if (b > bpr) {
+                b = inverse_permrows.get(b);
+                a = --pointer_num_el_row_L[++numb_el_row_L[b]];
+                inverse_permrows.switch_index(permrows.get(a),permrows.get(b));
+                permrows.switch_index(a,b);
+                numb_el_row_L.switch_entry(a,b);
+            }
+            // end updating fields
+        } // end for j
+        // sort permrows if necessary, i.e. if num_el_row_L increases at next iteration.
+        if(pointer_num_el_row_L[numb_el_row_L[k]+1] == k+1){ 
+            permrows.quicksort_with_inverse(inverse_permrows,pointer_num_el_row_L[numb_el_row_L[k]+1],pointer_num_el_row_L[numb_el_row_L[k]+2]-1);}
+        // end sorting
+        pointer[k+1]=pointer[k]+list_L.dimension()+1;
+#ifdef VERBOSE
+        time_0=clock();
+        time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
+#endif
+    }  // (13.) end for k
+#ifdef VERBOSE
+    time_2 = clock();
+#endif
+    compress();
+    U.compress();
+#ifdef VERBOSE
+    time_3=clock();
+    time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+#ifdef VERBOSE
+    time_4=clock();
+    time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+    std::cout<<"    ILUCDP-Times: "<<std::endl;
+    std::cout<<"        initialization:                           "<<time_init<<std::endl;
+    std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
+    std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
+    std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
+    std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
+    std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
+    std::cout<<"        compressing:                              "<<time_compress<<std::endl;
+    std::cout<<"        resorting:                                "<<time_resort<<std::endl;
+    std::cout<<"      Total times:"<<std::endl;
+    std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
+    std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
+#endif
+    time_end=clock();
+    time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+    return true;
 }
 
 
 template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_sparse<T>& U, vector_dense<T>& Dinv, index_list& perm, index_list& permrows, index_list& inverse_perm, index_list& inverse_permrows,Integer last_row_to_eliminate, Real threshold, Integer bp, Integer bpr, Integer epr, Integer& zero_pivots, Real& time_self, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used){
-  try {
-      time_self = 0.0;
-      total_memory_allocated = 0.0;
-      Integer n = Acol.columns();
-      if(!Arow.square_check()){
-          std::cerr<<"matrix_sparse::partialILUCDP: argument matrix must be square. Returning 0x0 matrices."<<std::endl<<std::flush;
-          reformat(0,0,0,COLUMN);
-          U.reformat(0,0,0,ROW);
-          Dinv.resize_without_initialization(0);
-          Anew.reformat(0,0,0,ROW);
-          perm.resize(0);
-          permrows.resize(0);
-          inverse_perm.resize(0);
-          inverse_permrows.resize(0);
-          return false;
-      }
-      if(n==0){
-          reformat(0,0,0,COLUMN);
-          U.reformat(0,0,0,ROW);
-          Dinv.resize_without_initialization(0);
-          Anew.reformat(0,0,0,ROW);
-          perm.resize(0);
-          permrows.resize(0);
-          inverse_perm.resize(0);
-          inverse_permrows.resize(0);
-          return true;
-      }
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      Integer max_fill_in;
-      Integer bandwidth, bandwidth_L, bandwidth_U;
-      Integer a,b,k,i,j,p,current_row_col_U,current_col_row_L;//help;
-      Integer h,pos, selected_row;
-      Integer pos_pivot=-1; // is set later
-      T current_data_row_L,current_data_col_U;
-      T val_larg_el = 0.0;
-      zero_pivots=0;
-      Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-      Real max_inv_piv=0.0;
-      Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
-      Real post_fact_threshold;
-      Real perm_tol = IP.get_perm_tol();
-      bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
-      bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
-      //bool pivoting = true;        // indicates if columns are pivoted in a particular step
-      T pivot = 0.0;
-      Integer k_Anew,n_Anew=0; // set later
-      Integer reserved_memory_Anew=0; // will be set later
-      T  xplus, xminus, yplus, yminus,vi;
-      Real nuplus,numinus;
-      Integer nplus, nminus,pk;
-      bool use_improved_SCHUR = (IP.get_SCHUR_COMPLEMENT()>0);
-      bool use_weightsLU = IP.get_USE_WEIGHTED_DROPPING() || IP.get_USE_WEIGHTED_DROPPING2();
-      bool use_norm_row_U=false;
-      Real weightL, weightU;
-      Real move_level_parameter=0;
-      Integer reserved_memory_L;
-      Integer reserved_memory_U;
-      Integer reserved_memory_droppedU;
-      #ifdef VERBOSE
-          clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
-          Real time_init=0.0;
-          Real time_read=0.0;
-          Real time_calc_L=0.0;
-          Real time_scu_L=0.0;  // sorting, copying, updating access information
-          Real time_calc_U=0.0;
-          Real time_scu_U=0.0;
-          Real time_calc_Anew=0.0;
-          Real time_scu_Anew=0.0;
-          Real time_zeroset=0.0;
-          Real time_compress=0.0;
-          Real time_resort=0.0;
-          Real time_dropping=0.0;
-          time_0 = clock();
-      #endif
-      if(IP.get_MAX_FILLIN_IS_INF())  max_fill_in = n;
-      else max_fill_in = IP.get_fill_in();
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>n) max_fill_in = n;
-      if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
-      switch (IP.get_DROP_TYPE_L()){
-          case 3: bandwidth_L = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
-          case 4: bandwidth_L = bandwidth; break;
-          default: bandwidth_L = 0;
-      }
-      switch (IP.get_DROP_TYPE_U()){
-          case 3: bandwidth_U = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
-          case 4: bandwidth_U = bandwidth; break;
-          default: bandwidth_U = 0;
-      }
-      if (threshold > 500.0) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      if (perm_tol > 500.0) perm_tol=0.0;
-      else perm_tol=std::exp(-perm_tol*std::log(10.0));
-      if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
-      else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
-      if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
-      if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
-      if(epr<0)  epr=0;
-      if(epr>=n) epr=n-1;
-      if(bpr<0)  bpr=0;
-      if(bpr>=n) bpr=n-1;
-      reserved_memory_L = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
-      reserved_memory_U = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
-      reserved_memory_droppedU = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
-      #ifdef STATISTICS
-          vector_dense<Integer> L_total,L_kept,U_total,U_kept;
-          Real average_total,average_kept,average_prop, min_prop, max_prop, stand_dev_kept, stand_dev_prop, stand_dev_total;
-          Integer min_total, max_total, min_kept, max_kept,help;
-          Real sum1, sum2, sum3, prop;
-      #endif
-      vector_sparse_dynamic<T> w,z;
-      vector_dense<bool> non_pivot, unused_rows;
-      vector_dense<Integer> numb_el_row_L, pointer_num_el_row_L;
-      vector_dense<Real> norm_row_U;
-      sorted_vector row_reorder_weight;
-      index_list list_L, list_U;
-      index_list rejected_L, rejected_U;
-      matrix_sparse<T> droppedU;  // matrix containing dropped elements of U. Used to calculate an improved Schur complement.
-      array< std::queue<T> > droppedL_data;
-      array< std::queue<Integer> > droppedL_colindex;
-      Real droppedL_data_memory = 0.0;
-      Real droppedL_colindex_memory = 0.0;
-      vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
-      vector_dense<Real> weightsL,weightsU;
-      array<Integer> linkU, rowU, startU, linkL, colL, startL;
-      Dinv.resize(n,1.0);
-      perm.resize(n);
-      permrows.resize(n);
-      inverse_perm.resize(n);
-      inverse_permrows.resize(n);
-      w.resize(n); z.resize(n);
-      non_pivot.resize(n,true);
-      unused_rows.resize(n,true);
-      numb_el_row_L.resize(n,0);
-      pointer_num_el_row_L.resize(n+2,epr+1);
-      linkU.erase_resize_data_field(reserved_memory_U); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
-      rowU.erase_resize_data_field(reserved_memory_U);  // row indices of elements of U.data.
-      startU.erase_resize_data_field(n); // startU[i] points to start of points to an index of data belonging to column i 
-      linkL.erase_resize_data_field(reserved_memory_L); //h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
-      colL.erase_resize_data_field(reserved_memory_L);  // column indices of elements of data.
-      startL.erase_resize_data_field(n); // startL[i] points to start of points to an index of data belonging to row i 
-      U.reformat(n,n,reserved_memory_U,ROW);
-      reformat(n,n,reserved_memory_L,COLUMN);
-      if(IP.get_FINAL_ROW_CRIT() <= -1){ row_reorder_weight.resize(n); if(n>0) row_reorder_weight.remove(0);}
-      if(IP.get_FINAL_ROW_CRIT() == -3 || IP.get_FINAL_ROW_CRIT() == -4) {use_norm_row_U=true; norm_row_U.resize(n,0.0);}
-      if(IP.get_USE_INVERSE_DROPPING()){
-          xL.resize(n,0); yL.resize(n,0); vxL.resize(n,0);vyL.resize(n,0);xU.resize(n,0);yU.resize(n,0);vxU.resize(n,0);vyU.resize(n,0);
-      }
-      if(use_weightsLU){
-          weightsL.resize(n,IP.get_INIT_WEIGHTS_LU()); weightsU.resize(n,IP.get_INIT_WEIGHTS_LU());  // set equal to 1 for diagonal element
-      }
-      if(use_improved_SCHUR){
-          droppedU.reformat(n,n,reserved_memory_droppedU,ROW);
-          droppedL_data.resize(n);
-          droppedL_colindex.resize(n);
-      }
-      #ifdef STATISTICS
-          L_total.resize(n,0); L_kept.resize(n,0); U_total.resize(n,0); U_kept.resize(n,0);
-      #endif
-      pointer_num_el_row_L.set(0)=0;
-      for(k=0;k<n;k++) startU[k]=-1;
-      for(k=0;k<n;k++) startL[k]=-1;
-// stores dropped elements of L by rows
-      // (1.) begin for k
-      #ifdef VERBOSE
-          time_1 = clock();
-          time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-      #endif
-      for(k=0;k<n;k++){
-          if (IP.get_BEGIN_TOTAL_PIV() && k == bp){ perm_tol = 1.0;}// permute always
-          #ifdef VERBOSE
-              time_2=clock();
-          #endif
-          // (2.) initialize z
-          selected_row = permrows.get(k);
-          unused_rows.set(selected_row)=false;
-          z.zero_reset();
-          #ifdef VERBOSE
-              time_3=clock();
-              time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read row of A
-          for(i=Arow.pointer[selected_row];i<Arow.pointer[selected_row+1];i++){
-              if(non_pivot[Arow.indices[i]]) z[Arow.indices[i]] = Arow.data[i];
-          }     // end for i
-          #ifdef VERBOSE
-              time_4=clock();
-              time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (3.) begin while
-          h=startL[selected_row]; // h=startL[permrows.get(k)];
-          // do standard elimination
-          while(h!=-1){
-              current_col_row_L=colL[h];
-              current_data_row_L=data[h];
-              h=linkL[h];
-              for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
-                  if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*U.data[j];
-                 // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
-              } // end for
-              // use improved Schur?
-              if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of L, small of U):
-                  for(j=droppedU.pointer[current_col_row_L];j<droppedU.pointer[current_col_row_L+1];j++){
-                      if(non_pivot[droppedU.indices[j]]) z[droppedU.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*droppedU.data[j];
-                     // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
-                  } // end for
-              } //end if
-          }   // (5.) end while
-          if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of U, small of L):
-              while(droppedL_data[k].size()>0){
-                  current_col_row_L = droppedL_colindex[k].front();  // read
-                  current_data_row_L = droppedL_data[k].front();
-                  for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
-                      if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*U.data[j];
-                     // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
-                  } // end for
-                  droppedL_colindex[k].pop();  // remove
-                  droppedL_data[k].pop();
-              }  // end while
-          } // end if
-          #ifdef VERBOSE
-              time_5=clock();
-              if(eliminate) time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-              else time_calc_Anew += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-          #endif
+    time_self = 0.0;
+    total_memory_allocated = 0.0;
+    Integer n = Acol.columns();
+    if(!Arow.square_check()){
+        std::cerr<<"matrix_sparse::partialILUCDP: argument matrix must be square. Returning 0x0 matrices."<<std::endl<<std::flush;
+        reformat(0,0,0,COLUMN);
+        U.reformat(0,0,0,ROW);
+        Dinv.resize_without_initialization(0);
+        Anew.reformat(0,0,0,ROW);
+        perm.resize(0);
+        permrows.resize(0);
+        inverse_perm.resize(0);
+        inverse_permrows.resize(0);
+        return false;
+    }
+    if(n==0){
+        reformat(0,0,0,COLUMN);
+        U.reformat(0,0,0,ROW);
+        Dinv.resize_without_initialization(0);
+        Anew.reformat(0,0,0,ROW);
+        perm.resize(0);
+        permrows.resize(0);
+        inverse_perm.resize(0);
+        inverse_permrows.resize(0);
+        return true;
+    }
+    clock_t time_begin, time_end;
+    time_begin=clock();
+    Integer max_fill_in;
+    Integer bandwidth, bandwidth_L, bandwidth_U;
+    Integer a,b,k,i,j,p,current_row_col_U,current_col_row_L;//help;
+    Integer h,pos, selected_row;
+    Integer pos_pivot=-1; // is set later
+    T current_data_row_L,current_data_col_U;
+    T val_larg_el = 0.0;
+    zero_pivots=0;
+    Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    Real max_inv_piv=0.0;
+    Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
+    Real post_fact_threshold;
+    Real perm_tol = IP.get_perm_tol();
+    bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
+    bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
+    //bool pivoting = true;        // indicates if columns are pivoted in a particular step
+    T pivot = 0.0;
+    Integer k_Anew,n_Anew=0; // set later
+    Integer reserved_memory_Anew=0; // will be set later
+    T  xplus, xminus, yplus, yminus,vi;
+    Real nuplus,numinus;
+    Integer nplus, nminus,pk;
+    bool use_improved_SCHUR = (IP.get_SCHUR_COMPLEMENT()>0);
+    bool use_weightsLU = IP.get_USE_WEIGHTED_DROPPING() || IP.get_USE_WEIGHTED_DROPPING2();
+    bool use_norm_row_U=false;
+    Real weightL, weightU;
+    Real move_level_parameter=0;
+    Integer reserved_memory_L;
+    Integer reserved_memory_U;
+    Integer reserved_memory_droppedU;
+#ifdef VERBOSE
+    clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
+    Real time_init=0.0;
+    Real time_read=0.0;
+    Real time_calc_L=0.0;
+    Real time_scu_L=0.0;  // sorting, copying, updating access information
+    Real time_calc_U=0.0;
+    Real time_scu_U=0.0;
+    Real time_calc_Anew=0.0;
+    Real time_scu_Anew=0.0;
+    Real time_zeroset=0.0;
+    Real time_compress=0.0;
+    Real time_resort=0.0;
+    Real time_dropping=0.0;
+    time_0 = clock();
+#endif
+    if(IP.get_MAX_FILLIN_IS_INF())  max_fill_in = n;
+    else max_fill_in = IP.get_fill_in();
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+    if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
+    switch (IP.get_DROP_TYPE_L()){
+        case 3: bandwidth_L = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
+        case 4: bandwidth_L = bandwidth; break;
+        default: bandwidth_L = 0;
+    }
+    switch (IP.get_DROP_TYPE_U()){
+        case 3: bandwidth_U = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
+        case 4: bandwidth_U = bandwidth; break;
+        default: bandwidth_U = 0;
+    }
+    if (threshold > 500.0) threshold=0.0;
+    else threshold=std::exp(-threshold*std::log(10.0));
+    if (perm_tol > 500.0) perm_tol=0.0;
+    else perm_tol=std::exp(-perm_tol*std::log(10.0));
+    if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
+    else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
+    if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
+    if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
+    if(epr<0)  epr=0;
+    if(epr>=n) epr=n-1;
+    if(bpr<0)  bpr=0;
+    if(bpr>=n) bpr=n-1;
+    reserved_memory_L = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
+    reserved_memory_U = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
+    reserved_memory_droppedU = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Acol.non_zeroes()));
+#ifdef STATISTICS
+    vector_dense<Integer> L_total,L_kept,U_total,U_kept;
+    Real average_total,average_kept,average_prop, min_prop, max_prop, stand_dev_kept, stand_dev_prop, stand_dev_total;
+    Integer min_total, max_total, min_kept, max_kept,help;
+    Real sum1, sum2, sum3, prop;
+#endif
+    vector_sparse_dynamic<T> w,z;
+    vector_dense<bool> non_pivot, unused_rows;
+    vector_dense<Integer> numb_el_row_L, pointer_num_el_row_L;
+    vector_dense<Real> norm_row_U;
+    sorted_vector row_reorder_weight;
+    index_list list_L, list_U;
+    index_list rejected_L, rejected_U;
+    matrix_sparse<T> droppedU;  // matrix containing dropped elements of U. Used to calculate an improved Schur complement.
+    array< std::queue<T> > droppedL_data;
+    array< std::queue<Integer> > droppedL_colindex;
+    Real droppedL_data_memory = 0.0;
+    Real droppedL_colindex_memory = 0.0;
+    vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
+    vector_dense<Real> weightsL,weightsU;
+    array<Integer> linkU, rowU, startU, linkL, colL, startL;
+    Dinv.resize(n,1.0);
+    perm.resize(n);
+    permrows.resize(n);
+    inverse_perm.resize(n);
+    inverse_permrows.resize(n);
+    w.resize(n); z.resize(n);
+    non_pivot.resize(n,true);
+    unused_rows.resize(n,true);
+    numb_el_row_L.resize(n,0);
+    pointer_num_el_row_L.resize(n+2,epr+1);
+    linkU.erase_resize_data_field(reserved_memory_U); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
+    rowU.erase_resize_data_field(reserved_memory_U);  // row indices of elements of U.data.
+    startU.erase_resize_data_field(n); // startU[i] points to start of points to an index of data belonging to column i 
+    linkL.erase_resize_data_field(reserved_memory_L); //h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
+    colL.erase_resize_data_field(reserved_memory_L);  // column indices of elements of data.
+    startL.erase_resize_data_field(n); // startL[i] points to start of points to an index of data belonging to row i 
+    U.reformat(n,n,reserved_memory_U,ROW);
+    reformat(n,n,reserved_memory_L,COLUMN);
+    if(IP.get_FINAL_ROW_CRIT() <= -1){ row_reorder_weight.resize(n); if(n>0) row_reorder_weight.remove(0);}
+    if(IP.get_FINAL_ROW_CRIT() == -3 || IP.get_FINAL_ROW_CRIT() == -4) {use_norm_row_U=true; norm_row_U.resize(n,0.0);}
+    if(IP.get_USE_INVERSE_DROPPING()){
+        xL.resize(n,0); yL.resize(n,0); vxL.resize(n,0);vyL.resize(n,0);xU.resize(n,0);yU.resize(n,0);vxU.resize(n,0);vyU.resize(n,0);
+    }
+    if(use_weightsLU){
+        weightsL.resize(n,IP.get_INIT_WEIGHTS_LU()); weightsU.resize(n,IP.get_INIT_WEIGHTS_LU());  // set equal to 1 for diagonal element
+    }
+    if(use_improved_SCHUR){
+        droppedU.reformat(n,n,reserved_memory_droppedU,ROW);
+        droppedL_data.resize(n);
+        droppedL_colindex.resize(n);
+    }
+#ifdef STATISTICS
+    L_total.resize(n,0); L_kept.resize(n,0); U_total.resize(n,0); U_kept.resize(n,0);
+#endif
+    pointer_num_el_row_L.set(0)=0;
+    for(k=0;k<n;k++) startU[k]=-1;
+    for(k=0;k<n;k++) startL[k]=-1;
+    // stores dropped elements of L by rows
+    // (1.) begin for k
+#ifdef VERBOSE
+    time_1 = clock();
+    time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
+#endif
+    for(k=0;k<n;k++){
+        if (IP.get_BEGIN_TOTAL_PIV() && k == bp){ perm_tol = 1.0;}// permute always
+#ifdef VERBOSE
+        time_2=clock();
+#endif
+        // (2.) initialize z
+        selected_row = permrows.get(k);
+        unused_rows.set(selected_row)=false;
+        z.zero_reset();
+#ifdef VERBOSE
+        time_3=clock();
+        time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read row of A
+        for(i=Arow.pointer[selected_row];i<Arow.pointer[selected_row+1];i++){
+            if(non_pivot[Arow.indices[i]]) z[Arow.indices[i]] = Arow.data[i];
+        }     // end for i
+#ifdef VERBOSE
+        time_4=clock();
+        time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (3.) begin while
+        h=startL[selected_row]; // h=startL[permrows.get(k)];
+        // do standard elimination
+        while(h!=-1){
+            current_col_row_L=colL[h];
+            current_data_row_L=data[h];
+            h=linkL[h];
+            for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
+                if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*U.data[j];
+                // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
+            } // end for
+            // use improved Schur?
+            if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of L, small of U):
+                for(j=droppedU.pointer[current_col_row_L];j<droppedU.pointer[current_col_row_L+1];j++){
+                    if(non_pivot[droppedU.indices[j]]) z[droppedU.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*droppedU.data[j];
+                    // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
+                } // end for
+            } //end if
+        }   // (5.) end while
+        if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of U, small of L):
+            while(droppedL_data[k].size()>0){
+                current_col_row_L = droppedL_colindex[k].front();  // read
+                current_data_row_L = droppedL_data[k].front();
+                for(j=U.pointer[current_col_row_L];j<U.pointer[current_col_row_L+1];j++){
+                    if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L/Dinv[current_col_row_L]*U.data[j];
+                    // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
+                } // end for
+                droppedL_colindex[k].pop();  // remove
+                droppedL_data[k].pop();
+            }  // end while
+        } // end if
+#ifdef VERBOSE
+        time_5=clock();
+        if(eliminate) time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+        else time_calc_Anew += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+#endif
 
-/*
-          if(eliminate){  // select potential pivot
-              val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-              if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
-                  pivoting = true;
-                  pivot = val_larg_el;
-              } else {
-                  pivoting = false;
-                  pivot = z.read(perm.get(k));
-              }
-          }
+        /*
+           if(eliminate){  // select potential pivot
+           val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
+           pivoting = true;
+           pivot = val_larg_el;
+           } else {
+           pivoting = false;
+           pivot = z.read(perm.get(k));
+           }
+           }
+           */
+
+        /*
+           if(eliminate){  // select potential pivot
+           val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
+           if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0){
+           std::cout<<"*1 "; 
+           pivoting = true;
+           pivot = val_larg_el;
+           } else {
+           std::cout<<"*2 "; 
+           pivoting = false;
+           pos_pivot = selected_row;
+           pivot = z.read(pos_pivot);
+           }
+           } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
+           std::cout<<"*3 "; 
+           pivoting = true;
+           pivot = val_larg_el;
+           } else {
+           std::cout<<"*4 "; 
+           pivoting = false;
+           pos_pivot = perm.get(k);
+           pivot = z.read(pos_pivot);
+           }
+           }
+           }
+           */
+        if(eliminate){  // select potential pivot
+            val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
+            if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
+                if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+                    //pivoting = true;
+                    pivot = val_larg_el;
+                } else {
+                    //pivoting = false;
+                    pos_pivot = selected_row;
+                    pivot = z.read(pos_pivot);
+                }
+            } else {   // pivot if possible... only if nothing else works, use corresponding column
+                if ( (std::abs(val_larg_el)>0.0) && pos_pivot>=0){ 
+                    //pivoting = true;
+                    pivot = val_larg_el;
+                } else {
+                    //pivoting = false;
+                    pos_pivot = perm.get(k);
+                    pivot = z.read(pos_pivot);
+                }
+            }
+        }
+
+        /*
+
+           if(eliminate){  // select potential pivot
+           val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
+           if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+           pivoting = true;
+           pivot = val_larg_el;
+           } else {
+           pivoting = false;
+           pos_pivot = selected_row;
+           pivot = z.read(pos_pivot);
+           }
+           } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
+           pivoting = true;
+           pivot = val_larg_el;
+           } else {
+           pivoting = false;
+           pos_pivot = perm.get(k);
+           pivot = z.read(pos_pivot);
+           }
+           }
+           }
+
 */
 
-/*
-          if(eliminate){  // select potential pivot
-              val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-              if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0){
-std::cout<<"*1 "; 
-                      pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-std::cout<<"*2 "; 
-                      pivoting = false;
-                      pos_pivot = selected_row;
-                      pivot = z.read(pos_pivot);
-                  }
-              } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0){ 
-std::cout<<"*3 "; 
-                      pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-std::cout<<"*4 "; 
-                      pivoting = false;
-                      pos_pivot = perm.get(k);
-                      pivot = z.read(pos_pivot);
-                  }
-              }
-          }
-*/
-          if(eliminate){  // select potential pivot
-              val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-              if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
-                      //pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-                      //pivoting = false;
-                      pos_pivot = selected_row;
-                      pivot = z.read(pos_pivot);
-                  }
-              } else {   // pivot if possible... only if nothing else works, use corresponding column
-                  if ( (std::abs(val_larg_el)>0.0) && pos_pivot>=0){ 
-                      //pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-                      //pivoting = false;
-                      pos_pivot = perm.get(k);
-                      pivot = z.read(pos_pivot);
-                  }
-              }
-          }
-
-/*
-
-          if(eliminate){  // select potential pivot
-              val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-              if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
-                      pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-                      pivoting = false;
-                      pos_pivot = selected_row;
-                      pivot = z.read(pos_pivot);
-                  }
-              } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-                  if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm.get(k))) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
-                      pivoting = true;
-                      pivot = val_larg_el;
-                  } else {
-                      pivoting = false;
-                      pos_pivot = perm.get(k);
-                      pivot = z.read(pos_pivot);
-                  }
-              }
-          }
-
-*/
-
-          if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && std::abs(pivot) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
-               eliminate = false;
-               end_level_now = true;
-               threshold *= threshold_Schur_factor;
-               last_row_to_eliminate = k-1;  // the current row will already be the first row of Anew
-               n_Anew = n-k;
-               reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
-               Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
-               if(use_improved_SCHUR){ 
-                   for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                   for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
-                   droppedL_data_memory *= sizeof(T);
-                   droppedL_colindex_memory *= sizeof(Integer);
+        if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && std::abs(pivot) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
+            eliminate = false;
+            end_level_now = true;
+            threshold *= threshold_Schur_factor;
+            last_row_to_eliminate = k-1;  // the current row will already be the first row of Anew
+            n_Anew = n-k;
+            reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
+            Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
+            if(use_improved_SCHUR){ 
+                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
+                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                droppedL_data_memory *= sizeof(T);
+                droppedL_colindex_memory *= sizeof(Integer);
+            }
+        }
+        if(eliminate){  // select pivot scale z/U
+            Dinv[k]=1.0/pivot;
+            /*
+               if (pivoting) {
+               Dinv[k]=1.0/val_larg_el;
+               } else {
+               Dinv[k]=1.0/z.read(perm.get(k)); pos_pivot=perm.get(k);
                }
-          }
-          if(eliminate){  // select pivot scale z/U
-              Dinv[k]=1.0/pivot;
-              /*
-              if (pivoting) {
-                  Dinv[k]=1.0/val_larg_el;
-              } else {
-                  Dinv[k]=1.0/z.read(perm.get(k)); pos_pivot=perm.get(k);
-              }
-              */
-              z.scale(Dinv[k]);
-              z[pos_pivot]=0.0; // eliminate pivot for sorting
-              // update permutations
-              p=inverse_perm.get(pos_pivot);
-              inverse_perm.switch_index(perm.get(k),pos_pivot);
-              perm.switch_index(k,p);
-              non_pivot[pos_pivot]=false;
-          }
-          if(use_weightsLU){
-              for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += std::abs(z.get_data(j));
-          }
-           // (8.) read w
-          #ifdef VERBOSE
-              time_6=clock();
-              time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
-          #endif
-          w.zero_reset();
-          #ifdef VERBOSE
-              time_7 = clock();
-              time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read column of A
-          if(eliminate){
-              for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
-                  if(unused_rows[Acol.indices[i]])
-                      w[Acol.indices[i]] = Acol.data[i];
-              }     // end for i
-              #ifdef VERBOSE
-                  time_8=clock();
-                  time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
-              #endif
-              // (9.) begin while
-              h=startU[perm.get(k)];
-              while(h!=-1){
-                  current_row_col_U=rowU.get(h);
-                  current_data_col_U=U.data[h];
-                  h=linkU.get(h);
-                 // (10.) w = w - U(i,perm(k))*l_i
-                  for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
-                      //if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U*data[j];
-                      if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U/Dinv[current_row_col_U]*data[j];
-                  } // end for
-              }   // (11.) end while
-              #ifdef VERBOSE
-                  time_7 = time_9=clock();
-                  time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
-              #endif
-          } // end if 
-          w.scale(Dinv[k]);
-          if(use_weightsLU){
-              for(j=0;j<w.non_zeroes();j++){ 
-                  weightsL.set(w.get_pointer(j)) += std::abs(w.get_data(j));
-              }
-          }
-          #ifdef VERBOSE
-              time_8 = clock();
-              time_scu_L += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
-          #endif
-          pk = perm.get(k);
-          if(IP.get_USE_INVERSE_DROPPING() && eliminate){
-              if(k==0){
-                  xU[pk]=1.0; yU[pk]=1.0;
-                  for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)]=vxU[z.get_pointer(j)]=z.get_data(j);
-              } else {
-                  // initialise
-                  xplus  =  1.0 - vxU[pk];
-                  xminus = -1.0 - vxU[pk];
-                  nplus  = 0;
-                  nminus = 0;
-                  yplus  =  1.0 - vyU[pk];
-                  yminus = -1.0 - vyU[pk];
-                  nuplus  = 0.0;
-                  numinus = 0.0;
-                  // do x_k
-                  for(j=0;j<z.non_zeroes();j++) nuplus  += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
-                  for(j=0;j<z.non_zeroes();j++) numinus += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
-                  if(nuplus > numinus) xU[pk] = xplus;
-                  else xU[pk] = xminus;
-                  for(j=0;j<z.non_zeroes();j++) vxU[z.get_pointer(j)] +=  z.get_data(j)*xU.get(pk);
-                  xU[pk]=max(std::abs(xplus),std::abs(xminus));
-                  // do y_k
-                  for(j=0;j<z.non_zeroes();j++){
-                      vi=vyU[z.get_pointer(j)];
-                      if(std::abs(vi+z.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real)0.5)) nplus++;
-                      if(max(2.0*std::abs(vi+z.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
-                      if(std::abs(vi+z.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
-                      if(max(2.0*std::abs(vi+z.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
-                  }
-                  if(nplus > nminus) yU[pk]=yplus;
-                  else yU[pk]= yminus;
-                  for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)] += z.get_data(j)*yU.get(pk);
-                  yU[pk]=max(std::abs(yplus),std::abs(yminus));
-              }
-          }   // values for dropping are now in xU[pk],yU[pk]
-          #ifdef STATISTICS
-               L_total.set(k)= w.non_zeroes(); 
-               U_total.set(k)= z.non_zeroes();
-          #endif
-          if(!eliminate){  // drop in Schur complement
-              z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,0,n);
-          } else { // drop in U
-              weightU=IP.get_NEUTRAL_ELEMENT();
-              if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
-              if(IP.get_USE_STANDARD_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP2());  // drop if |w_i|<tau
-              if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xU[pk]),std::abs(yU[pk])));
-              if(IP.get_USE_WEIGHTED_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_WEIGHTED_DROP()*weightsU.get(pk));
-              if(IP.get_USE_ERR_PROP_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP()*w.norm1());
-              //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(w.norm_max()));
-              //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(1.0+w.norm_max()));
-              if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/std::abs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= std::abs(Dinv[k]);
-              if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,std::abs(Dinv[k])); weightU *= max_inv_piv;}
-              if(use_improved_SCHUR){
-                  switch (IP.get_DROP_TYPE_U()){
-                      case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,0,n); break; // usual dropping
-                      case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break; // positional dropping
-                      case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
-                      case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                      case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          perm.resize(0);
-                          permrows.resize(0);
-                          inverse_perm.resize(0);
-                          inverse_permrows.resize(0);
-                          return false;
-                  }
-              } else {
-                  switch (IP.get_DROP_TYPE_U()){
-                      case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,0,n); break; // usual dropping
-                      case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break; // positional dropping
-                      case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
-                      case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                      case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          perm.resize(0);
-                          permrows.resize(0);
-                          inverse_perm.resize(0);
-                          inverse_permrows.resize(0);
-                          return false;
-                  }
-              }
-          }
+               */
+            z.scale(Dinv[k]);
+            z[pos_pivot]=0.0; // eliminate pivot for sorting
+            // update permutations
+            p=inverse_perm.get(pos_pivot);
+            inverse_perm.switch_index(perm.get(k),pos_pivot);
+            perm.switch_index(k,p);
+            non_pivot[pos_pivot]=false;
+        }
+        if(use_weightsLU){
+            for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += std::abs(z.get_data(j));
+        }
+        // (8.) read w
+#ifdef VERBOSE
+        time_6=clock();
+        time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
+#endif
+        w.zero_reset();
+#ifdef VERBOSE
+        time_7 = clock();
+        time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read column of A
+        if(eliminate){
+            for(i=Acol.pointer[perm.get(k)];i<Acol.pointer[perm.get(k)+1];i++){
+                if(unused_rows[Acol.indices[i]])
+                    w[Acol.indices[i]] = Acol.data[i];
+            }     // end for i
+#ifdef VERBOSE
+            time_8=clock();
+            time_read += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
+#endif
+            // (9.) begin while
+            h=startU[perm.get(k)];
+            while(h!=-1){
+                current_row_col_U=rowU.get(h);
+                current_data_col_U=U.data[h];
+                h=linkU.get(h);
+                // (10.) w = w - U(i,perm(k))*l_i
+                for(j=pointer[current_row_col_U];j<pointer[current_row_col_U+1];j++){
+                    //if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U*data[j];
+                    if(unused_rows[indices[j]]) w[indices[j]] -= current_data_col_U/Dinv[current_row_col_U]*data[j];
+                } // end for
+            }   // (11.) end while
+#ifdef VERBOSE
+            time_7 = time_9=clock();
+            time_calc_L += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
+#endif
+        } // end if 
+        w.scale(Dinv[k]);
+        if(use_weightsLU){
+            for(j=0;j<w.non_zeroes();j++){ 
+                weightsL.set(w.get_pointer(j)) += std::abs(w.get_data(j));
+            }
+        }
+#ifdef VERBOSE
+        time_8 = clock();
+        time_scu_L += (Real)(time_8-time_7)/(Real)CLOCKS_PER_SEC;
+#endif
+        pk = perm.get(k);
+        if(IP.get_USE_INVERSE_DROPPING() && eliminate){
+            if(k==0){
+                xU[pk]=1.0; yU[pk]=1.0;
+                for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)]=vxU[z.get_pointer(j)]=z.get_data(j);
+            } else {
+                // initialise
+                xplus  =  1.0 - vxU[pk];
+                xminus = -1.0 - vxU[pk];
+                nplus  = 0;
+                nminus = 0;
+                yplus  =  1.0 - vyU[pk];
+                yminus = -1.0 - vyU[pk];
+                nuplus  = 0.0;
+                numinus = 0.0;
+                // do x_k
+                for(j=0;j<z.non_zeroes();j++) nuplus  += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
+                for(j=0;j<z.non_zeroes();j++) numinus += std::abs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
+                if(nuplus > numinus) xU[pk] = xplus;
+                else xU[pk] = xminus;
+                for(j=0;j<z.non_zeroes();j++) vxU[z.get_pointer(j)] +=  z.get_data(j)*xU.get(pk);
+                xU[pk]=max(std::abs(xplus),std::abs(xminus));
+                // do y_k
+                for(j=0;j<z.non_zeroes();j++){
+                    vi=vyU[z.get_pointer(j)];
+                    if(std::abs(vi+z.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real)0.5)) nplus++;
+                    if(max(2.0*std::abs(vi+z.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
+                    if(std::abs(vi+z.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
+                    if(max(2.0*std::abs(vi+z.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
+                }
+                if(nplus > nminus) yU[pk]=yplus;
+                else yU[pk]= yminus;
+                for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)] += z.get_data(j)*yU.get(pk);
+                yU[pk]=max(std::abs(yplus),std::abs(yminus));
+            }
+        }   // values for dropping are now in xU[pk],yU[pk]
+#ifdef STATISTICS
+        L_total.set(k)= w.non_zeroes(); 
+        U_total.set(k)= z.non_zeroes();
+#endif
+        if(!eliminate){  // drop in Schur complement
+            z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,0,n);
+        } else { // drop in U
+            weightU=IP.get_NEUTRAL_ELEMENT();
+            if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
+            if(IP.get_USE_STANDARD_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP2());  // drop if |w_i|<tau
+            if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xU[pk]),std::abs(yU[pk])));
+            if(IP.get_USE_WEIGHTED_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_WEIGHTED_DROP()*weightsU.get(pk));
+            if(IP.get_USE_ERR_PROP_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP()*w.norm1());
+            //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(w.norm_max()));
+            //if(USE_ERR_PROP_DROPPING) weightU = combine(weightU,WEIGHT_ERR_PROP_DROP*(1.0+w.norm_max()));
+            if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/std::abs(Dinv[k]));
+            if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
+            if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= std::abs(Dinv[k]);
+            if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,std::abs(Dinv[k])); weightU *= max_inv_piv;}
+            if(use_improved_SCHUR){
+                switch (IP.get_DROP_TYPE_U()){
+                    case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,0,n); break; // usual dropping
+                    case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break; // positional dropping
+                    case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
+                    case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
+                    case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            perm.resize(0);
+                            permrows.resize(0);
+                            inverse_perm.resize(0);
+                            inverse_permrows.resize(0);
+                            return false;
+                }
+            } else {
+                switch (IP.get_DROP_TYPE_U()){
+                    case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,0,n); break; // usual dropping
+                    case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break; // positional dropping
+                    case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
+                    case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
+                    case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            perm.resize(0);
+                            permrows.resize(0);
+                            inverse_perm.resize(0);
+                            inverse_permrows.resize(0);
+                            return false;
+                }
+            }
+        }
 
-          #ifdef VERBOSE
-              time_9 = clock();
-              time_dropping += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
-          #endif
-          #ifdef STATISTICS
-               U_kept.set(k)= list_U.dimension();
-//if (U_total.get(k) != U_kept.get(k)){ std::cout<<"k = "<<k<<" U_kept"<<U_kept.get(k)<<" U_total "<<U_total.get(k)<<std::endl<<"Vector"<<std::endl; z.print_non_zeroes();}
-          #endif
-      // update U or Anew
-         if(eliminate){
-             if(U.pointer[k]+list_U.dimension()+1>reserved_memory_U){
-                 reserved_memory_U = 2*(U.pointer[k]+list_U.dimension()+1);
-                 U.enlarge_fields_keep_data(reserved_memory_U);
-                 linkU.enlarge_dim_keep_data(reserved_memory_U);
-                 rowU.enlarge_dim_keep_data(reserved_memory_U);
-                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U at position 1"<<std::endl;
-                 // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+list_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                 // reformat(0,0,0,COLUMN);
-                 // U.reformat(0,0,0,ROW);
-                 // Dinv.resize_without_initialization(0);
-                 // Anew.reformat(0,0,0,ROW);
-                 // perm.resize(0);
-                 // permrows.resize(0);
-                 // inverse_perm.resize(0);
-                 // inverse_permrows.resize(0);
-                 // return false;
-             }
-             U.data[U.pointer[k]]=1.0;
-             U.indices[U.pointer[k]]=pos_pivot;
-             for(j=0;j<list_U.dimension();j++){
-                 pos=U.pointer[k]+j+1;
-                 U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
-                 U.indices[pos]=list_U[list_U.dimension()-1-j];
-                 if(use_norm_row_U) norm_row_U.set(k) += std::abs(U.data[pos]);
-                 h=startU[U.indices[pos]];
-                 startU[U.indices[pos]]=pos;
-                 linkU.set(pos)=h;
-                 rowU.set(pos)=k;
-             }
-             U.pointer[k+1]=U.pointer[k]+list_U.dimension()+1;
-             if(pivot==0.0){
-                 zero_pivots++;
-                 Dinv[k]=1.0;
-                 #ifdef VERBOSE
-                     std::cerr<<"matrix_sparse::partialILUCDP: Preconditioner does not exist (zero pivot). Setting diagonal to 1."<<std::endl;
-                 #endif
-             }
-             if(use_improved_SCHUR){ // update droppedU
-                 if(droppedU.pointer[k]+rejected_U.dimension()>reserved_memory_droppedU){
-                     reserved_memory_droppedU = 2*(droppedU.pointer[k]+rejected_U.dimension());
-                     droppedU.enlarge_fields_keep_data(reserved_memory_droppedU);
-                     // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for droppedU at position 1"<<std::endl;
-                     // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<droppedU.pointer[k]+rejected_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                     // reformat(0,0,0,COLUMN);
-                     // U.reformat(0,0,0,ROW);
-                     // Dinv.resize_without_initialization(0);
-                     // Anew.reformat(0,0,0,ROW);
-                     // perm.resize(0);
-                     // permrows.resize(0);
-                     // inverse_perm.resize(0);
-                     // inverse_permrows.resize(0);
-                     // return false;
-                 }
-                 for(j=0;j<rejected_U.dimension();j++){
-                     pos=droppedU.pointer[k]+j;
-                     droppedU.data[pos]=z.read(rejected_U[j]);
-                     droppedU.indices[pos]=rejected_U[j];
-                 }
-                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
-             }  // end updating droppedU
-         } else {
-             k_Anew = k -last_row_to_eliminate-1;
-             if(U.pointer[k]+1>reserved_memory_U){
-                 reserved_memory_U = 2*(U.pointer[k]+1);
-                 U.enlarge_fields_keep_data(reserved_memory_U);
-                 linkU.enlarge_dim_keep_data(reserved_memory_U);
-                 rowU.enlarge_dim_keep_data(reserved_memory_U);                 
-                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
-                 // std::cerr<<"For U:    Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                 // reformat(0,0,0,COLUMN);
-                 // U.reformat(0,0,0,ROW);
-                 // Dinv.resize_without_initialization(0);
-                 // Anew.reformat(0,0,0,ROW);
-                 // perm.resize(0);
-                 // permrows.resize(0);
-                 // inverse_perm.resize(0);
-                 // inverse_permrows.resize(0);
-                 // return false;
-             }
-             if(Anew.pointer[k_Anew]+list_U.dimension()>reserved_memory_Anew){
-                 reserved_memory_Anew = 2*(Anew.pointer[k_Anew]+list_U.dimension());
-                 Anew.enlarge_fields_keep_data(reserved_memory_Anew);
-                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
-                 // std::cerr<<"For Anew: Reserved memory for non-zero elements: "<<reserved_memory_Anew<<" Memory needed: "<<Anew.pointer[k_Anew]+list_U.dimension()<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                 // reformat(0,0,0,COLUMN);
-                 // U.reformat(0,0,0,ROW);
-                 // Dinv.resize_without_initialization(0);
-                 // Anew.reformat(0,0,0,ROW);
-                 // perm.resize(0);
-                 // permrows.resize(0);
-                 // inverse_perm.resize(0);
-                 // inverse_permrows.resize(0);
-                 // return false;
-             }
-             U.data[U.pointer[k]]=1.0;
-             Dinv[k]=1.0;
-             U.indices[U.pointer[k]]=perm.get(k);
-             U.pointer[k+1]=U.pointer[k]+1;
-             for(j=0;j<list_U.dimension();j++){
-                 pos=Anew.pointer[k_Anew]+j;
-                 Anew.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
-                 Anew.indices[pos]=list_U[list_U.dimension()-1-j];
-             }
-             Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
-          }
-          // store positions of columns of U, but without pivot
-          // update non-pivots.
-          #ifdef VERBOSE
-              time_0=clock();
-              if(eliminate) time_scu_U += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
-              else time_scu_Anew += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (12.) sort and copy data to L
-          // sort
-          pk = permrows.get(k);
-          if(eliminate){
+#ifdef VERBOSE
+        time_9 = clock();
+        time_dropping += (Real)(time_9-time_8)/(Real)CLOCKS_PER_SEC;
+#endif
+#ifdef STATISTICS
+        U_kept.set(k)= list_U.dimension();
+        //if (U_total.get(k) != U_kept.get(k)){ std::cout<<"k = "<<k<<" U_kept"<<U_kept.get(k)<<" U_total "<<U_total.get(k)<<std::endl<<"Vector"<<std::endl; z.print_non_zeroes();}
+#endif
+        // update U or Anew
+        if(eliminate){
+            if(U.pointer[k]+list_U.dimension()+1>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k]+list_U.dimension()+1);
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                linkU.enlarge_dim_keep_data(reserved_memory_U);
+                rowU.enlarge_dim_keep_data(reserved_memory_U);
+                // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U at position 1"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+list_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            }
+            U.data[U.pointer[k]]=1.0;
+            U.indices[U.pointer[k]]=pos_pivot;
+            for(j=0;j<list_U.dimension();j++){
+                pos=U.pointer[k]+j+1;
+                U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+                U.indices[pos]=list_U[list_U.dimension()-1-j];
+                if(use_norm_row_U) norm_row_U.set(k) += std::abs(U.data[pos]);
+                h=startU[U.indices[pos]];
+                startU[U.indices[pos]]=pos;
+                linkU.set(pos)=h;
+                rowU.set(pos)=k;
+            }
+            U.pointer[k+1]=U.pointer[k]+list_U.dimension()+1;
+            if(pivot==0.0){
+                zero_pivots++;
+                Dinv[k]=1.0;
+#ifdef VERBOSE
+                std::cerr<<"matrix_sparse::partialILUCDP: Preconditioner does not exist (zero pivot). Setting diagonal to 1."<<std::endl;
+#endif
+            }
+            if(use_improved_SCHUR){ // update droppedU
+                if(droppedU.pointer[k]+rejected_U.dimension()>reserved_memory_droppedU){
+                    reserved_memory_droppedU = 2*(droppedU.pointer[k]+rejected_U.dimension());
+                    droppedU.enlarge_fields_keep_data(reserved_memory_droppedU);
+                    // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for droppedU at position 1"<<std::endl;
+                    // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<droppedU.pointer[k]+rejected_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                    // reformat(0,0,0,COLUMN);
+                    // U.reformat(0,0,0,ROW);
+                    // Dinv.resize_without_initialization(0);
+                    // Anew.reformat(0,0,0,ROW);
+                    // perm.resize(0);
+                    // permrows.resize(0);
+                    // inverse_perm.resize(0);
+                    // inverse_permrows.resize(0);
+                    // return false;
+                }
+                for(j=0;j<rejected_U.dimension();j++){
+                    pos=droppedU.pointer[k]+j;
+                    droppedU.data[pos]=z.read(rejected_U[j]);
+                    droppedU.indices[pos]=rejected_U[j];
+                }
+                droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
+            }  // end updating droppedU
+        } else {
+            k_Anew = k -last_row_to_eliminate-1;
+            if(U.pointer[k]+1>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k]+1);
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                linkU.enlarge_dim_keep_data(reserved_memory_U);
+                rowU.enlarge_dim_keep_data(reserved_memory_U);                 
+                // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
+                // std::cerr<<"For U:    Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            }
+            if(Anew.pointer[k_Anew]+list_U.dimension()>reserved_memory_Anew){
+                reserved_memory_Anew = 2*(Anew.pointer[k_Anew]+list_U.dimension());
+                Anew.enlarge_fields_keep_data(reserved_memory_Anew);
+                // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
+                // std::cerr<<"For Anew: Reserved memory for non-zero elements: "<<reserved_memory_Anew<<" Memory needed: "<<Anew.pointer[k_Anew]+list_U.dimension()<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            }
+            U.data[U.pointer[k]]=1.0;
+            Dinv[k]=1.0;
+            U.indices[U.pointer[k]]=perm.get(k);
+            U.pointer[k+1]=U.pointer[k]+1;
+            for(j=0;j<list_U.dimension();j++){
+                pos=Anew.pointer[k_Anew]+j;
+                Anew.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+                Anew.indices[pos]=list_U[list_U.dimension()-1-j];
+            }
+            Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
+        }
+        // store positions of columns of U, but without pivot
+        // update non-pivots.
+#ifdef VERBOSE
+        time_0=clock();
+        if(eliminate) time_scu_U += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
+        else time_scu_Anew += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (12.) sort and copy data to L
+        // sort
+        pk = permrows.get(k);
+        if(eliminate){
 
-              if(IP.get_USE_INVERSE_DROPPING()){
-                  if(k==0){
-                      xL[pk]=1.0; yL[pk]=1.0;
-                      for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)]=vxL[w.get_pointer(j)]=w.get_data(j);
-                  } else {
-                      // initialise
-                      xplus  =  1.0 - vxL[pk];
-                      xminus = -1.0 - vxL[pk];
-                      nplus  = 0;
-                      nminus = 0;
-                      yplus  =  1.0 - vyL[pk];
-                      yminus = -1.0 - vyL[pk];
-                      nuplus  = 0.0;
-                      numinus = 0.0;
-                  // do x_k
-                      for(j=0;j<w.non_zeroes();j++) nuplus  += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
-                      for(j=0;j<w.non_zeroes();j++) numinus += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
-                      if(nuplus > numinus) xL[pk] = xplus;
-                      else xL[pk] = xminus;
-                      for(j=0;j<w.non_zeroes();j++) vxL[w.get_pointer(j)] +=  w.get_data(j)*xL.get(pk);
-                      xL[pk]=max(std::abs(xplus),std::abs(xminus));
-                      // do y_k
-                      for(j=0;j<w.non_zeroes();j++){
-                          vi=vyL[w.get_pointer(j)];
-                          if(std::abs(vi+w.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real) 0.5)) nplus++;
-                          if(max(2.0*std::abs(vi+w.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
-                          if(std::abs(vi+w.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
-                          if(max(2.0*std::abs(vi+w.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
-                      }
-                      if(nplus > nminus) yL[pk]=yplus;
-                      else yL[pk]= yminus;
-                      for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)] += w.get_data(j)*yL.get(pk);
-                      yL[pk]=max(std::abs(yplus),std::abs(yminus));
-                  }  // values for dropping are now in xL[pk],yL[pk]
-              }
-              weightL=IP.get_NEUTRAL_ELEMENT();
-              if(IP.get_USE_STANDARD_DROPPING()) {norm = w.norm2(); if(norm==0.0) norm=1e-16; weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP()/norm);}
-              if(IP.get_USE_STANDARD_DROPPING2()) weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP2());
-              if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xL[pk]),std::abs(yL[pk])));
-              if(IP.get_USE_WEIGHTED_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_WEIGHTED_DROP()*weightsL.get(pk));
-              if(IP.get_USE_ERR_PROP_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP()*z.norm1());
-              if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/std::abs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= std::abs(Dinv[k]);
-              if(IP.get_SCALE_WGT_MAXINVDIAG())  weightL *= max_inv_piv;
-              if(use_improved_SCHUR){
-                  switch (IP.get_DROP_TYPE_L()){
-                      case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in,threshold,0,n); break;
-                      case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break;
-                      case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
-                      case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          perm.resize(0);
-                          permrows.resize(0);
-                          inverse_perm.resize(0);
-                          inverse_permrows.resize(0);
-                          return false;
-                   }
-              } else {
-                  switch (IP.get_DROP_TYPE_L()){
-                      case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in,threshold,0,n); break;
-                      case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break;
-                      case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
-                      case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          perm.resize(0);
-                          permrows.resize(0);
-                          inverse_perm.resize(0);
-                          inverse_permrows.resize(0);
-                          return false;
-                   }
-              }
-              #ifdef VERBOSE
-                  time_1 = clock();
-                  time_dropping += (Real)(time_1-time_0)/(Real)CLOCKS_PER_SEC;
-                  time_0 = time_1;
-              #endif
-              #ifdef STATISTICS
-                  L_kept.set(k)= list_L.dimension();
-//if (L_total.get(k) != L_kept.get(k)){ std::cout<<"k = "<<k<<" L_kept"<<L_kept.get(k)<<" L_total "<<L_total.get(k)<<std::endl<<"Vector"<<std::endl; w.print_non_zeroes();}
-              #endif
-              if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  linkL.enlarge_dim_keep_data(reserved_memory_L);
-                  colL.enlarge_dim_keep_data(reserved_memory_L);
-                  // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 1"<<std::endl;
-                  // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // perm.resize(0);
-                  // permrows.resize(0);
-                  // inverse_perm.resize(0);
-                  // inverse_permrows.resize(0);
-                  // return false;
-              }
-              // copy data
-              data[pointer[k]]=1.0;
-              indices[pointer[k]]=selected_row;
-              for(j=0;j<list_L.dimension();j++){
-                  pos = pointer[k]+j+1;
-                  //data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
-                  //data[pos] = w.read(list_L[j])*Dinv[k];
-                  data[pos] = w.read(list_L[j]); // scaling has already been performed previously
-                  b = indices[pos] = list_L[j];
-                  h=startL[b];
-                  startL[b]=pos;
-                  linkL[pos]=h;
-                  colL[pos]=k;
-                  // begin updating fields for number elements of row of L
-                  if (b >= bpr && b <=  epr) {
-                      if(IP.get_FINAL_ROW_CRIT() >= -1 && IP.get_FINAL_ROW_CRIT() < 11){  // resorting by the number of elements in row of L. Eliminating in increasing order.
-                          b = inverse_permrows.get(b);
-                          a = --pointer_num_el_row_L[++numb_el_row_L[b]];
-                          inverse_permrows.switch_index(permrows.get(a),permrows.get(b));
-                          permrows.switch_index(a,b);
-                          numb_el_row_L.switch_entry(a,b);
-                      } else {   // resorting by 1-norm of number of elements in row of L. Eliminating in increasing order.
-                          switch(IP.get_FINAL_ROW_CRIT()){
-                              case -2: row_reorder_weight.add(b,std::abs(data[pos])); break;
-                              case -3: row_reorder_weight.add(b,std::abs(data[pos])*norm_row_U.get(b)); break;
-                              case -4: row_reorder_weight.add(b,std::abs(data[pos])/std::abs(Dinv.get(b))*norm_row_U.get(b)); break;
-                              default: std::cerr<<"matrix_sparse::partialILUCDP: FINAL_ROW_CRIT has undefined value. Please set to correct value."<<std::endl;
-                                  reformat(0,0,0,COLUMN);
-                                  U.reformat(0,0,0,ROW);
-                                  Dinv.resize_without_initialization(0);
-                                  Anew.reformat(0,0,0,ROW);
-                                  perm.resize(0);
-                                  permrows.resize(0);
-                                  inverse_perm.resize(0);
-                                  inverse_permrows.resize(0);
-                                  return false;
-                          }
-                      }
-                  }
-                  // end updating fields
-              } // end for j
-              // sort permrows if necessary, i.e. if num_el_row_L increases at next iteration.
-              if(IP.get_FINAL_ROW_CRIT() >= -1 && IP.get_FINAL_ROW_CRIT() < 11 && pointer_num_el_row_L[numb_el_row_L[k]+1] == k+1) 
-                      permrows.quicksort_with_inverse(inverse_permrows,pointer_num_el_row_L[numb_el_row_L[k]+1],pointer_num_el_row_L[numb_el_row_L[k]+2]-1);
-              // end sorting
-             if(IP.get_FINAL_ROW_CRIT() < -1 && k<n-1){  // still need to update permutations and inverse permutations for rows in this case
-                  b = row_reorder_weight.index_min();
-                  if(IP.get_USE_MAX_AS_MOVE()) move_level_parameter=row_reorder_weight.read_max(); else move_level_parameter=row_reorder_weight.read_min();
-                  row_reorder_weight.remove_min();
-                  p=inverse_permrows.get(b);
-                  inverse_permrows.switch_index(permrows.get(k+1),b); // k+1 the next loop
-                  permrows.switch_index(k+1,p);
-              }
-              pointer[k+1]=pointer[k]+list_L.dimension()+1;
-              if(use_improved_SCHUR){ // update droppedU
-                 for(j=0;j<rejected_L.dimension();j++){
-                     pos = rejected_L[j]; // row index of current element
-                     droppedL_colindex[pos].push(k);  // store corresponding column index = k
-                     droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
+            if(IP.get_USE_INVERSE_DROPPING()){
+                if(k==0){
+                    xL[pk]=1.0; yL[pk]=1.0;
+                    for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)]=vxL[w.get_pointer(j)]=w.get_data(j);
+                } else {
+                    // initialise
+                    xplus  =  1.0 - vxL[pk];
+                    xminus = -1.0 - vxL[pk];
+                    nplus  = 0;
+                    nminus = 0;
+                    yplus  =  1.0 - vyL[pk];
+                    yminus = -1.0 - vyL[pk];
+                    nuplus  = 0.0;
+                    numinus = 0.0;
+                    // do x_k
+                    for(j=0;j<w.non_zeroes();j++) nuplus  += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
+                    for(j=0;j<w.non_zeroes();j++) numinus += std::abs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
+                    if(nuplus > numinus) xL[pk] = xplus;
+                    else xL[pk] = xminus;
+                    for(j=0;j<w.non_zeroes();j++) vxL[w.get_pointer(j)] +=  w.get_data(j)*xL.get(pk);
+                    xL[pk]=max(std::abs(xplus),std::abs(xminus));
+                    // do y_k
+                    for(j=0;j<w.non_zeroes();j++){
+                        vi=vyL[w.get_pointer(j)];
+                        if(std::abs(vi+w.get_data(j)*yplus) > max(2.0*std::abs(vi),(Real) 0.5)) nplus++;
+                        if(max(2.0*std::abs(vi+w.get_data(j)*yplus),(Real) 0.5)<std::abs(vi)) nplus--;
+                        if(std::abs(vi+w.get_data(j)*yminus) > max(2.0*std::abs(vi),(Real) 0.5)) nminus++;
+                        if(max(2.0*std::abs(vi+w.get_data(j)*yminus),(Real) 0.5)<std::abs(vi)) nminus--;
+                    }
+                    if(nplus > nminus) yL[pk]=yplus;
+                    else yL[pk]= yminus;
+                    for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)] += w.get_data(j)*yL.get(pk);
+                    yL[pk]=max(std::abs(yplus),std::abs(yminus));
+                }  // values for dropping are now in xL[pk],yL[pk]
+            }
+            weightL=IP.get_NEUTRAL_ELEMENT();
+            if(IP.get_USE_STANDARD_DROPPING()) {norm = w.norm2(); if(norm==0.0) norm=1e-16; weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP()/norm);}
+            if(IP.get_USE_STANDARD_DROPPING2()) weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP2());
+            if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(std::abs(xL[pk]),std::abs(yL[pk])));
+            if(IP.get_USE_WEIGHTED_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_WEIGHTED_DROP()*weightsL.get(pk));
+            if(IP.get_USE_ERR_PROP_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP()*z.norm1());
+            if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/std::abs(Dinv[k]));
+            if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*std::abs(Dinv[k]));
+            if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= std::abs(Dinv[k]);
+            if(IP.get_SCALE_WGT_MAXINVDIAG())  weightL *= max_inv_piv;
+            if(use_improved_SCHUR){
+                switch (IP.get_DROP_TYPE_L()){
+                    case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in,threshold,0,n); break;
+                    case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break;
+                    case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
+                    case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            perm.resize(0);
+                            permrows.resize(0);
+                            inverse_perm.resize(0);
+                            inverse_permrows.resize(0);
+                            return false;
+                }
+            } else {
+                switch (IP.get_DROP_TYPE_L()){
+                    case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in,threshold,0,n); break;
+                    case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,last_row_to_eliminate); break;
+                    case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
+                    case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            perm.resize(0);
+                            permrows.resize(0);
+                            inverse_perm.resize(0);
+                            inverse_permrows.resize(0);
+                            return false;
+                }
+            }
+#ifdef VERBOSE
+            time_1 = clock();
+            time_dropping += (Real)(time_1-time_0)/(Real)CLOCKS_PER_SEC;
+            time_0 = time_1;
+#endif
+#ifdef STATISTICS
+            L_kept.set(k)= list_L.dimension();
+            //if (L_total.get(k) != L_kept.get(k)){ std::cout<<"k = "<<k<<" L_kept"<<L_kept.get(k)<<" L_total "<<L_total.get(k)<<std::endl<<"Vector"<<std::endl; w.print_non_zeroes();}
+#endif
+            if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
+                enlarge_fields_keep_data(reserved_memory_L);
+                linkL.enlarge_dim_keep_data(reserved_memory_L);
+                colL.enlarge_dim_keep_data(reserved_memory_L);
+                // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 1"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            }
+            // copy data
+            data[pointer[k]]=1.0;
+            indices[pointer[k]]=selected_row;
+            for(j=0;j<list_L.dimension();j++){
+                pos = pointer[k]+j+1;
+                //data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
+                //data[pos] = w.read(list_L[j])*Dinv[k];
+                data[pos] = w.read(list_L[j]); // scaling has already been performed previously
+                b = indices[pos] = list_L[j];
+                h=startL[b];
+                startL[b]=pos;
+                linkL[pos]=h;
+                colL[pos]=k;
+                // begin updating fields for number elements of row of L
+                if (b >= bpr && b <=  epr) {
+                    if(IP.get_FINAL_ROW_CRIT() >= -1 && IP.get_FINAL_ROW_CRIT() < 11){  // resorting by the number of elements in row of L. Eliminating in increasing order.
+                        b = inverse_permrows.get(b);
+                        a = --pointer_num_el_row_L[++numb_el_row_L[b]];
+                        inverse_permrows.switch_index(permrows.get(a),permrows.get(b));
+                        permrows.switch_index(a,b);
+                        numb_el_row_L.switch_entry(a,b);
+                    } else {   // resorting by 1-norm of number of elements in row of L. Eliminating in increasing order.
+                        switch(IP.get_FINAL_ROW_CRIT()){
+                            case -2: row_reorder_weight.add(b,std::abs(data[pos])); break;
+                            case -3: row_reorder_weight.add(b,std::abs(data[pos])*norm_row_U.get(b)); break;
+                            case -4: row_reorder_weight.add(b,std::abs(data[pos])/std::abs(Dinv.get(b))*norm_row_U.get(b)); break;
+                            default: std::cerr<<"matrix_sparse::partialILUCDP: FINAL_ROW_CRIT has undefined value. Please set to correct value."<<std::endl;
+                                     reformat(0,0,0,COLUMN);
+                                     U.reformat(0,0,0,ROW);
+                                     Dinv.resize_without_initialization(0);
+                                     Anew.reformat(0,0,0,ROW);
+                                     perm.resize(0);
+                                     permrows.resize(0);
+                                     inverse_perm.resize(0);
+                                     inverse_permrows.resize(0);
+                                     return false;
+                        }
+                    }
+                }
+                // end updating fields
+            } // end for j
+            // sort permrows if necessary, i.e. if num_el_row_L increases at next iteration.
+            if(IP.get_FINAL_ROW_CRIT() >= -1 && IP.get_FINAL_ROW_CRIT() < 11 && pointer_num_el_row_L[numb_el_row_L[k]+1] == k+1) 
+                permrows.quicksort_with_inverse(inverse_permrows,pointer_num_el_row_L[numb_el_row_L[k]+1],pointer_num_el_row_L[numb_el_row_L[k]+2]-1);
+            // end sorting
+            if(IP.get_FINAL_ROW_CRIT() < -1 && k<n-1){  // still need to update permutations and inverse permutations for rows in this case
+                b = row_reorder_weight.index_min();
+                if(IP.get_USE_MAX_AS_MOVE()) move_level_parameter=row_reorder_weight.read_max(); else move_level_parameter=row_reorder_weight.read_min();
+                row_reorder_weight.remove_min();
+                p=inverse_permrows.get(b);
+                inverse_permrows.switch_index(permrows.get(k+1),b); // k+1 the next loop
+                permrows.switch_index(k+1,p);
+            }
+            pointer[k+1]=pointer[k]+list_L.dimension()+1;
+            if(use_improved_SCHUR){ // update droppedU
+                for(j=0;j<rejected_L.dimension();j++){
+                    pos = rejected_L[j]; // row index of current element
+                    droppedL_colindex[pos].push(k);  // store corresponding column index = k
+                    droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
 
-                 }
-              }  // end updating droppedU
-          } else {  //  else branch of if(eliminate)
-              if(pointer[k]+1>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k]+1);
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  linkL.enlarge_dim_keep_data(reserved_memory_L);
-                  colL.enlarge_dim_keep_data(reserved_memory_L);
-                  // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 2"<<std::endl;
-                  // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // perm.resize(0);
-                  // permrows.resize(0);
-                  // inverse_perm.resize(0);
-                  // inverse_permrows.resize(0);
-                  // return false;
-              }
-              // copy data
-              data[pointer[k]]=1.0;
-              indices[pointer[k]]=selected_row;
-              pointer[k+1]=pointer[k]+1;
-          }  //  end:  if(eliminate)
-          #ifdef VERBOSE
-              time_1=clock();
-              time_scu_L += (Real)(time_1-time_0)/(Real)CLOCKS_PER_SEC;
-          #endif
-          if(eliminate && IP.get_FINAL_ROW_CRIT() < 11 && !force_finish){
-              if(IP.get_EXTERNAL_FINAL_ROW()){
-                  if (k >= last_row_to_eliminate && k >= IP.get_EXT_MIN_ELIM_FACTOR()*n){
-                      end_level_now = true;
-                  }  // end if (last_row_to_eliminate == k)
-              } else {
-                  if(k > IP.get_MIN_ELIM_FACTOR()*n)
-                      switch(IP.get_FINAL_ROW_CRIT()){
-                          case -3:  if(move_level_parameter > IP.get_MOVE_LEVEL_THRESHOLD()) end_level_now = true; break;
-                          case -2:  if(move_level_parameter > IP.get_MOVE_LEVEL_THRESHOLD()) end_level_now = true; break;
-                          case -1:  if( numb_el_row_L.get(k) > ((Real) IP.get_MOVE_LEVEL_FACTOR()*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  0:  if( numb_el_row_L.get(k) > ((Real) 0.5*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  1:  if( numb_el_row_L.get(k) > ((Real)     Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  2:  if( numb_el_row_L.get(k) > ((Real) 2.0*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  3:  if( numb_el_row_L.get(k) > ((Real) 4.0*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  4:  if( numb_el_row_L.get(k) > ((Real) 6.0*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  5:  if( numb_el_row_L.get(k) > 10) end_level_now = true; break;
-                          case  6:  if( numb_el_row_L.get(k) > ((Real) 1.5*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  7:  if( z.norm2() > IP.get_ROW_U_MAX()) end_level_now = true; break;
-                          case  8:  if( numb_el_row_L.get(k) > ((Real) 3.0*Acol.non_zeroes())/n) end_level_now = true; break;
-                          case  9:  if( numb_el_row_L.get(k) > ((Real) 1.2*Acol.non_zeroes())/n) end_level_now = true; break;
-                          //case 10:  end_level_now = true; break;
-                          default:
-                              std::cerr<<"Please set FINAL_ROW_CRIT to a permissible value. Returning empty preconditioner."<<std::endl;
-                              reformat(0,0,0,COLUMN);
-                              U.reformat(0,0,0,ROW);
-                              Dinv.resize_without_initialization(0);
-                              Anew.reformat(0,0,0,ROW);
-                              perm.resize(0);
-                              permrows.resize(0);
-                              inverse_perm.resize(0);
-                              inverse_permrows.resize(0);
-                              return false;
-                          break;
-                      }  // end switch
-              }   // end if(EXTERNAL_ROW)
-              if(end_level_now){
-                  eliminate = false;
-                  threshold *= threshold_Schur_factor;
-                  last_row_to_eliminate = k;
-                  n_Anew = n-k-1;
-                  //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Acol.non_zeroes()));
-                  reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
-                  Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
-                  Anew.pointer[0]=0;
-                  if(use_improved_SCHUR){ 
-                   for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                   for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
-                      droppedL_data_memory *= sizeof(T);
-                      droppedL_colindex_memory *= sizeof(Integer);
-                  }
-              } // end if(end_level_now)
-          } // end if (eliminate)
-          if (eliminate && IP.get_REQUIRE_ZERO_SCHUR() && IP.get_REQ_ZERO_SCHUR_SIZE()>= n-k-1){
-//std::cout<<"setting schur complement: matrix has dimension "<<n<<" IP.get_REQ_ZERO_SCHUR_SIZE() = "<<IP.get_REQ_ZERO_SCHUR_SIZE()<<" k = "<<k<<std::endl; 
-              eliminate = false;
-              if(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  linkL.enlarge_dim_keep_data(reserved_memory_L);
-                  colL.enlarge_dim_keep_data(reserved_memory_L);
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // perm.resize(0);
-                  // permrows.resize(0);
-                  // inverse_perm.resize(0);
-                  // inverse_permrows.resize(0);
-                  // return false;
-              } 
-              if(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_U){
-                  reserved_memory_U = 2*(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
-                  U.enlarge_fields_keep_data(reserved_memory_U);
-                  linkU.enlarge_dim_keep_data(reserved_memory_U);
-                  rowU.enlarge_dim_keep_data(reserved_memory_U);                 
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // perm.resize(0);
-                  // permrows.resize(0);
-                  // inverse_perm.resize(0);
-                  // inverse_permrows.resize(0);
-                  // return false;
-              } 
-              n_Anew = IP.get_REQ_ZERO_SCHUR_SIZE();
-              Anew.reformat(n_Anew,n_Anew,0,ROW);
-//std::cout<<"reformated Anew to dimension = "<<Anew.rows()<<std::endl; 
-              for(j=k+1;j<n;j++){
-//std::cout<<"doing row/column of L/U j=  "<<j<<std::endl; 
-                  data[pointer[j]]=1.0;
-                  indices[pointer[j]]=permrows.get(j);
-                  pointer[j+1]=pointer[j]+1;
-                  U.data[U.pointer[j]]=1.0;
-                  Dinv[j]=1.0;
-                  U.indices[U.pointer[j]]=perm.get(j);
-                  U.pointer[j+1]=U.pointer[j]+1;
-              }
-              break;
-          }  // end if
-      }  // (13.) end for k
-      #ifdef VERBOSE
-          time_2 = clock();
-      #endif
-      Real memory_L_allocated = memory();
-      Real memory_U_allocated = U.memory();
-      Real memory_Anew_allocated = Anew.memory();
-      compress();
-      U.compress();
-      if(eliminate) Anew.reformat(0,0,0,ROW); // if eliminated till end, then Anew is a 0x0 matrix.
-      else {
-          if(Anew.nnz>0){
-              Anew.compress();
-              // abuse linkU to store data
-              linkU.destroy_resize_data_field(Anew.nnz);
-              // resort and shift indices to standard
-              for(j=0;j<Anew.nnz;j++) linkU.set(j)=Anew.indices[j];
-              for (i=0; i<Anew.rows(); i++)
-                  for(j=Anew.pointer[i]; j<Anew.pointer[i+1]; j++)
-                      Anew.indices[j] = inverse_perm.get(linkU.get(j))-last_row_to_eliminate-1;
-              Anew.normal_order();
-              Anew.number_columns=n_Anew; // originally, Anew has n columns
-          } else {
-              Anew.reformat(n_Anew,n_Anew,0,ROW);
-          }
-      }
-      permute(permrows,ROW);
-      U.permute(perm,COLUMN);
-      if(IP.get_USE_POS_COMPRESS()){
-          positional_compress(IP,post_fact_threshold);
-          U.positional_compress(IP,post_fact_threshold);
-      }
-      #ifdef VERBOSE
-          time_3=clock();
-          time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-      #endif
-      #ifdef VERBOSE
-          time_4=clock();
-          time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"    partialILUCDP-Times: "<<std::endl;
-          std::cout<<"        initialization:                              "<<time_init<<std::endl;
-          std::cout<<"        reading matrix:                              "<<time_read<<std::endl;
-          std::cout<<"        sparse zero set:                             "<<time_zeroset<<std::endl;
-          std::cout<<"        calculating L:                               "<<time_calc_L<<std::endl;
-          std::cout<<"        calculating U:                               "<<time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info L:    "<<time_scu_L<<std::endl;
-          std::cout<<"        sorting, copying, updating access info U:    "<<time_scu_U<<std::endl;
-          std::cout<<"        calculating Anew:                            "<<time_calc_Anew<<std::endl;
-          std::cout<<"        sorting, copying, updating access info Anew: "<<time_scu_Anew<<std::endl;
-          std::cout<<"        dropping:                                    "<<time_dropping<<std::endl;
-          std::cout<<"        compressing:                                 "<<time_compress<<std::endl;
-          std::cout<<"        resorting:                                   "<<time_resort<<std::endl;
-          std::cout<<"      Total times:"<<std::endl;
-          std::cout<<"        calculations:                                "<<time_calc_L+time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info:      "<<time_scu_L+time_scu_U<<std::endl;
-          std::cout<<"        other administration:                        "<<time_init+time_read+time_zeroset+time_compress+time_resort+time_dropping<<std::endl;
-          std::cout<<"      Grand total                                    "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
-      #endif
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-      Real allocated_mem_lists_L = ((Real) (reserved_memory_L+1)) * sizeof(Integer);  // for linkL, colL
-      Real allocated_mem_lists_U = ((Real) (reserved_memory_U+1)) * sizeof(Integer);  // for linkU, rowU
-      Real used_mem_lists_L = ((Real) (nnz+1)) * sizeof(Integer);  // for linkL, colL
-      Real used_mem_lists_U = ((Real) (U.nnz+1)) * sizeof(Integer);  // for linkU, rowU
-      total_memory_allocated = w.memory() + z.memory() + non_pivot.memory() + unused_rows.memory() + numb_el_row_L.memory()+
-                     pointer_num_el_row_L.memory() + norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory()+
-                     list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
-                     vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
-                     startU.memory() +  startL.memory() + Dinv.memory()+ perm.memory() + permrows.memory() + inverse_perm.memory()
-                     + inverse_permrows.memory() + droppedL_data_memory + droppedL_colindex_memory;
-      total_memory_used = total_memory_allocated;
-      total_memory_allocated += 2.0*allocated_mem_lists_U + 2.0* allocated_mem_lists_L + memory_U_allocated + memory_L_allocated + memory_Anew_allocated;
-      total_memory_used += 2.0*used_mem_lists_U + 2.0* used_mem_lists_L + U.memory() + memory() + Anew.memory();
-//       Real mem_mat = Arow.memory();
-//       std::cout<<std::endl;
-//       std::cout<<"Relative Memory for a matrix of dimension "<<n<<":"<<std::endl;
-//       std::cout<<"w                    "<< w.memory()/mem_mat<<std::endl;
-//       std::cout<<"z                    "<< z.memory()/mem_mat<<std::endl;
-//       std::cout<<"non_pivot            "<< non_pivot.memory()/mem_mat<<std::endl;
-//       std::cout<<"unused_rows          "<< unused_rows.memory()/mem_mat<<std::endl;
-//       std::cout<<"numb_el_row_L        "<< numb_el_row_L.memory()/mem_mat<<std::endl;
-//       std::cout<<"pointer_num_el_row_L "<< pointer_num_el_row_L.memory()/mem_mat<<std::endl;
-//       std::cout<<"norm_row_U           "<< norm_row_U.memory()/mem_mat<<std::endl;
-//       std::cout<<"row_reorder_weight   "<< row_reorder_weight.memory()/mem_mat<<std::endl;
-//       std::cout<<"list                 "<< list_L.memory()/mem_mat<<std::endl;
-//       std::cout<<"list_U               "<< list_U.memory()/mem_mat<<std::endl;
-//       std::cout<<"rejected_L           "<< rejected_L.memory()/mem_mat<<std::endl;
-//       std::cout<<"rejected_U           "<< rejected_U.memory()/mem_mat<<std::endl;
-//       std::cout<<"droppedU             "<< droppedU.memory()/mem_mat<<std::endl;
-//       std::cout<<"vxL                  "<< vxL.memory()/mem_mat<<std::endl;
-//       std::cout<<"vyL                  "<< vyL.memory()/mem_mat<<std::endl;
-//       std::cout<<"vxU                  "<< vxU.memory()/mem_mat<<std::endl;
-//       std::cout<<"vyU                  "<< vyU.memory()/mem_mat<<std::endl;
-//       std::cout<<"xL                   "<< xL.memory()/mem_mat<<std::endl;
-//       std::cout<<"yL                   "<< yL.memory()/mem_mat<<std::endl;
-//       std::cout<<"xU                   "<< xU.memory()/mem_mat<<std::endl;
-//       std::cout<<"yU                   "<< yU.memory()/mem_mat<<std::endl;
-//       std::cout<<"linkU                "<< allocated_mem_lists_U/mem_mat<<std::endl;
-//       std::cout<<"rowU                 "<< allocated_mem_lists_U/mem_mat<<std::endl;
-//       std::cout<<"startU               "<< startU.memory()/mem_mat<<std::endl;
-//       std::cout<<"linkL                "<< allocated_mem_lists_L/mem_mat<<std::endl;
-//       std::cout<<"colL                 "<< allocated_mem_lists_L/mem_mat<<std::endl;
-//       std::cout<<"startL               "<< startL.memory()/mem_mat<<std::endl;
-//       std::cout<<"Dinv                 "<< Dinv.memory()/mem_mat<<std::endl;
-//       std::cout<<"perm                 "<< perm.memory()/mem_mat<<std::endl;
-//       std::cout<<"permrows             "<< permrows.memory()/mem_mat<<std::endl;
-//       std::cout<<"inverse_perm         "<< inverse_perm.memory()/mem_mat<<std::endl;
-//       std::cout<<"inverse_permrows     "<< inverse_permrows.memory()/mem_mat<<std::endl;
-//       std::cout<<"U                    "<< memory_U_allocated/mem_mat<<std::endl;
-//       std::cout<<"L                    "<< memory_L_allocated/mem_mat<<std::endl;
-//       std::cout<<"Anew                 "<< memory_Anew_allocated/mem_mat<<std::endl;
-//       std::cout<<"droppedL_data        "<< droppedL_data_memory/mem_mat<<std::endl;
-//       std::cout<<"droppedL_colindex    "<< droppedL_colindex_memory/mem_mat<<std::endl;
-//       std::cout<<"linkU (used)         "<< used_mem_lists_U/mem_mat<<std::endl;
-//       std::cout<<"rowU  (used)         "<< used_mem_lists_U/mem_mat<<std::endl;
-//       std::cout<<"linkL (used)         "<< used_mem_lists_L/mem_mat<<std::endl;
-//       std::cout<<"colL  (used)         "<< used_mem_lists_L/mem_mat<<std::endl;
-//       std::cout<<"U     (used)         "<< U.memory()/mem_mat<<std::endl;
-//       std::cout<<"L     (used)         "<< memory()/mem_mat<<std::endl;
-//       std::cout<<"Anew  (used)         "<< Anew.memory()/mem_mat<<std::endl;
-//       std::cout<<"total_memory         "<< total_memory_allocated/mem_mat<<std::endl;
-//       std::cout<<"total_memory (used)  "<< total_memory_used/mem_mat<<std::endl;
-//       std::cout<<std::endl;
-      #ifdef STATISTICS
-          // Statistics for A
-          sum1 = 0.0;   max_total=0; min_total=n;
-          average_total = Arow.row_density();
-          for(k=0;k<n;k++){
-              help =  Arow.pointer[k+1]-Arow.pointer[k];
-              if (max_total < help) max_total = help;
-              if (min_total > help) min_total = help;
-              sum1 += (help-average_total)*(help-average_total);
-          }
-          stand_dev_total = sqrt(sum1/n);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for A"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number: "<<average_total<<std::endl;
-          std::cout<<"       Minimum Number     in Row:    "<<min_total<<std::endl;
-          std::cout<<"       Maximum Number     in Row:    "<<max_total<<std::endl;
-          std::cout<<"       Standard Deviation in Row:    "<<stand_dev_total<<std::endl;
-          sum1 = 0.0;   max_total=0; min_total=n;
-          average_total = Acol.column_density();
-          for(k=0;k<n;k++){
-              help =  Acol.pointer[k+1]-Acol.pointer[k];
-              if(max_total < help) max_total = help;
-              if(min_total > help) min_total = help;
-              sum1 += (help-average_total)*(help-average_total);
-          }
-          stand_dev_total = sqrt(sum1/n);
-          std::cout<<"       Minimum Number     in Column: "<<min_total<<std::endl;
-          std::cout<<"       Maximum Number     in Column: "<<max_total<<std::endl;
-          std::cout<<"       Standard Deviation in Column: "<<stand_dev_total<<std::endl;
-          // Statistics for L
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(L_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-              if(max_total < L_total.read(k)) max_total =L_total.read(k);
-              if(min_total > L_total.read(k)) min_total =L_total.read(k);
-              if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
-              if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
-              if(max_prop < prop) max_prop = prop;
-              if(min_prop > prop) min_prop = prop;
-              sum1 += L_total.read(k);
-              sum2 += L_kept.read(k);
-              sum3 += prop;
-          }
-          average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
-          average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
-          average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(L_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-              sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
-              sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
-              sum3 += (prop-average_prop)*(prop-average_prop);
-          }
-          stand_dev_total = sqrt(sum1/last_row_to_eliminate);
-          stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
-          stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for L"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
-          std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
-          std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
-          std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
-          std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
-          std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
-          std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
-          std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
-          std::cout<<"   Relative Data: "<<std::endl;
-          std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
-          std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
-          // Statistics for U
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(U_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-              if(max_total < U_total.read(k)) max_total =U_total.read(k);
-              if(min_total > U_total.read(k)) min_total =U_total.read(k);
-              if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
-              if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
-              if(max_prop < prop) max_prop = prop;
-              if(min_prop > prop) min_prop = prop;
-              sum1 += U_total.read(k);
-              sum2 += U_kept.read(k);
-              sum3 += prop;
-          }
-          average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
-          average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
-          average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(U_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-              sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
-              sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
-              sum3 += (prop-average_prop)*(prop-average_prop);
-          }
-          stand_dev_total = sqrt(sum1/last_row_to_eliminate);
-          stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
-          stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for U"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
-          std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
-          std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
-          std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
-          std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
-          std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
-          std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
-          std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
-          std::cout<<"   Relative Data: "<<std::endl;
-          std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
-          std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
+                }
+            }  // end updating droppedU
+        } else {  //  else branch of if(eliminate)
+            if(pointer[k]+1>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k]+1);
+                enlarge_fields_keep_data(reserved_memory_L);
+                linkL.enlarge_dim_keep_data(reserved_memory_L);
+                colL.enlarge_dim_keep_data(reserved_memory_L);
+                // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 2"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            }
+            // copy data
+            data[pointer[k]]=1.0;
+            indices[pointer[k]]=selected_row;
+            pointer[k+1]=pointer[k]+1;
+        }  //  end:  if(eliminate)
+#ifdef VERBOSE
+        time_1=clock();
+        time_scu_L += (Real)(time_1-time_0)/(Real)CLOCKS_PER_SEC;
+#endif
+        if(eliminate && IP.get_FINAL_ROW_CRIT() < 11 && !force_finish){
+            if(IP.get_EXTERNAL_FINAL_ROW()){
+                if (k >= last_row_to_eliminate && k >= IP.get_EXT_MIN_ELIM_FACTOR()*n){
+                    end_level_now = true;
+                }  // end if (last_row_to_eliminate == k)
+            } else {
+                if(k > IP.get_MIN_ELIM_FACTOR()*n)
+                    switch(IP.get_FINAL_ROW_CRIT()){
+                        case -3:  if(move_level_parameter > IP.get_MOVE_LEVEL_THRESHOLD()) end_level_now = true; break;
+                        case -2:  if(move_level_parameter > IP.get_MOVE_LEVEL_THRESHOLD()) end_level_now = true; break;
+                        case -1:  if( numb_el_row_L.get(k) > ((Real) IP.get_MOVE_LEVEL_FACTOR()*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  0:  if( numb_el_row_L.get(k) > ((Real) 0.5*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  1:  if( numb_el_row_L.get(k) > ((Real)     Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  2:  if( numb_el_row_L.get(k) > ((Real) 2.0*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  3:  if( numb_el_row_L.get(k) > ((Real) 4.0*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  4:  if( numb_el_row_L.get(k) > ((Real) 6.0*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  5:  if( numb_el_row_L.get(k) > 10) end_level_now = true; break;
+                        case  6:  if( numb_el_row_L.get(k) > ((Real) 1.5*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  7:  if( z.norm2() > IP.get_ROW_U_MAX()) end_level_now = true; break;
+                        case  8:  if( numb_el_row_L.get(k) > ((Real) 3.0*Acol.non_zeroes())/n) end_level_now = true; break;
+                        case  9:  if( numb_el_row_L.get(k) > ((Real) 1.2*Acol.non_zeroes())/n) end_level_now = true; break;
+                                      //case 10:  end_level_now = true; break;
+                        default:
+                                      std::cerr<<"Please set FINAL_ROW_CRIT to a permissible value. Returning empty preconditioner."<<std::endl;
+                                      reformat(0,0,0,COLUMN);
+                                      U.reformat(0,0,0,ROW);
+                                      Dinv.resize_without_initialization(0);
+                                      Anew.reformat(0,0,0,ROW);
+                                      perm.resize(0);
+                                      permrows.resize(0);
+                                      inverse_perm.resize(0);
+                                      inverse_permrows.resize(0);
+                                      return false;
+                                      break;
+                    }  // end switch
+            }   // end if(EXTERNAL_ROW)
+            if(end_level_now){
+                eliminate = false;
+                threshold *= threshold_Schur_factor;
+                last_row_to_eliminate = k;
+                n_Anew = n-k-1;
+                //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Acol.non_zeroes()));
+                reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
+                Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
+                Anew.pointer[0]=0;
+                if(use_improved_SCHUR){ 
+                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
+                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                    droppedL_data_memory *= sizeof(T);
+                    droppedL_colindex_memory *= sizeof(Integer);
+                }
+            } // end if(end_level_now)
+        } // end if (eliminate)
+        if (eliminate && IP.get_REQUIRE_ZERO_SCHUR() && IP.get_REQ_ZERO_SCHUR_SIZE()>= n-k-1){
+            //std::cout<<"setting schur complement: matrix has dimension "<<n<<" IP.get_REQ_ZERO_SCHUR_SIZE() = "<<IP.get_REQ_ZERO_SCHUR_SIZE()<<" k = "<<k<<std::endl; 
+            eliminate = false;
+            if(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
+                enlarge_fields_keep_data(reserved_memory_L);
+                linkL.enlarge_dim_keep_data(reserved_memory_L);
+                colL.enlarge_dim_keep_data(reserved_memory_L);
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            } 
+            if(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                linkU.enlarge_dim_keep_data(reserved_memory_U);
+                rowU.enlarge_dim_keep_data(reserved_memory_U);                 
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // perm.resize(0);
+                // permrows.resize(0);
+                // inverse_perm.resize(0);
+                // inverse_permrows.resize(0);
+                // return false;
+            } 
+            n_Anew = IP.get_REQ_ZERO_SCHUR_SIZE();
+            Anew.reformat(n_Anew,n_Anew,0,ROW);
+            //std::cout<<"reformated Anew to dimension = "<<Anew.rows()<<std::endl; 
+            for(j=k+1;j<n;j++){
+                //std::cout<<"doing row/column of L/U j=  "<<j<<std::endl; 
+                data[pointer[j]]=1.0;
+                indices[pointer[j]]=permrows.get(j);
+                pointer[j+1]=pointer[j]+1;
+                U.data[U.pointer[j]]=1.0;
+                Dinv[j]=1.0;
+                U.indices[U.pointer[j]]=perm.get(j);
+                U.pointer[j+1]=U.pointer[j]+1;
+            }
+            break;
+        }  // end if
+    }  // (13.) end for k
+#ifdef VERBOSE
+    time_2 = clock();
+#endif
+    Real memory_L_allocated = memory();
+    Real memory_U_allocated = U.memory();
+    Real memory_Anew_allocated = Anew.memory();
+    compress();
+    U.compress();
+    if(eliminate) Anew.reformat(0,0,0,ROW); // if eliminated till end, then Anew is a 0x0 matrix.
+    else {
+        if(Anew.nnz>0){
+            Anew.compress();
+            // abuse linkU to store data
+            linkU.destroy_resize_data_field(Anew.nnz);
+            // resort and shift indices to standard
+            for(j=0;j<Anew.nnz;j++) linkU.set(j)=Anew.indices[j];
+            for (i=0; i<Anew.rows(); i++)
+                for(j=Anew.pointer[i]; j<Anew.pointer[i+1]; j++)
+                    Anew.indices[j] = inverse_perm.get(linkU.get(j))-last_row_to_eliminate-1;
+            Anew.normal_order();
+            Anew.number_columns=n_Anew; // originally, Anew has n columns
+        } else {
+            Anew.reformat(n_Anew,n_Anew,0,ROW);
+        }
+    }
+    permute(permrows,ROW);
+    U.permute(perm,COLUMN);
+    if(IP.get_USE_POS_COMPRESS()){
+        positional_compress(IP,post_fact_threshold);
+        U.positional_compress(IP,post_fact_threshold);
+    }
+#ifdef VERBOSE
+    time_3=clock();
+    time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+#ifdef VERBOSE
+    time_4=clock();
+    time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+    std::cout<<"    partialILUCDP-Times: "<<std::endl;
+    std::cout<<"        initialization:                              "<<time_init<<std::endl;
+    std::cout<<"        reading matrix:                              "<<time_read<<std::endl;
+    std::cout<<"        sparse zero set:                             "<<time_zeroset<<std::endl;
+    std::cout<<"        calculating L:                               "<<time_calc_L<<std::endl;
+    std::cout<<"        calculating U:                               "<<time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info L:    "<<time_scu_L<<std::endl;
+    std::cout<<"        sorting, copying, updating access info U:    "<<time_scu_U<<std::endl;
+    std::cout<<"        calculating Anew:                            "<<time_calc_Anew<<std::endl;
+    std::cout<<"        sorting, copying, updating access info Anew: "<<time_scu_Anew<<std::endl;
+    std::cout<<"        dropping:                                    "<<time_dropping<<std::endl;
+    std::cout<<"        compressing:                                 "<<time_compress<<std::endl;
+    std::cout<<"        resorting:                                   "<<time_resort<<std::endl;
+    std::cout<<"      Total times:"<<std::endl;
+    std::cout<<"        calculations:                                "<<time_calc_L+time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info:      "<<time_scu_L+time_scu_U<<std::endl;
+    std::cout<<"        other administration:                        "<<time_init+time_read+time_zeroset+time_compress+time_resort+time_dropping<<std::endl;
+    std::cout<<"      Grand total                                    "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
+#endif
+    time_end=clock();
+    time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+    Real allocated_mem_lists_L = ((Real) (reserved_memory_L+1)) * sizeof(Integer);  // for linkL, colL
+    Real allocated_mem_lists_U = ((Real) (reserved_memory_U+1)) * sizeof(Integer);  // for linkU, rowU
+    Real used_mem_lists_L = ((Real) (nnz+1)) * sizeof(Integer);  // for linkL, colL
+    Real used_mem_lists_U = ((Real) (U.nnz+1)) * sizeof(Integer);  // for linkU, rowU
+    total_memory_allocated = w.memory() + z.memory() + non_pivot.memory() + unused_rows.memory() + numb_el_row_L.memory()+
+        pointer_num_el_row_L.memory() + norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory()+
+        list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
+        vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
+        startU.memory() +  startL.memory() + Dinv.memory()+ perm.memory() + permrows.memory() + inverse_perm.memory()
+        + inverse_permrows.memory() + droppedL_data_memory + droppedL_colindex_memory;
+    total_memory_used = total_memory_allocated;
+    total_memory_allocated += 2.0*allocated_mem_lists_U + 2.0* allocated_mem_lists_L + memory_U_allocated + memory_L_allocated + memory_Anew_allocated;
+    total_memory_used += 2.0*used_mem_lists_U + 2.0* used_mem_lists_L + U.memory() + memory() + Anew.memory();
+    //       Real mem_mat = Arow.memory();
+    //       std::cout<<std::endl;
+    //       std::cout<<"Relative Memory for a matrix of dimension "<<n<<":"<<std::endl;
+    //       std::cout<<"w                    "<< w.memory()/mem_mat<<std::endl;
+    //       std::cout<<"z                    "<< z.memory()/mem_mat<<std::endl;
+    //       std::cout<<"non_pivot            "<< non_pivot.memory()/mem_mat<<std::endl;
+    //       std::cout<<"unused_rows          "<< unused_rows.memory()/mem_mat<<std::endl;
+    //       std::cout<<"numb_el_row_L        "<< numb_el_row_L.memory()/mem_mat<<std::endl;
+    //       std::cout<<"pointer_num_el_row_L "<< pointer_num_el_row_L.memory()/mem_mat<<std::endl;
+    //       std::cout<<"norm_row_U           "<< norm_row_U.memory()/mem_mat<<std::endl;
+    //       std::cout<<"row_reorder_weight   "<< row_reorder_weight.memory()/mem_mat<<std::endl;
+    //       std::cout<<"list                 "<< list_L.memory()/mem_mat<<std::endl;
+    //       std::cout<<"list_U               "<< list_U.memory()/mem_mat<<std::endl;
+    //       std::cout<<"rejected_L           "<< rejected_L.memory()/mem_mat<<std::endl;
+    //       std::cout<<"rejected_U           "<< rejected_U.memory()/mem_mat<<std::endl;
+    //       std::cout<<"droppedU             "<< droppedU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"vxL                  "<< vxL.memory()/mem_mat<<std::endl;
+    //       std::cout<<"vyL                  "<< vyL.memory()/mem_mat<<std::endl;
+    //       std::cout<<"vxU                  "<< vxU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"vyU                  "<< vyU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"xL                   "<< xL.memory()/mem_mat<<std::endl;
+    //       std::cout<<"yL                   "<< yL.memory()/mem_mat<<std::endl;
+    //       std::cout<<"xU                   "<< xU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"yU                   "<< yU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"linkU                "<< allocated_mem_lists_U/mem_mat<<std::endl;
+    //       std::cout<<"rowU                 "<< allocated_mem_lists_U/mem_mat<<std::endl;
+    //       std::cout<<"startU               "<< startU.memory()/mem_mat<<std::endl;
+    //       std::cout<<"linkL                "<< allocated_mem_lists_L/mem_mat<<std::endl;
+    //       std::cout<<"colL                 "<< allocated_mem_lists_L/mem_mat<<std::endl;
+    //       std::cout<<"startL               "<< startL.memory()/mem_mat<<std::endl;
+    //       std::cout<<"Dinv                 "<< Dinv.memory()/mem_mat<<std::endl;
+    //       std::cout<<"perm                 "<< perm.memory()/mem_mat<<std::endl;
+    //       std::cout<<"permrows             "<< permrows.memory()/mem_mat<<std::endl;
+    //       std::cout<<"inverse_perm         "<< inverse_perm.memory()/mem_mat<<std::endl;
+    //       std::cout<<"inverse_permrows     "<< inverse_permrows.memory()/mem_mat<<std::endl;
+    //       std::cout<<"U                    "<< memory_U_allocated/mem_mat<<std::endl;
+    //       std::cout<<"L                    "<< memory_L_allocated/mem_mat<<std::endl;
+    //       std::cout<<"Anew                 "<< memory_Anew_allocated/mem_mat<<std::endl;
+    //       std::cout<<"droppedL_data        "<< droppedL_data_memory/mem_mat<<std::endl;
+    //       std::cout<<"droppedL_colindex    "<< droppedL_colindex_memory/mem_mat<<std::endl;
+    //       std::cout<<"linkU (used)         "<< used_mem_lists_U/mem_mat<<std::endl;
+    //       std::cout<<"rowU  (used)         "<< used_mem_lists_U/mem_mat<<std::endl;
+    //       std::cout<<"linkL (used)         "<< used_mem_lists_L/mem_mat<<std::endl;
+    //       std::cout<<"colL  (used)         "<< used_mem_lists_L/mem_mat<<std::endl;
+    //       std::cout<<"U     (used)         "<< U.memory()/mem_mat<<std::endl;
+    //       std::cout<<"L     (used)         "<< memory()/mem_mat<<std::endl;
+    //       std::cout<<"Anew  (used)         "<< Anew.memory()/mem_mat<<std::endl;
+    //       std::cout<<"total_memory         "<< total_memory_allocated/mem_mat<<std::endl;
+    //       std::cout<<"total_memory (used)  "<< total_memory_used/mem_mat<<std::endl;
+    //       std::cout<<std::endl;
+#ifdef STATISTICS
+    // Statistics for A
+    sum1 = 0.0;   max_total=0; min_total=n;
+    average_total = Arow.row_density();
+    for(k=0;k<n;k++){
+        help =  Arow.pointer[k+1]-Arow.pointer[k];
+        if (max_total < help) max_total = help;
+        if (min_total > help) min_total = help;
+        sum1 += (help-average_total)*(help-average_total);
+    }
+    stand_dev_total = sqrt(sum1/n);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for A"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number: "<<average_total<<std::endl;
+    std::cout<<"       Minimum Number     in Row:    "<<min_total<<std::endl;
+    std::cout<<"       Maximum Number     in Row:    "<<max_total<<std::endl;
+    std::cout<<"       Standard Deviation in Row:    "<<stand_dev_total<<std::endl;
+    sum1 = 0.0;   max_total=0; min_total=n;
+    average_total = Acol.column_density();
+    for(k=0;k<n;k++){
+        help =  Acol.pointer[k+1]-Acol.pointer[k];
+        if(max_total < help) max_total = help;
+        if(min_total > help) min_total = help;
+        sum1 += (help-average_total)*(help-average_total);
+    }
+    stand_dev_total = sqrt(sum1/n);
+    std::cout<<"       Minimum Number     in Column: "<<min_total<<std::endl;
+    std::cout<<"       Maximum Number     in Column: "<<max_total<<std::endl;
+    std::cout<<"       Standard Deviation in Column: "<<stand_dev_total<<std::endl;
+    // Statistics for L
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(L_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
+        if(max_total < L_total.read(k)) max_total =L_total.read(k);
+        if(min_total > L_total.read(k)) min_total =L_total.read(k);
+        if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
+        if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
+        if(max_prop < prop) max_prop = prop;
+        if(min_prop > prop) min_prop = prop;
+        sum1 += L_total.read(k);
+        sum2 += L_kept.read(k);
+        sum3 += prop;
+    }
+    average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
+    average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
+    average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(L_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
+        sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
+        sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
+        sum3 += (prop-average_prop)*(prop-average_prop);
+    }
+    stand_dev_total = sqrt(sum1/last_row_to_eliminate);
+    stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
+    stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for L"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
+    std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
+    std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
+    std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
+    std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
+    std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
+    std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
+    std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
+    std::cout<<"   Relative Data: "<<std::endl;
+    std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
+    std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
+    // Statistics for U
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(U_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
+        if(max_total < U_total.read(k)) max_total =U_total.read(k);
+        if(min_total > U_total.read(k)) min_total =U_total.read(k);
+        if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
+        if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
+        if(max_prop < prop) max_prop = prop;
+        if(min_prop > prop) min_prop = prop;
+        sum1 += U_total.read(k);
+        sum2 += U_kept.read(k);
+        sum3 += prop;
+    }
+    average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
+    average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
+    average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(U_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
+        sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
+        sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
+        sum3 += (prop-average_prop)*(prop-average_prop);
+    }
+    stand_dev_total = sqrt(sum1/last_row_to_eliminate);
+    stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
+    stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for U"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
+    std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
+    std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
+    std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
+    std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
+    std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
+    std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
+    std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
+    std::cout<<"   Relative Data: "<<std::endl;
+    std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
+    std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
 
-      #endif
-//std::cout<<"L"<<std::endl<<expand()<<std::endl;
-//std::cout<<"U"<<std::endl<<U.expand()<<std::endl;
-//std::cout<<"Anew"<<std::endl<<Anew.expand()<<std::endl;
-//std::cout<<"Dinv"<<std::endl<<Dinv<<std::endl;
-      return true;
-  }  // end try
-  catch(std::bad_alloc){
-      std::cerr<<"sparse_matrix::partialILUCDP: Error allocating memory. Returning 0x0 matrices."<<std::endl<<std::flush;
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      Anew.reformat(0,0,0,ROW);
-      Dinv.resize_without_initialization(0);
-      perm.resize(0);
-      permrows.resize(0);
-      inverse_perm.resize(0);
-      inverse_permrows.resize(0);
-      return false;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"sparse_matrix::partialILUCDP: "<<ippe.error_message()<<" Returning 0x0 matrices."<<std::endl<<std::flush;
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      Dinv.resize_without_initialization(0);
-      Anew.reformat(0,0,0,ROW);
-      perm.resize(0);
-      permrows.resize(0);
-      inverse_perm.resize(0);
-      inverse_permrows.resize(0);
-      return false;
-  }  // end catch
+#endif
+    //std::cout<<"L"<<std::endl<<expand()<<std::endl;
+    //std::cout<<"U"<<std::endl<<U.expand()<<std::endl;
+    //std::cout<<"Anew"<<std::endl<<Anew.expand()<<std::endl;
+    //std::cout<<"Dinv"<<std::endl<<Dinv<<std::endl;
+    return true;
 }
 
 template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Arow, matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_sparse<T>& U, vector_dense<T>& Dinv, Integer last_row_to_eliminate, Real threshold, Integer& zero_pivots, Real& time_self, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used){
-  try {
-      total_memory_allocated = 0.0;
-      time_self = 0.0;
-      Integer n = Arow.columns();
-      if(!Arow.square_check()){
-          std::cerr<<"matrix_sparse::partialILUC: argument matrix must be square. Returning 0x0 matrices."<<std::endl<<std::flush;
-          reformat(0,0,0,COLUMN);
-          U.reformat(0,0,0,ROW);
-          Dinv.resize_without_initialization(0);
-          Anew.reformat(0,0,0,ROW);
-          return false;
-      }
-      if(n==0){
-          reformat(0,0,0,COLUMN);
-          U.reformat(0,0,0,ROW);
-          Dinv.resize_without_initialization(0);
-          Anew.reformat(0,0,0,ROW);
-          return true;
-      }
-      clock_t time_begin, time_end;
-      time_begin=clock();
-      Integer bandwidth, bandwidth_L, bandwidth_U;
-      Integer i,j,k;//help;
-      Integer h,pos;
-      Integer max_fill_in;
-      if(IP.get_MAX_FILLIN_IS_INF())  max_fill_in = n;
-      else max_fill_in = IP.get_fill_in();
-      if(max_fill_in<1) max_fill_in = 1;
-      if(max_fill_in>n) max_fill_in = n;
-      T pivot = 0.0;  // dummy initialization
-      zero_pivots=0;
-      Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-      Real max_inv_piv=0.0;
-      if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
-      switch (IP.get_DROP_TYPE_L()){
-          case 3: bandwidth_L = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
-          case 4: bandwidth_L = bandwidth; break;
-          default: bandwidth_L = 0;
-      }
-      switch (IP.get_DROP_TYPE_U()){
-          case 3: bandwidth_U = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
-          case 4: bandwidth_U = bandwidth; break;
-          default: bandwidth_U = 0;
-      }
-      if (threshold > 500.0) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
-      Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
-      Real post_fact_threshold;
-      if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
-      else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
-      if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
-      if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
-      bool use_improved_SCHUR = (IP.get_SCHUR_COMPLEMENT()>0);
-      bool use_weightsLU = IP.get_USE_WEIGHTED_DROPPING() || IP.get_USE_WEIGHTED_DROPPING2();
-      bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
-      bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
-      Integer k_Anew,n_Anew=0; // set later
-      Integer reserved_memory_Anew=0; // will be set later
-      T  xplus, xminus, yplus, yminus,vi;
-      Real nuplus,numinus;
-      Integer nplus, nminus;
-      Real weightL, weightU;
-      #ifdef VERBOSE
-          clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_9;
-          Real time_init=0.0;
-          Real time_read=0.0;
-          Real time_calc_L=0.0;
-          Real time_scu_L=0.0;  // sorting, copying, updating access information
-          Real time_calc_U=0.0;
-          Real time_scu_U=0.0;
-          Real time_zeroset=0.0;
-          Real time_compress=0.0;
-          Real time_resort=0.0;
-          time_0 = clock();
-      #endif
-      sorted_vector row_reorder_weight;
-      bool use_norm_row_U = false;
-      vector_dense<Real> norm_row_U;
-      Real droppedL_data_memory = 0.0;
-      Real droppedL_colindex_memory = 0.0;
-      vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
-      vector_dense<Real> weightsL,weightsU;
-      index_list list_L, list_U;
-      index_list rejected_L, rejected_U;
-      Integer reserved_memory_L = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
-      Integer reserved_memory_U = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
-      Integer reserved_memory_droppedU = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
-      array<Integer> firstU, firstUdropped, firstL, firstA, listA, headA, listU,listUdropped, listL;
-      array< std::queue<T> > droppedL_data;
-      array< std::queue<Integer> > droppedL_colindex;
-      matrix_sparse<T> droppedU;
-      vector_sparse_dynamic<T> w,z;
-      #ifdef STATISTICS
-          vector_dense<Integer> L_total,L_kept,U_total,U_kept;
-          Real average_total,average_kept,average_prop, min_prop, max_prop, stand_dev_kept, stand_dev_prop, stand_dev_total;
-          Integer min_total, max_total, min_kept, max_kept, help;
-          Real sum1, sum2, sum3, prop;
-      #endif
-      firstU.erase_resize_data_field(n);
-      firstL.erase_resize_data_field(n);
-      firstA.erase_resize_data_field(n);
-      listA.erase_resize_data_field(n);
-      headA.erase_resize_data_field(n);
-      listU.erase_resize_data_field(n);
-      listL.erase_resize_data_field(n);
-      Dinv.resize(n,1.0);
-      w.resize(n);
-      z.resize(n);
-      U.reformat(n,n,reserved_memory_U,ROW);
-      reformat(n,n,reserved_memory_L,COLUMN);
-      if(use_improved_SCHUR){
-          firstUdropped.erase_resize_data_field(n);
-          listUdropped.erase_resize_data_field(n);
-      }
-      if(IP.get_FINAL_ROW_CRIT() <= -1){
-          row_reorder_weight.resize(n); 
-          if(n>0) row_reorder_weight.remove(0);
-      }
-      if(IP.get_FINAL_ROW_CRIT() == -3 || IP.get_FINAL_ROW_CRIT() == -4) {
-          use_norm_row_U=true; 
-          norm_row_U.resize(n,0.0);
-      }
-      if(use_improved_SCHUR){
-          droppedU.reformat(n,n,reserved_memory_droppedU,ROW);
-          droppedL_data.resize(n);
-          droppedL_colindex.resize(n);
-      }
-      if(IP.get_USE_INVERSE_DROPPING()){
-          xL.resize(n,0);
-          yL.resize(n,0);
-          vxL.resize(n,0);
-          vyL.resize(n,0);
-          xU.resize(n,0);
-          yU.resize(n,0);
-          vxU.resize(n,0);
-          vyU.resize(n,0);
-      }
-      if(use_weightsLU){
-          weightsL.resize(n,IP.get_INIT_WEIGHTS_LU());
-          weightsU.resize(n,IP.get_INIT_WEIGHTS_LU());  // set equal to 1 for diagonal element
-      }
-      #ifdef STATISTICS
-          L_total.resize(n,0); L_kept.resize(n,0); U_total.resize(n,0); U_kept.resize(n,0);
-      #endif
-      initialize_sparse_matrix_fields(n,Arow.pointer,Arow.indices,listA,headA,firstA);
-      initialize_triangular_fields(n,listL);
-      initialize_triangular_fields(n,listU);
-      if(use_improved_SCHUR){
-          initialize_triangular_fields(n,listUdropped);
-      }
-      // (1.) begin for k
-      #ifdef VERBOSE
-          time_1 = clock();
-          time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
-      #endif
-      for(k=0;k<n;k++){
-          #ifdef VERBOSE
-              time_2=clock();
-          #endif
-          // (2.) initialize z
-          z.zero_reset();
-          #ifdef VERBOSE
-              time_3=clock();
-              time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // read row of A
-          for(j=firstA[k];j<Arow.pointer[k+1];j++) z[Arow.indices[j]] = Arow.data[j];
-          #ifdef VERBOSE
-              time_4=clock();
-              time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (3.) begin while
-          h=listL[k];
-          while(h!=-1){
-              for(j=firstU[h];j<U.pointer[h+1];j++){
-                  z[U.indices[j]] -= data[firstL[h]]/Dinv[h]*U.data[j]; 
-             }  // end for j
+    total_memory_allocated = 0.0;
+    time_self = 0.0;
+    Integer n = Arow.columns();
+    if(!Arow.square_check()){
+        std::cerr<<"matrix_sparse::partialILUC: argument matrix must be square. Returning 0x0 matrices."<<std::endl<<std::flush;
+        reformat(0,0,0,COLUMN);
+        U.reformat(0,0,0,ROW);
+        Dinv.resize_without_initialization(0);
+        Anew.reformat(0,0,0,ROW);
+        return false;
+    }
+    if(n==0){
+        reformat(0,0,0,COLUMN);
+        U.reformat(0,0,0,ROW);
+        Dinv.resize_without_initialization(0);
+        Anew.reformat(0,0,0,ROW);
+        return true;
+    }
+    clock_t time_begin, time_end;
+    time_begin=clock();
+    Integer bandwidth, bandwidth_L, bandwidth_U;
+    Integer i,j,k;//help;
+    Integer h,pos;
+    Integer max_fill_in;
+    if(IP.get_MAX_FILLIN_IS_INF())  max_fill_in = n;
+    else max_fill_in = IP.get_fill_in();
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+    T pivot = 0.0;  // dummy initialization
+    zero_pivots=0;
+    Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    Real max_inv_piv=0.0;
+    if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
+    switch (IP.get_DROP_TYPE_L()){
+        case 3: bandwidth_L = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
+        case 4: bandwidth_L = bandwidth; break;
+        default: bandwidth_L = 0;
+    }
+    switch (IP.get_DROP_TYPE_U()){
+        case 3: bandwidth_U = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
+        case 4: bandwidth_U = bandwidth; break;
+        default: bandwidth_U = 0;
+    }
+    if (threshold > 500.0) threshold=0.0;
+    else threshold=std::exp(-threshold*std::log(10.0));
+    Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
+    Real post_fact_threshold;
+    if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
+    else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
+    if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
+    if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
+    bool use_improved_SCHUR = (IP.get_SCHUR_COMPLEMENT()>0);
+    bool use_weightsLU = IP.get_USE_WEIGHTED_DROPPING() || IP.get_USE_WEIGHTED_DROPPING2();
+    bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
+    bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
+    Integer k_Anew,n_Anew=0; // set later
+    Integer reserved_memory_Anew=0; // will be set later
+    T  xplus, xminus, yplus, yminus,vi;
+    Real nuplus,numinus;
+    Integer nplus, nminus;
+    Real weightL, weightU;
+#ifdef VERBOSE
+    clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_9;
+    Real time_init=0.0;
+    Real time_read=0.0;
+    Real time_calc_L=0.0;
+    Real time_scu_L=0.0;  // sorting, copying, updating access information
+    Real time_calc_U=0.0;
+    Real time_scu_U=0.0;
+    Real time_zeroset=0.0;
+    Real time_compress=0.0;
+    Real time_resort=0.0;
+    time_0 = clock();
+#endif
+    sorted_vector row_reorder_weight;
+    bool use_norm_row_U = false;
+    vector_dense<Real> norm_row_U;
+    Real droppedL_data_memory = 0.0;
+    Real droppedL_colindex_memory = 0.0;
+    vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
+    vector_dense<Real> weightsL,weightsU;
+    index_list list_L, list_U;
+    index_list rejected_L, rejected_U;
+    Integer reserved_memory_L = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
+    Integer reserved_memory_U = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
+    Integer reserved_memory_droppedU = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
+    array<Integer> firstU, firstUdropped, firstL, firstA, listA, headA, listU,listUdropped, listL;
+    array< std::queue<T> > droppedL_data;
+    array< std::queue<Integer> > droppedL_colindex;
+    matrix_sparse<T> droppedU;
+    vector_sparse_dynamic<T> w,z;
+#ifdef STATISTICS
+    vector_dense<Integer> L_total,L_kept,U_total,U_kept;
+    Real average_total,average_kept,average_prop, min_prop, max_prop, stand_dev_kept, stand_dev_prop, stand_dev_total;
+    Integer min_total, max_total, min_kept, max_kept, help;
+    Real sum1, sum2, sum3, prop;
+#endif
+    firstU.erase_resize_data_field(n);
+    firstL.erase_resize_data_field(n);
+    firstA.erase_resize_data_field(n);
+    listA.erase_resize_data_field(n);
+    headA.erase_resize_data_field(n);
+    listU.erase_resize_data_field(n);
+    listL.erase_resize_data_field(n);
+    Dinv.resize(n,1.0);
+    w.resize(n);
+    z.resize(n);
+    U.reformat(n,n,reserved_memory_U,ROW);
+    reformat(n,n,reserved_memory_L,COLUMN);
+    if(use_improved_SCHUR){
+        firstUdropped.erase_resize_data_field(n);
+        listUdropped.erase_resize_data_field(n);
+    }
+    if(IP.get_FINAL_ROW_CRIT() <= -1){
+        row_reorder_weight.resize(n); 
+        if(n>0) row_reorder_weight.remove(0);
+    }
+    if(IP.get_FINAL_ROW_CRIT() == -3 || IP.get_FINAL_ROW_CRIT() == -4) {
+        use_norm_row_U=true; 
+        norm_row_U.resize(n,0.0);
+    }
+    if(use_improved_SCHUR){
+        droppedU.reformat(n,n,reserved_memory_droppedU,ROW);
+        droppedL_data.resize(n);
+        droppedL_colindex.resize(n);
+    }
+    if(IP.get_USE_INVERSE_DROPPING()){
+        xL.resize(n,0);
+        yL.resize(n,0);
+        vxL.resize(n,0);
+        vyL.resize(n,0);
+        xU.resize(n,0);
+        yU.resize(n,0);
+        vxU.resize(n,0);
+        vyU.resize(n,0);
+    }
+    if(use_weightsLU){
+        weightsL.resize(n,IP.get_INIT_WEIGHTS_LU());
+        weightsU.resize(n,IP.get_INIT_WEIGHTS_LU());  // set equal to 1 for diagonal element
+    }
+#ifdef STATISTICS
+    L_total.resize(n,0); L_kept.resize(n,0); U_total.resize(n,0); U_kept.resize(n,0);
+#endif
+    initialize_sparse_matrix_fields(n,Arow.pointer,Arow.indices,listA,headA,firstA);
+    initialize_triangular_fields(n,listL);
+    initialize_triangular_fields(n,listU);
+    if(use_improved_SCHUR){
+        initialize_triangular_fields(n,listUdropped);
+    }
+    // (1.) begin for k
+#ifdef VERBOSE
+    time_1 = clock();
+    time_init = ((Real)time_1-(Real)time_0)/(Real)CLOCKS_PER_SEC;
+#endif
+    for(k=0;k<n;k++){
+#ifdef VERBOSE
+        time_2=clock();
+#endif
+        // (2.) initialize z
+        z.zero_reset();
+#ifdef VERBOSE
+        time_3=clock();
+        time_zeroset += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+        // read row of A
+        for(j=firstA[k];j<Arow.pointer[k+1];j++) z[Arow.indices[j]] = Arow.data[j];
+#ifdef VERBOSE
+        time_4=clock();
+        time_read += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (3.) begin while
+        h=listL[k];
+        while(h!=-1){
+            for(j=firstU[h];j<U.pointer[h+1];j++){
+                z[U.indices[j]] -= data[firstL[h]]/Dinv[h]*U.data[j]; 
+            }  // end for j
 
-             if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of L, small of U):
-                  for(j=firstUdropped[h];j<droppedU.pointer[h+1];j++){
-                      z[droppedU.indices[j]] -= data[firstL[h]]/Dinv[h]*droppedU.data[j];
-                   } // end for
-             } //end if
-             h=listL[h];
-          } // end while (5.) in algorithm of Saad.
-          if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of U, small of L):
-              while(droppedL_data[k].size()>0){
-                  h = droppedL_colindex[k].front();  // read (h = corresponding column index in a fixed row of droppedL)
-                  for(j=firstU[h];j<U.pointer[h+1];j++){
-                      z[U.indices[j]] -= droppedL_data[k].front()/Dinv[h]*U.data[j];
-                     // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
-                  } // end for
-                  droppedL_colindex[k].pop();  // remove
-                  droppedL_data[k].pop();
-              }  // end while
-          } // end if
-          #ifdef VERBOSE
-              time_5=clock();
-              time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-          #endif
-          if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && fabs(z.read(k)) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
-               eliminate = false;
-               end_level_now = true;
-               threshold *= threshold_Schur_factor;
-               last_row_to_eliminate = k-1;  // the current row will already be the first row of Anew
-               n_Anew = n-k;
-               //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Arow.non_zeroes()));
-               reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
-               Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
-               if(use_improved_SCHUR){ 
-                   for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                   for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
-                   droppedL_data_memory *= sizeof(T);
-                   droppedL_colindex_memory *= sizeof(Integer);
-               }
-          }
-          if(eliminate){  // select pivot scale z/U
-              pivot = z.read(k);
-              Dinv[k]=1.0/z.read(k);
-              z.scale(Dinv[k]);
-              z[k]=0.0; // eliminate pivot for sorting
-          }
-          if(use_weightsLU){
-              for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += fabs(z.get_data(j));
-          }
-           // (8.) read w
-          #ifdef VERBOSE
-              time_6=clock();
-              time_scu_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
-          #endif
-          w.zero_reset();
-          #ifdef VERBOSE
-              time_7=clock();
-              time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
-          #endif
-          if(eliminate){
-              // read column of A
-               h=headA[k];
-               while(h!=-1){
-                   if(h>k) w[h]=Arow.data[firstA[h]];
-                   h=listA[h];
-               }
-              // end while
-              h=listU[k];
-              while(h!=-1){
-                  // h is current row index of k-th column of U
-                 for(j=firstL[h];j<pointer[h+1];j++){
+            if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of L, small of U):
+                for(j=firstUdropped[h];j<droppedU.pointer[h+1];j++){
+                    z[droppedU.indices[j]] -= data[firstL[h]]/Dinv[h]*droppedU.data[j];
+                } // end for
+            } //end if
+            h=listL[h];
+        } // end while (5.) in algorithm of Saad.
+        if(use_improved_SCHUR && !eliminate){  // do improved elimination for Schur complement (large elements of U, small of L):
+            while(droppedL_data[k].size()>0){
+                h = droppedL_colindex[k].front();  // read (h = corresponding column index in a fixed row of droppedL)
+                for(j=firstU[h];j<U.pointer[h+1];j++){
+                    z[U.indices[j]] -= droppedL_data[k].front()/Dinv[h]*U.data[j];
+                    // if(non_pivot[U.indices[j]]) z[U.indices[j]] -= current_data_row_L*U.data[j];
+                } // end for
+                droppedL_colindex[k].pop();  // remove
+                droppedL_data[k].pop();
+            }  // end while
+        } // end if
+#ifdef VERBOSE
+        time_5=clock();
+        time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+#endif
+        if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && fabs(z.read(k)) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
+            eliminate = false;
+            end_level_now = true;
+            threshold *= threshold_Schur_factor;
+            last_row_to_eliminate = k-1;  // the current row will already be the first row of Anew
+            n_Anew = n-k;
+            //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Arow.non_zeroes()));
+            reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
+            Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
+            if(use_improved_SCHUR){ 
+                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
+                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                droppedL_data_memory *= sizeof(T);
+                droppedL_colindex_memory *= sizeof(Integer);
+            }
+        }
+        if(eliminate){  // select pivot scale z/U
+            pivot = z.read(k);
+            Dinv[k]=1.0/z.read(k);
+            z.scale(Dinv[k]);
+            z[k]=0.0; // eliminate pivot for sorting
+        }
+        if(use_weightsLU){
+            for(j=0;j<z.non_zeroes();j++) weightsU.set(z.get_pointer(j)) += fabs(z.get_data(j));
+        }
+        // (8.) read w
+#ifdef VERBOSE
+        time_6=clock();
+        time_scu_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
+#endif
+        w.zero_reset();
+#ifdef VERBOSE
+        time_7=clock();
+        time_zeroset += (Real)(time_7-time_6)/(Real)CLOCKS_PER_SEC;
+#endif
+        if(eliminate){
+            // read column of A
+            h=headA[k];
+            while(h!=-1){
+                if(h>k) w[h]=Arow.data[firstA[h]];
+                h=listA[h];
+            }
+            // end while
+            h=listU[k];
+            while(h!=-1){
+                // h is current row index of k-th column of U
+                for(j=firstL[h];j<pointer[h+1];j++){
                     // (8.) in the algorithm of Saad.
-                     w[indices[j]] -= U.data[firstU[h]]/Dinv[h]*data[j];
-                 }  // end for j
-                 h=listU[h];
-              } // end while (9.) in algorithm of Saad.
-          } // end if 
-          w.scale(Dinv[k]);
-          #ifdef VERBOSE
-              time_9=clock();
-              time_calc_L += (Real)(time_9-time_7)/(Real)CLOCKS_PER_SEC;
-          #endif
-          if(use_weightsLU){
-              for(j=0;j<w.non_zeroes();j++){ 
-                  //weightsL.set(w.get_pointer(j)) = max(weightsL.set(w.get_pointer(j)),fabs(w.get_data(j)));
-                  weightsL.set(w.get_pointer(j)) += fabs(w.get_data(j));
-              }
-          }
-          if(IP.get_USE_INVERSE_DROPPING() && eliminate){
-              if(k==0){
-                  xU[k]=1.0; yU[k]=1.0;
-                  for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)]=vxU[z.get_pointer(j)]=z.get_data(j);
-              } else {
-                  // initialise
-                  xplus  =  1.0 - vxU[k];
-                  xminus = -1.0 - vxU[k];
-                  nplus  = 0;
-                  nminus = 0;
-                  yplus  =  1.0 - vyU[k];
-                  yminus = -1.0 - vyU[k];
-                  nuplus  = 0.0;
-                  numinus = 0.0;
-                  // do x_k
-                  for(j=0;j<z.non_zeroes();j++) nuplus  += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
-                  for(j=0;j<z.non_zeroes();j++) numinus += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
-                  if(nuplus > numinus) xU[k] = xplus;
-                  else xU[k] = xminus;
-                  for(j=0;j<z.non_zeroes();j++) vxU[z.get_pointer(j)] +=  z.get_data(j)*xU.get(k);
-                  xU[k]=max(fabs(xplus),fabs(xminus));
-                  // do y_k
-                  for(j=0;j<z.non_zeroes();j++){
-                      vi=vyU[z.get_pointer(j)];
-                      if(fabs(vi+z.get_data(j)*yplus) > max(2.0*fabs(vi),(Real)0.5)) nplus++;
-                      if(max(2.0*fabs(vi+z.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
-                      if(fabs(vi+z.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
-                      if(max(2.0*fabs(vi+z.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
-                  }
-                  if(nplus > nminus) yU[k]=yplus;
-                  else yU[k]= yminus;
-                  for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)] += z.get_data(j)*yU.get(k);
-                  yU[k]=max(fabs(yplus),fabs(yminus));
-              }
-          }   // values for dropping are now in xU[k],yU[k]
-          #ifdef STATISTICS
-               L_total.set(k)= w.non_zeroes(); 
-               U_total.set(k)= z.non_zeroes();
-          #endif
-          if(!eliminate){
-              z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,last_row_to_eliminate+1,n);
-          } else {
-              weightU=IP.get_NEUTRAL_ELEMENT();
-              if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
-              if(IP.get_USE_STANDARD_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP2());  // drop if |w_i|<tau
-              if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xU[k]),fabs(yU[k])));
-              if(IP.get_USE_WEIGHTED_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_WEIGHTED_DROP()*weightsU.get(k));
-              if(IP.get_USE_ERR_PROP_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP()*w.norm1());
-              if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/fabs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= fabs(Dinv[k]);
-              if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,fabs(Dinv[k])); weightU *= max_inv_piv;}
-              if(use_improved_SCHUR){
-                  switch (IP.get_DROP_TYPE_U()){
-                      case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k+1,n); break; // usual dropping
-                      case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break; // positional dropping
-                      case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightsU,weightU,max_fill_in-1,threshold,k+1,n); // weighted dropping
-                      case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
-                      case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_U does not have permissible value"<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          return false;
-                  }
-              } else {
-                  switch (IP.get_DROP_TYPE_U()){
-                      case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k+1,n); break; // usual dropping
-                      case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break; // positional dropping
-                      case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,weightsU,weightU,max_fill_in-1,threshold,k+1,n); // weighted dropping
-                      case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
-                      case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_U does not have permissible value"<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          return false;
-                  }
-              }
-          }
-          #ifdef STATISTICS
-               U_kept.set(k)= list_U.dimension();
-          #endif
-      // update U or Anew
-         if(eliminate){
-             if(U.pointer[k]+list_U.dimension()+1>reserved_memory_U){
-                 reserved_memory_U = 2*(U.pointer[k]+list_U.dimension()+1);
-                 U.enlarge_fields_keep_data(reserved_memory_U);
-                 // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for U at position 1"<<std::endl;
-                 // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+list_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                 // reformat(0,0,0,COLUMN);
-                 // U.reformat(0,0,0,ROW);
-                 // Dinv.resize_without_initialization(0);
-                 // Anew.reformat(0,0,0,ROW);
-                 // return false;
-             }
-             U.data[U.pointer[k]]=1.0;
-             U.indices[U.pointer[k]]=k;
-             for(j=0;j<list_U.dimension();j++){
-                 pos=U.pointer[k]+j+1;
-                 U.data[pos]=z.read(list_U[j]);
-                 U.indices[pos]=list_U[j];
-                 if(use_norm_row_U) norm_row_U.set(k) += fabs(U.data[pos]);
-                 //h=startU[U.indices[pos]];
-                 //startU[U.indices[pos]]=pos;
-                 //linkU[pos]=h;
-                 //rowU[pos]=k;
-             }
-             U.pointer[k+1]=U.pointer[k]+list_U.dimension()+1;
-             if(pivot == 0.0){
-                 zero_pivots++;
-                 Dinv[k]=1.0;
-                 #ifdef VERBOSE
-                     std::cerr<<"matrix_sparse::partialILUC: Preconditioner does not exist (zero pivot). Setting diagonal to 1."<<std::endl;
-                 #endif
-             }
-             if(use_improved_SCHUR){ // update droppedU
-                 if(droppedU.pointer[k]+rejected_U.dimension()>reserved_memory_droppedU){
-                     reserved_memory_droppedU = 2*(droppedU.pointer[k]+rejected_U.dimension());
-                     droppedU.enlarge_fields_keep_data(reserved_memory_droppedU);
-                     // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for droppedU at position 1"<<std::endl;
-                     // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<droppedU.pointer[k]+rejected_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                     // reformat(0,0,0,COLUMN);
-                     // U.reformat(0,0,0,ROW);
-                     // Dinv.resize_without_initialization(0);
-                     // Anew.reformat(0,0,0,ROW);
-                     // return false;
-                 }
-                 for(j=0;j<rejected_U.dimension();j++){
-                     pos=droppedU.pointer[k]+j;
-                     droppedU.data[pos]=z.read(rejected_U[j]);
-                     droppedU.indices[pos]=rejected_U[j];
-                 }
-                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
-             }  // end updating droppedU
-         } else {
-             k_Anew = k -last_row_to_eliminate-1;
-             if(U.pointer[k]+1>reserved_memory_U){
-                 reserved_memory_U = 2*(U.pointer[k]+1);
-                 U.enlarge_fields_keep_data(reserved_memory_U);
-                 // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
-                 // std::cerr<<"For Anew: Reserved memory for non-zero elements: "<<reserved_memory_Anew<<" Memory needed: "<<Anew.pointer[k_Anew]+list_U.dimension()<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                 // reformat(0,0,0,COLUMN);
-                 // U.reformat(0,0,0,ROW);
-                 // Dinv.resize_without_initialization(0);
-                 // Anew.reformat(0,0,0,ROW);
-                 // return false;
-             }
-             if(Anew.pointer[k_Anew]+list_U.dimension()>reserved_memory_Anew){
+                    w[indices[j]] -= U.data[firstU[h]]/Dinv[h]*data[j];
+                }  // end for j
+                h=listU[h];
+            } // end while (9.) in algorithm of Saad.
+        } // end if 
+        w.scale(Dinv[k]);
+#ifdef VERBOSE
+        time_9=clock();
+        time_calc_L += (Real)(time_9-time_7)/(Real)CLOCKS_PER_SEC;
+#endif
+        if(use_weightsLU){
+            for(j=0;j<w.non_zeroes();j++){ 
+                //weightsL.set(w.get_pointer(j)) = max(weightsL.set(w.get_pointer(j)),fabs(w.get_data(j)));
+                weightsL.set(w.get_pointer(j)) += fabs(w.get_data(j));
+            }
+        }
+        if(IP.get_USE_INVERSE_DROPPING() && eliminate){
+            if(k==0){
+                xU[k]=1.0; yU[k]=1.0;
+                for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)]=vxU[z.get_pointer(j)]=z.get_data(j);
+            } else {
+                // initialise
+                xplus  =  1.0 - vxU[k];
+                xminus = -1.0 - vxU[k];
+                nplus  = 0;
+                nminus = 0;
+                yplus  =  1.0 - vyU[k];
+                yminus = -1.0 - vyU[k];
+                nuplus  = 0.0;
+                numinus = 0.0;
+                // do x_k
+                for(j=0;j<z.non_zeroes();j++) nuplus  += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xplus);
+                for(j=0;j<z.non_zeroes();j++) numinus += fabs(vxU[z.get_pointer(j)]+z.get_data(j)*xminus);
+                if(nuplus > numinus) xU[k] = xplus;
+                else xU[k] = xminus;
+                for(j=0;j<z.non_zeroes();j++) vxU[z.get_pointer(j)] +=  z.get_data(j)*xU.get(k);
+                xU[k]=max(fabs(xplus),fabs(xminus));
+                // do y_k
+                for(j=0;j<z.non_zeroes();j++){
+                    vi=vyU[z.get_pointer(j)];
+                    if(fabs(vi+z.get_data(j)*yplus) > max(2.0*fabs(vi),(Real)0.5)) nplus++;
+                    if(max(2.0*fabs(vi+z.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
+                    if(fabs(vi+z.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
+                    if(max(2.0*fabs(vi+z.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
+                }
+                if(nplus > nminus) yU[k]=yplus;
+                else yU[k]= yminus;
+                for(j=0;j<z.non_zeroes();j++) vyU[z.get_pointer(j)] += z.get_data(j)*yU.get(k);
+                yU[k]=max(fabs(yplus),fabs(yminus));
+            }
+        }   // values for dropping are now in xU[k],yU[k]
+#ifdef STATISTICS
+        L_total.set(k)= w.non_zeroes(); 
+        U_total.set(k)= z.non_zeroes();
+#endif
+        if(!eliminate){
+            z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,last_row_to_eliminate+1,n);
+        } else {
+            weightU=IP.get_NEUTRAL_ELEMENT();
+            if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
+            if(IP.get_USE_STANDARD_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP2());  // drop if |w_i|<tau
+            if(IP.get_USE_INVERSE_DROPPING())  weightU = IP.combine(weightU,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xU[k]),fabs(yU[k])));
+            if(IP.get_USE_WEIGHTED_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_WEIGHTED_DROP()*weightsU.get(k));
+            if(IP.get_USE_ERR_PROP_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP()*w.norm1());
+            if(IP.get_USE_ERR_PROP_DROPPING2()) weightU = IP.combine(weightU,IP.get_WEIGHT_ERR_PROP_DROP2()*w.norm1()/fabs(Dinv[k]));
+            if(IP.get_USE_PIVOT_DROPPING()) weightU = IP.combine(weightU,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
+            if(IP.get_SCALE_WEIGHT_INVDIAG()) weightU *= fabs(Dinv[k]);
+            if(IP.get_SCALE_WGT_MAXINVDIAG()){max_inv_piv = max(max_inv_piv,fabs(Dinv[k])); weightU *= max_inv_piv;}
+            if(use_improved_SCHUR){
+                switch (IP.get_DROP_TYPE_U()){
+                    case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k+1,n); break; // usual dropping
+                    case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break; // positional dropping
+                    case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightsU,weightU,max_fill_in-1,threshold,k+1,n); // weighted dropping
+                    case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
+                    case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_U does not have permissible value"<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            return false;
+                }
+            } else {
+                switch (IP.get_DROP_TYPE_U()){
+                    case 0: z.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k+1,n); break; // usual dropping
+                    case 1: z.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break; // positional dropping
+                    case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,weightsU,weightU,max_fill_in-1,threshold,k+1,n); // weighted dropping
+                    case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
+                    case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in-1,threshold,k,n,k+1,bandwidth_U,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_U does not have permissible value"<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            return false;
+                }
+            }
+        }
+#ifdef STATISTICS
+        U_kept.set(k)= list_U.dimension();
+#endif
+        // update U or Anew
+        if(eliminate){
+            if(U.pointer[k]+list_U.dimension()+1>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k]+list_U.dimension()+1);
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for U at position 1"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+list_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            }
+            U.data[U.pointer[k]]=1.0;
+            U.indices[U.pointer[k]]=k;
+            for(j=0;j<list_U.dimension();j++){
+                pos=U.pointer[k]+j+1;
+                U.data[pos]=z.read(list_U[j]);
+                U.indices[pos]=list_U[j];
+                if(use_norm_row_U) norm_row_U.set(k) += fabs(U.data[pos]);
+                //h=startU[U.indices[pos]];
+                //startU[U.indices[pos]]=pos;
+                //linkU[pos]=h;
+                //rowU[pos]=k;
+            }
+            U.pointer[k+1]=U.pointer[k]+list_U.dimension()+1;
+            if(pivot == 0.0){
+                zero_pivots++;
+                Dinv[k]=1.0;
+#ifdef VERBOSE
+                std::cerr<<"matrix_sparse::partialILUC: Preconditioner does not exist (zero pivot). Setting diagonal to 1."<<std::endl;
+#endif
+            }
+            if(use_improved_SCHUR){ // update droppedU
+                if(droppedU.pointer[k]+rejected_U.dimension()>reserved_memory_droppedU){
+                    reserved_memory_droppedU = 2*(droppedU.pointer[k]+rejected_U.dimension());
+                    droppedU.enlarge_fields_keep_data(reserved_memory_droppedU);
+                    // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for droppedU at position 1"<<std::endl;
+                    // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<droppedU.pointer[k]+rejected_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                    // reformat(0,0,0,COLUMN);
+                    // U.reformat(0,0,0,ROW);
+                    // Dinv.resize_without_initialization(0);
+                    // Anew.reformat(0,0,0,ROW);
+                    // return false;
+                }
+                for(j=0;j<rejected_U.dimension();j++){
+                    pos=droppedU.pointer[k]+j;
+                    droppedU.data[pos]=z.read(rejected_U[j]);
+                    droppedU.indices[pos]=rejected_U[j];
+                }
+                droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
+            }  // end updating droppedU
+        } else {
+            k_Anew = k -last_row_to_eliminate-1;
+            if(U.pointer[k]+1>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k]+1);
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
+                // std::cerr<<"For Anew: Reserved memory for non-zero elements: "<<reserved_memory_Anew<<" Memory needed: "<<Anew.pointer[k_Anew]+list_U.dimension()<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            }
+            if(Anew.pointer[k_Anew]+list_U.dimension()>reserved_memory_Anew){
                 reserved_memory_Anew = 2*(Anew.pointer[k_Anew]+list_U.dimension());
                 Anew.enlarge_fields_keep_data(reserved_memory_Anew);
                 // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
@@ -8876,412 +7926,395 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 // Dinv.resize_without_initialization(0);
                 // Anew.reformat(0,0,0,ROW);
                 // return false;
-             }
-             U.data[U.pointer[k]]=1.0;
-             Dinv[k]=1.0;
-             U.indices[U.pointer[k]]=k;
-             U.pointer[k+1]=U.pointer[k]+1;
-             for(j=0;j<list_U.dimension();j++){
-                 pos=Anew.pointer[k_Anew]+j;
-                 Anew.data[pos]=z.read(list_U[j]);
-                 Anew.indices[pos]=list_U[j];
-             }
-             Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
-          }
-          #ifdef VERBOSE
-              time_6=clock();
-              time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
-          #endif
-          // (12.) sort and copy data to L
-          if(eliminate){
-              if(IP.get_USE_INVERSE_DROPPING()){
-                  if(k==0){
-                      xL[k]=1.0; yL[k]=1.0;
-                      for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)]=vxL[w.get_pointer(j)]=w.get_data(j);
-                  } else {
-                      // initialise
-                      xplus  =  1.0 - vxL[k];
-                      xminus = -1.0 - vxL[k];
-                      nplus  = 0;
-                      nminus = 0;
-                      yplus  =  1.0 - vyL[k];
-                      yminus = -1.0 - vyL[k];
-                      nuplus  = 0.0;
-                      numinus = 0.0;
-                  // do x_k
-                      for(j=0;j<w.non_zeroes();j++) nuplus  += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
-                      for(j=0;j<w.non_zeroes();j++) numinus += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
-                      if(nuplus > numinus) xL[k] = xplus;
-                      else xL[k] = xminus;
-                      for(j=0;j<w.non_zeroes();j++) vxL[w.get_pointer(j)] +=  w.get_data(j)*xL.get(k);
-                      xL[k]=max(fabs(xplus),fabs(xminus));
-                      // do y_k
-                      for(j=0;j<w.non_zeroes();j++){
-                          vi=vyL[w.get_pointer(j)];
-                          if(fabs(vi+w.get_data(j)*yplus) > max(2.0*fabs(vi),(Real) 0.5)) nplus++;
-                          if(max(2.0*fabs(vi+w.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
-                          if(fabs(vi+w.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
-                          if(max(2.0*fabs(vi+w.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
-                      }
-                      if(nplus > nminus) yL[k]=yplus;
-                      else yL[k]= yminus;
-                      for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)] += w.get_data(j)*yL.get(k);
-                      yL[k]=max(fabs(yplus),fabs(yminus));
-                  }  // values for dropping are now in xL[k],yL[k]
-              }
-              weightL=IP.get_NEUTRAL_ELEMENT();
-              if(IP.get_USE_STANDARD_DROPPING()) {norm = w.norm2(); if(norm==0.0) norm=1e-16; weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP()/norm);}
-              if(IP.get_USE_STANDARD_DROPPING2()) weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP2());
-              if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xL[k]),fabs(yL[k])));
-              if(IP.get_USE_WEIGHTED_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_WEIGHTED_DROP()*weightsL.get(k));
-              if(IP.get_USE_ERR_PROP_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP()*z.norm1());
-              if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/fabs(Dinv[k]));
-              if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
-              if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= fabs(Dinv[k]);
-              if(IP.get_SCALE_WGT_MAXINVDIAG())  weightL *= max_inv_piv;
-              if(use_improved_SCHUR){
-                  switch (IP.get_DROP_TYPE_L()){
-                      case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n); break;
-                      case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break;
-                      case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightsL,weightL,max_fill_in-1,threshold,k+1,n); break;
-                      case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_L does not have permissible value"<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          return false;
-                   }
-              } else {
-                  switch (IP.get_DROP_TYPE_L()){
-                      case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n); break;
-                      case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break;
-                      case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,weightsL,weightL,max_fill_in-1,threshold,k+1,n); break;
-                      case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
-                      default:
-                          std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_L does not have permissible value"<<std::endl;
-                          reformat(0,0,0,COLUMN);
-                          U.reformat(0,0,0,ROW);
-                          Dinv.resize_without_initialization(0);
-                          Anew.reformat(0,0,0,ROW);
-                          return false;
-                   }
-              }
-              #ifdef STATISTICS
-                  L_kept.set(k)= list_L.dimension();
-              #endif
-              if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for L at position 1"<<std::endl;
-                  // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // return false;
-              }
-              // copy data
-              data[pointer[k]]=1.0;
-              indices[pointer[k]]=k;
-              for(j=0;j<list_L.dimension();j++){
-                  pos = pointer[k]+j+1;
-                  data[pos] = w.read(list_L[j]); // scaling has already been performed previously
-                  indices[pos] = list_L[j];
-              } // end for j
-              pointer[k+1]=pointer[k]+list_L.dimension()+1;
-              if(use_improved_SCHUR){ // update droppedL
-                 for(j=0;j<rejected_L.dimension();j++){
-                     pos = rejected_L[j]; // row index of current element
-                     droppedL_colindex[pos].push(k);  // store corresponding column index = k
-                     droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
-                 }
-              }  // end updating droppedL
-          } else {  //  else branch of if(eliminate)
-              if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for L at position 2"<<std::endl;
-                  // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // return false;
-              }
-              // copy data
-              data[pointer[k]]=1.0;
-              indices[pointer[k]]=k;
-              pointer[k+1]=pointer[k]+1;
-          }  //  end:  if(eliminate)
+            }
+            U.data[U.pointer[k]]=1.0;
+            Dinv[k]=1.0;
+            U.indices[U.pointer[k]]=k;
+            U.pointer[k+1]=U.pointer[k]+1;
+            for(j=0;j<list_U.dimension();j++){
+                pos=Anew.pointer[k_Anew]+j;
+                Anew.data[pos]=z.read(list_U[j]);
+                Anew.indices[pos]=list_U[j];
+            }
+            Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
+        }
+#ifdef VERBOSE
+        time_6=clock();
+        time_scu_U += (Real)(time_6-time_5)/(Real)CLOCKS_PER_SEC;
+#endif
+        // (12.) sort and copy data to L
+        if(eliminate){
+            if(IP.get_USE_INVERSE_DROPPING()){
+                if(k==0){
+                    xL[k]=1.0; yL[k]=1.0;
+                    for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)]=vxL[w.get_pointer(j)]=w.get_data(j);
+                } else {
+                    // initialise
+                    xplus  =  1.0 - vxL[k];
+                    xminus = -1.0 - vxL[k];
+                    nplus  = 0;
+                    nminus = 0;
+                    yplus  =  1.0 - vyL[k];
+                    yminus = -1.0 - vyL[k];
+                    nuplus  = 0.0;
+                    numinus = 0.0;
+                    // do x_k
+                    for(j=0;j<w.non_zeroes();j++) nuplus  += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xplus);
+                    for(j=0;j<w.non_zeroes();j++) numinus += fabs(vxL[w.get_pointer(j)]+w.get_data(j)*xminus);
+                    if(nuplus > numinus) xL[k] = xplus;
+                    else xL[k] = xminus;
+                    for(j=0;j<w.non_zeroes();j++) vxL[w.get_pointer(j)] +=  w.get_data(j)*xL.get(k);
+                    xL[k]=max(fabs(xplus),fabs(xminus));
+                    // do y_k
+                    for(j=0;j<w.non_zeroes();j++){
+                        vi=vyL[w.get_pointer(j)];
+                        if(fabs(vi+w.get_data(j)*yplus) > max(2.0*fabs(vi),(Real) 0.5)) nplus++;
+                        if(max(2.0*fabs(vi+w.get_data(j)*yplus),(Real) 0.5)<fabs(vi)) nplus--;
+                        if(fabs(vi+w.get_data(j)*yminus) > max(2.0*fabs(vi),(Real) 0.5)) nminus++;
+                        if(max(2.0*fabs(vi+w.get_data(j)*yminus),(Real) 0.5)<fabs(vi)) nminus--;
+                    }
+                    if(nplus > nminus) yL[k]=yplus;
+                    else yL[k]= yminus;
+                    for(j=0;j<w.non_zeroes();j++) vyL[w.get_pointer(j)] += w.get_data(j)*yL.get(k);
+                    yL[k]=max(fabs(yplus),fabs(yminus));
+                }  // values for dropping are now in xL[k],yL[k]
+            }
+            weightL=IP.get_NEUTRAL_ELEMENT();
+            if(IP.get_USE_STANDARD_DROPPING()) {norm = w.norm2(); if(norm==0.0) norm=1e-16; weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP()/norm);}
+            if(IP.get_USE_STANDARD_DROPPING2()) weightL = IP.combine(weightL,IP.get_WEIGHT_STANDARD_DROP2());
+            if(IP.get_USE_INVERSE_DROPPING())  weightL = IP.combine(weightL,IP.get_WEIGHT_INVERSE_DROP()*max(fabs(xL[k]),fabs(yL[k])));
+            if(IP.get_USE_WEIGHTED_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_WEIGHTED_DROP()*weightsL.get(k));
+            if(IP.get_USE_ERR_PROP_DROPPING()) weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP()*z.norm1());
+            if(IP.get_USE_ERR_PROP_DROPPING2())weightL = IP.combine(weightL,IP.get_WEIGHT_ERR_PROP_DROP2()*z.norm1()/fabs(Dinv[k]));
+            if(IP.get_USE_PIVOT_DROPPING())weightL = IP.combine(weightL,IP.get_WEIGHT_PIVOT_DROP()*fabs(Dinv[k]));
+            if(IP.get_SCALE_WEIGHT_INVDIAG())  weightL *= fabs(Dinv[k]);
+            if(IP.get_SCALE_WGT_MAXINVDIAG())  weightL *= max_inv_piv;
+            if(use_improved_SCHUR){
+                switch (IP.get_DROP_TYPE_L()){
+                    case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n); break;
+                    case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break;
+                    case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightsL,weightL,max_fill_in-1,threshold,k+1,n); break;
+                    case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_L does not have permissible value"<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            return false;
+                }
+            } else {
+                switch (IP.get_DROP_TYPE_L()){
+                    case 0: w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n); break;
+                    case 1: w.take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,last_row_to_eliminate); break;
+                    case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,weightsL,weightL,max_fill_in-1,threshold,k+1,n); break;
+                    case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,k+1,n,k,bandwidth_L,last_row_to_eliminate); break;
+                    default:
+                            std::cerr<<"matrix_sparse::partialILUC: DROP_TYPE_L does not have permissible value"<<std::endl;
+                            reformat(0,0,0,COLUMN);
+                            U.reformat(0,0,0,ROW);
+                            Dinv.resize_without_initialization(0);
+                            Anew.reformat(0,0,0,ROW);
+                            return false;
+                }
+            }
+#ifdef STATISTICS
+            L_kept.set(k)= list_L.dimension();
+#endif
+            if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
+                enlarge_fields_keep_data(reserved_memory_L);
+                // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for L at position 1"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            }
+            // copy data
+            data[pointer[k]]=1.0;
+            indices[pointer[k]]=k;
+            for(j=0;j<list_L.dimension();j++){
+                pos = pointer[k]+j+1;
+                data[pos] = w.read(list_L[j]); // scaling has already been performed previously
+                indices[pos] = list_L[j];
+            } // end for j
+            pointer[k+1]=pointer[k]+list_L.dimension()+1;
+            if(use_improved_SCHUR){ // update droppedL
+                for(j=0;j<rejected_L.dimension();j++){
+                    pos = rejected_L[j]; // row index of current element
+                    droppedL_colindex[pos].push(k);  // store corresponding column index = k
+                    droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
+                }
+            }  // end updating droppedL
+        } else {  //  else branch of if(eliminate)
+            if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
+                enlarge_fields_keep_data(reserved_memory_L);
+                // std::cerr<<"matrix_sparse::partialILUC: memory reserved was insufficient. Overflow for L at position 2"<<std::endl;
+                // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            }
+            // copy data
+            data[pointer[k]]=1.0;
+            indices[pointer[k]]=k;
+            pointer[k+1]=pointer[k]+1;
+        }  //  end:  if(eliminate)
 
-          if(eliminate){
-              update_sparse_matrix_fields(k, Arow.pointer,Arow.indices,listA,headA,firstA);
-              update_triangular_fields(k, U.pointer,U.indices,listU,firstU);
-              if(use_improved_SCHUR) update_triangular_fields(k, droppedU.pointer,droppedU.indices,listUdropped,firstUdropped);
-          }
-          update_triangular_fields(k, pointer,indices,listL,firstL);
-          #ifdef VERBOSE
-              time_0=clock();
-              time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
-          #endif
-          if(eliminate && IP.get_FINAL_ROW_CRIT() < 11 && !force_finish){
-              if(IP.get_EXTERNAL_FINAL_ROW()){
-                  if (k >= last_row_to_eliminate && k >= IP.get_EXT_MIN_ELIM_FACTOR()*n ){
-                      end_level_now = true;
-                  }  // end if (last_row_to_eliminate == k)
-              }
-              if(end_level_now){
-                  eliminate = false;
-                  threshold *= threshold_Schur_factor;
-                  last_row_to_eliminate = k;
-                  n_Anew = n-k-1;
-                  //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Arow.non_zeroes()));
-                  reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
-                  Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
-                   if(use_improved_SCHUR){ 
-                      for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                      for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
-                      droppedL_data_memory *= sizeof(T);
-                      droppedL_colindex_memory *= sizeof(Integer);
-                  }
-              } // end if(end_level_now)
-          } // end if (eliminate)
-          if (eliminate && IP.get_REQUIRE_ZERO_SCHUR() && IP.get_REQ_ZERO_SCHUR_SIZE()>= n-k-1){
-              eliminate = false;
-              if(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_L){
-                  reserved_memory_L = 2*(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
-                  enlarge_fields_keep_data(reserved_memory_L);
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // return false;
-              } 
-              if(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_U){
-                  reserved_memory_U = 2*(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
-                  U.enlarge_fields_keep_data(reserved_memory_U);
-                  // reformat(0,0,0,COLUMN);
-                  // U.reformat(0,0,0,ROW);
-                  // Dinv.resize_without_initialization(0);
-                  // Anew.reformat(0,0,0,ROW);
-                  // return false;
-              } 
-              n_Anew = IP.get_REQ_ZERO_SCHUR_SIZE();
-              Anew.reformat(n_Anew,n_Anew,0,ROW);
-              for(j=k+1;j<n;j++){
-                  data[pointer[j]]=1.0;
-                  indices[pointer[j]]=j;
-                  pointer[j+1]=pointer[j]+1;
-                  U.data[U.pointer[j]]=1.0;
-                  Dinv[j]=1.0;
-                  U.indices[U.pointer[j]]=j;
-                  U.pointer[j+1]=U.pointer[j]+1;
-              }
-              break;
-          }  // end if
-      }  // (13.) end for k
-      #ifdef VERBOSE
-          time_2 = clock();
-      #endif
-      Real memory_L_allocated = memory();
-      Real memory_U_allocated = U.memory();
-      Real memory_Anew_allocated = Anew.memory();
-      compress();
-      U.compress();
-      if(eliminate) Anew.reformat(0,0,0,ROW); // if eliminated till end, then Anew is a 0x0 matrix.
-      else {
-          if(Anew.nnz>0){
-              Anew.compress();
-              // resort and shift indices to standard
-              for (i=0; i<Anew.rows(); i++)
-              for(j=Anew.pointer[i]; j<Anew.pointer[i+1]; j++)
-                          Anew.indices[j] -= last_row_to_eliminate+1;
-              Anew.normal_order();
-              Anew.number_columns=n_Anew; // originally, Anew has n columns
-          } else {
-              Anew.reformat(n_Anew,n_Anew,0,ROW);
-          }
-      }
-      if(IP.get_USE_POS_COMPRESS()){
-          positional_compress(IP,post_fact_threshold);
-          U.positional_compress(IP,post_fact_threshold);
-      }
-      #ifdef VERBOSE
-          time_3=clock();
-          time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
-      #endif
-      #ifdef VERBOSE
-          time_4=clock();
-          time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
-          std::cout<<"    partialILUC-Times: "<<std::endl;
-          std::cout<<"        initialization:                           "<<time_init<<std::endl;
-          std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
-          std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
-          std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
-          std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
-          std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
-          std::cout<<"        compressing:                              "<<time_compress<<std::endl;
-          std::cout<<"        resorting:                                "<<time_resort<<std::endl;
-          std::cout<<"      Total times:"<<std::endl;
-          std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
-          std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
-          std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
-          std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
-      #endif
-      time_end=clock();
-      time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-      total_memory_allocated = w.memory() + z.memory() +  norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory() +
-                     firstU.memory() + firstL.memory() + firstA.memory() + listA.memory() + headA.memory() + listU.memory() +
-                     listL.memory() + list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
-                     vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
-                     Dinv.memory() + droppedL_data_memory + droppedL_colindex_memory;
-      total_memory_used = total_memory_allocated;
-      total_memory_allocated += memory_U_allocated + memory_L_allocated + memory_Anew_allocated;
-      total_memory_used +=  U.memory() + memory() + Anew.memory();
-      #ifdef STATISTICS
-          // Statistics for A
-          matrix_sparse<T> Acol;
-          Acol.change_orientation_of_data(Arow);
-          sum1 = 0.0;   max_total=0; min_total=n;
-          average_total = Arow.row_density();
-          for(k=0;k<n;k++){
-              help =  Arow.pointer[k+1]-Arow.pointer[k];
-              if (max_total < help) max_total = help;
-              if (min_total > help) min_total = help;
-              sum1 += (help-average_total)*(help-average_total);
-          }
-          stand_dev_total = sqrt(sum1/n);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for A"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number: "<<average_total<<std::endl;
-          std::cout<<"       Minimum Number     in Row:    "<<min_total<<std::endl;
-          std::cout<<"       Maximum Number     in Row:    "<<max_total<<std::endl;
-          std::cout<<"       Standard Deviation in Row:    "<<stand_dev_total<<std::endl;
-          sum1 = 0.0;   max_total=0; min_total=n;
-          average_total = Acol.column_density();
-          for(k=0;k<n;k++){
-              help =  Acol.pointer[k+1]-Acol.pointer[k];
-              if(max_total < help) max_total = help;
-              if(min_total > help) min_total = help;
-              sum1 += (help-average_total)*(help-average_total);
-          }
-          stand_dev_total = sqrt(sum1/n);
-          std::cout<<"       Minimum Number     in Column: "<<min_total<<std::endl;
-          std::cout<<"       Maximum Number     in Column: "<<max_total<<std::endl;
-          std::cout<<"       Standard Deviation in Column: "<<stand_dev_total<<std::endl;
-          // Statistics for L
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(L_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-              if(max_total < L_total.read(k)) max_total =L_total.read(k);
-              if(min_total > L_total.read(k)) min_total =L_total.read(k);
-              if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
-              if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
-              if(max_prop < prop) max_prop = prop;
-              if(min_prop > prop) min_prop = prop;
-              sum1 += L_total.read(k);
-              sum2 += L_kept.read(k);
-              sum3 += prop;
-          }
-          average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
-          average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
-          average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(L_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-              sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
-              sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
-              sum3 += (prop-average_prop)*(prop-average_prop);
-          }
-          stand_dev_total = sqrt(sum1/last_row_to_eliminate);
-          stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
-          stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for L"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
-          std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
-          std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
-          std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
-          std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
-          std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
-          std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
-          std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
-          std::cout<<"   Relative Data: "<<std::endl;
-          std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
-          std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
-          // Statistics for U
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(U_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-              if(max_total < U_total.read(k)) max_total =U_total.read(k);
-              if(min_total > U_total.read(k)) min_total =U_total.read(k);
-              if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
-              if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
-              if(max_prop < prop) max_prop = prop;
-              if(min_prop > prop) min_prop = prop;
-              sum1 += U_total.read(k);
-              sum2 += U_kept.read(k);
-              sum3 += prop;
-          }
-          average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
-          average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
-          average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
-          sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
-          for(k=0;k<last_row_to_eliminate;k++){
-              if(U_total.read(k) == 0) prop = 1.0;
-              else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-              sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
-              sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
-              sum3 += (prop-average_prop)*(prop-average_prop);
-          }
-          stand_dev_total = sqrt(sum1/last_row_to_eliminate);
-          stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
-          stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
-          std::cout<<std::endl;
-          std::cout<<"Statistical Data for U"<<std::endl<<std::endl;
-          std::cout<<"   Absolute Data: "<<std::endl;
-          std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
-          std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
-          std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
-          std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
-          std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
-          std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
-          std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
-          std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
-          std::cout<<"   Relative Data: "<<std::endl;
-          std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
-          std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
+        if(eliminate){
+            update_sparse_matrix_fields(k, Arow.pointer,Arow.indices,listA,headA,firstA);
+            update_triangular_fields(k, U.pointer,U.indices,listU,firstU);
+            if(use_improved_SCHUR) update_triangular_fields(k, droppedU.pointer,droppedU.indices,listUdropped,firstUdropped);
+        }
+        update_triangular_fields(k, pointer,indices,listL,firstL);
+#ifdef VERBOSE
+        time_0=clock();
+        time_scu_L += (Real)(time_0-time_9)/(Real)CLOCKS_PER_SEC;
+#endif
+        if(eliminate && IP.get_FINAL_ROW_CRIT() < 11 && !force_finish){
+            if(IP.get_EXTERNAL_FINAL_ROW()){
+                if (k >= last_row_to_eliminate && k >= IP.get_EXT_MIN_ELIM_FACTOR()*n ){
+                    end_level_now = true;
+                }  // end if (last_row_to_eliminate == k)
+            }
+            if(end_level_now){
+                eliminate = false;
+                threshold *= threshold_Schur_factor;
+                last_row_to_eliminate = k;
+                n_Anew = n-k-1;
+                //reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(mem_factor*Arow.non_zeroes()));
+                reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
+                Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
+                if(use_improved_SCHUR){ 
+                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
+                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                    droppedL_data_memory *= sizeof(T);
+                    droppedL_colindex_memory *= sizeof(Integer);
+                }
+            } // end if(end_level_now)
+        } // end if (eliminate)
+        if (eliminate && IP.get_REQUIRE_ZERO_SCHUR() && IP.get_REQ_ZERO_SCHUR_SIZE()>= n-k-1){
+            eliminate = false;
+            if(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_L){
+                reserved_memory_L = 2*(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
+                enlarge_fields_keep_data(reserved_memory_L);
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            } 
+            if(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_U){
+                reserved_memory_U = 2*(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
+                U.enlarge_fields_keep_data(reserved_memory_U);
+                // reformat(0,0,0,COLUMN);
+                // U.reformat(0,0,0,ROW);
+                // Dinv.resize_without_initialization(0);
+                // Anew.reformat(0,0,0,ROW);
+                // return false;
+            } 
+            n_Anew = IP.get_REQ_ZERO_SCHUR_SIZE();
+            Anew.reformat(n_Anew,n_Anew,0,ROW);
+            for(j=k+1;j<n;j++){
+                data[pointer[j]]=1.0;
+                indices[pointer[j]]=j;
+                pointer[j+1]=pointer[j]+1;
+                U.data[U.pointer[j]]=1.0;
+                Dinv[j]=1.0;
+                U.indices[U.pointer[j]]=j;
+                U.pointer[j+1]=U.pointer[j]+1;
+            }
+            break;
+        }  // end if
+    }  // (13.) end for k
+#ifdef VERBOSE
+    time_2 = clock();
+#endif
+    Real memory_L_allocated = memory();
+    Real memory_U_allocated = U.memory();
+    Real memory_Anew_allocated = Anew.memory();
+    compress();
+    U.compress();
+    if(eliminate) Anew.reformat(0,0,0,ROW); // if eliminated till end, then Anew is a 0x0 matrix.
+    else {
+        if(Anew.nnz>0){
+            Anew.compress();
+            // resort and shift indices to standard
+            for (i=0; i<Anew.rows(); i++)
+                for(j=Anew.pointer[i]; j<Anew.pointer[i+1]; j++)
+                    Anew.indices[j] -= last_row_to_eliminate+1;
+            Anew.normal_order();
+            Anew.number_columns=n_Anew; // originally, Anew has n columns
+        } else {
+            Anew.reformat(n_Anew,n_Anew,0,ROW);
+        }
+    }
+    if(IP.get_USE_POS_COMPRESS()){
+        positional_compress(IP,post_fact_threshold);
+        U.positional_compress(IP,post_fact_threshold);
+    }
+#ifdef VERBOSE
+    time_3=clock();
+    time_compress += (Real)(time_3-time_2)/(Real)CLOCKS_PER_SEC;
+#endif
+#ifdef VERBOSE
+    time_4=clock();
+    time_resort += (Real)(time_4-time_3)/(Real)CLOCKS_PER_SEC;
+    std::cout<<"    partialILUC-Times: "<<std::endl;
+    std::cout<<"        initialization:                           "<<time_init<<std::endl;
+    std::cout<<"        reading matrix:                           "<<time_read<<std::endl;
+    std::cout<<"        sparse zero set:                          "<<time_zeroset<<std::endl;
+    std::cout<<"        calculating L:                            "<<time_calc_L<<std::endl;
+    std::cout<<"        calculating U:                            "<<time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info L: "<<time_scu_L<<std::endl;
+    std::cout<<"        sorting, copying, updating access info U: "<<time_scu_U<<std::endl;
+    std::cout<<"        compressing:                              "<<time_compress<<std::endl;
+    std::cout<<"        resorting:                                "<<time_resort<<std::endl;
+    std::cout<<"      Total times:"<<std::endl;
+    std::cout<<"        calculations:                             "<<time_calc_L+time_calc_U<<std::endl;
+    std::cout<<"        sorting, copying, updating access info:   "<<time_scu_L+time_scu_U<<std::endl;
+    std::cout<<"        other administration:                     "<<time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Grand total                                 "<<time_calc_L+time_calc_U+time_scu_L+time_scu_U+time_init+time_read+time_zeroset+time_compress+time_resort<<std::endl;
+    std::cout<<"      Encountered "<<zero_pivots<<" zero pivots that were set to 1."<<std::endl;
+#endif
+    time_end=clock();
+    time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+    total_memory_allocated = w.memory() + z.memory() +  norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory() +
+        firstU.memory() + firstL.memory() + firstA.memory() + listA.memory() + headA.memory() + listU.memory() +
+        listL.memory() + list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
+        vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
+        Dinv.memory() + droppedL_data_memory + droppedL_colindex_memory;
+    total_memory_used = total_memory_allocated;
+    total_memory_allocated += memory_U_allocated + memory_L_allocated + memory_Anew_allocated;
+    total_memory_used +=  U.memory() + memory() + Anew.memory();
+#ifdef STATISTICS
+    // Statistics for A
+    matrix_sparse<T> Acol;
+    Acol.change_orientation_of_data(Arow);
+    sum1 = 0.0;   max_total=0; min_total=n;
+    average_total = Arow.row_density();
+    for(k=0;k<n;k++){
+        help =  Arow.pointer[k+1]-Arow.pointer[k];
+        if (max_total < help) max_total = help;
+        if (min_total > help) min_total = help;
+        sum1 += (help-average_total)*(help-average_total);
+    }
+    stand_dev_total = sqrt(sum1/n);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for A"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number: "<<average_total<<std::endl;
+    std::cout<<"       Minimum Number     in Row:    "<<min_total<<std::endl;
+    std::cout<<"       Maximum Number     in Row:    "<<max_total<<std::endl;
+    std::cout<<"       Standard Deviation in Row:    "<<stand_dev_total<<std::endl;
+    sum1 = 0.0;   max_total=0; min_total=n;
+    average_total = Acol.column_density();
+    for(k=0;k<n;k++){
+        help =  Acol.pointer[k+1]-Acol.pointer[k];
+        if(max_total < help) max_total = help;
+        if(min_total > help) min_total = help;
+        sum1 += (help-average_total)*(help-average_total);
+    }
+    stand_dev_total = sqrt(sum1/n);
+    std::cout<<"       Minimum Number     in Column: "<<min_total<<std::endl;
+    std::cout<<"       Maximum Number     in Column: "<<max_total<<std::endl;
+    std::cout<<"       Standard Deviation in Column: "<<stand_dev_total<<std::endl;
+    // Statistics for L
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(L_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
+        if(max_total < L_total.read(k)) max_total =L_total.read(k);
+        if(min_total > L_total.read(k)) min_total =L_total.read(k);
+        if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
+        if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
+        if(max_prop < prop) max_prop = prop;
+        if(min_prop > prop) min_prop = prop;
+        sum1 += L_total.read(k);
+        sum2 += L_kept.read(k);
+        sum3 += prop;
+    }
+    average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
+    average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
+    average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(L_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
+        sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
+        sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
+        sum3 += (prop-average_prop)*(prop-average_prop);
+    }
+    stand_dev_total = sqrt(sum1/last_row_to_eliminate);
+    stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
+    stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for L"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
+    std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
+    std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
+    std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
+    std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
+    std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
+    std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
+    std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
+    std::cout<<"   Relative Data: "<<std::endl;
+    std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
+    std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
+    // Statistics for U
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(U_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
+        if(max_total < U_total.read(k)) max_total =U_total.read(k);
+        if(min_total > U_total.read(k)) min_total =U_total.read(k);
+        if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
+        if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
+        if(max_prop < prop) max_prop = prop;
+        if(min_prop > prop) min_prop = prop;
+        sum1 += U_total.read(k);
+        sum2 += U_kept.read(k);
+        sum3 += prop;
+    }
+    average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
+    average_kept      = ((Real) sum2) / ((Real)last_row_to_eliminate);
+    average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
+    sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+    for(k=0;k<last_row_to_eliminate;k++){
+        if(U_total.read(k) == 0) prop = 1.0;
+        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
+        sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
+        sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
+        sum3 += (prop-average_prop)*(prop-average_prop);
+    }
+    stand_dev_total = sqrt(sum1/last_row_to_eliminate);
+    stand_dev_kept  = sqrt(sum2/last_row_to_eliminate);
+    stand_dev_prop  = sqrt(sum3/last_row_to_eliminate);
+    std::cout<<std::endl;
+    std::cout<<"Statistical Data for U"<<std::endl<<std::endl;
+    std::cout<<"   Absolute Data: "<<std::endl;
+    std::cout<<"       Average Number     before dropping: "<<average_total<<std::endl;
+    std::cout<<"       Average Number     after  dropping: "<<average_kept<<std::endl;
+    std::cout<<"       Minimum Number     before dropping: "<<min_total<<std::endl;
+    std::cout<<"       Minimum Number     after  dropping: "<<min_kept<<std::endl;
+    std::cout<<"       Maximum Number     before dropping: "<<max_total<<std::endl;
+    std::cout<<"       Maximum Number     after  dropping: "<<max_kept<<std::endl;
+    std::cout<<"       Standard Deviation before dropping: "<<stand_dev_total<<std::endl;
+    std::cout<<"       Standard Deviation after  dropping: "<<stand_dev_kept<<std::endl;
+    std::cout<<"   Relative Data: "<<std::endl;
+    std::cout<<"       Average            Proportion kept:            "<<average_prop<<std::endl;
+    std::cout<<"       Standard Deviation Proportion kept:            "<<stand_dev_prop<<std::endl;
 
-      #endif
-      return true;
-  }  // end try
-  catch(std::bad_alloc){
-      std::cerr<<"sparse_matrix::partialILUC:  Error allocating memory. Returning 0x0 matrices."<<std::endl<<std::flush;
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      Dinv.resize_without_initialization(0);
-      Anew.reformat(0,0,0,ROW);
-      return false;
-  }
-  catch(iluplusplus_error ippe){
-      std::cerr<<"sparse_matrix::partialILUC: "<<ippe.error_message()<<" Returning 0x0 matrices."<<std::endl<<std::flush;
-      reformat(0,0,0,COLUMN);
-      U.reformat(0,0,0,ROW);
-      Dinv.resize_without_initialization(0);
-      Anew.reformat(0,0,0,ROW);
-      return false;
-  }
+#endif
+    return true;
 }
 
 
@@ -9289,121 +8322,105 @@ template<class T> bool matrix_sparse<T>::preprocessed_partialILUCDP(const iluplu
           index_list& permutation_rows, index_list& permutation_columns, index_list& inverse_permutation_rows, index_list& inverse_permutation_columns, vector_dense<T>& D_l, vector_dense<T>& D_r,
           Integer max_fill_in, Real threshold, Real perm_tol, Integer& zero_pivots, Real& setup_time, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used)
               {
-                try {
-                    bool use_ILUC;
-                    if( (IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))  && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) ) && IP.get_perm_tol() > 500.0) use_ILUC = true;
-                    else use_ILUC = false;
-                    clock_t time_1,time_2;
-                    time_1 = clock();
-                    matrix_sparse<T> Arow2,Acol;
-                    bool factorization_exists;
-                    index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
-                    Real partial_setup_time;
-                    setup_time = 0.0;
-                    Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
-                    if(A.orient() == ROW){
-                        end_PQ = Arow2.preprocess(A,IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
-                    } else {
-                        Arow2.change_orientation_of_data(A);
-                        end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
-                    }
-                    if (force_finish) {
-                       last_row_to_eliminate = Arow2.rows()-1;
-                    } else {
-                        if (IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = end_PQ-1;
-                        else last_row_to_eliminate = (Arow2.rows()-1)/2;
-                    }
-                    switch (IP.get_PERMUTE_ROWS()) {
-                        case 0:  bpr = 0; epr = 0; break;
-                        case 1:  if(IP.get_EXTERNAL_FINAL_ROW() && (!force_finish)){bpr = 0; epr = 0;} else {bpr = end_PQ; epr = Arow2.rows()-1;} break;
-                        case 2:  if(force_finish){bpr = 0; epr = Arow2.rows()-1;} else {bpr = 0; epr = last_row_to_eliminate;} break;
-                        case 3:  bpr = 0; epr = Arow2.rows()-1; break;
-                        default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for PERMUTE_ROWS!"<<std::endl; 
-                                 reformat(0,0,0,COLUMN);
-                                 U.reformat(0,0,0,ROW);
-                                 Dinv.resize_without_initialization(0);
-                                 D_l.resize_without_initialization(0);
-                                 D_r.resize_without_initialization(0);
-                                 Acoarse.reformat(0,0,0,ROW);
-                                 permutation_rows.resize(0);
-                                 permutation_columns.resize(0);
-                                 inverse_permutation_rows.resize(0);
-                                 inverse_permutation_columns.resize(0);
-                                 return false;
-                    }
-                    switch (IP.get_TOTAL_PIV()) {
-                        case 0:  bp = Acol.rows(); break;
-                        case 1:  if(force_finish){bp = end_PQ;} else {bp = last_row_to_eliminate+1;} break;
-                        case 2:  bp = 0;  break;
-                        default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for TOTAL_PIV!"<<std::endl;
-                                 reformat(0,0,0,COLUMN);
-                                 U.reformat(0,0,0,ROW);
-                                 Dinv.resize_without_initialization(0);
-                                 D_l.resize_without_initialization(0);
-                                 D_r.resize_without_initialization(0);
-                                 Acoarse.reformat(0,0,0,ROW);
-                                 permutation_rows.resize(0);
-                                 permutation_columns.resize(0);
-                                 inverse_permutation_rows.resize(0);
-                                 inverse_permutation_columns.resize(0);
-                                 return false;
-                    }
-                    #ifdef INFO
-                        std::cout<<std::endl;
-                        std::cout<<"  ** matrix statistics:"<<std::endl;
-                        std::cout<<"     n                      = "<<Arow2.rows()<<std::endl;
-                        std::cout<<"     nnz                    = "<<Arow2.actual_non_zeroes()<<std::endl;
-                        std::cout<<"     density                = "<<Arow2.row_density()<<std::endl;
-                        std::cout<<"  ** factorization parameters:"<<std::endl;
-                        std::cout<<"     max. numb. nnz/row p   = "<<max_fill_in<<std::endl;
-                        std::cout<<"     tau                    = "<<threshold<<std::endl;
-                        std::cout<<"     perm tolerance         = "<<perm_tol<<std::endl;
-                        std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
-                        std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
-                        if(IP.get_EXTERNAL_FINAL_ROW())
-                        std::cout<<"     last row to eliminate  = "<<last_row_to_eliminate;
-                        else
-                        std::cout<<"     last row to eliminate decided by factorization."<<std::endl;
-                        std::cout<<std::endl;
-                    #endif
-                    if (use_ILUC){
-                        factorization_exists = partialILUC(Arow2,Acoarse,IP,force_finish,U,Dinv,last_row_to_eliminate,threshold,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
-                    } else {
-                        Acol.change_orientation_of_data(Arow2);
-                        factorization_exists = partialILUCDP(Arow2,Acol,Acoarse,IP,force_finish,U,Dinv,pc2,pr2,ipc2,ipr2,last_row_to_eliminate,threshold,bp,bpr,epr,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
-                    }
-                    if(!factorization_exists) return false;
-                    #ifdef INFO
-                        std::cout<<"     zero-pivots            = "<<zero_pivots<<std::endl;
-                        std::cout<<"     local fill-in          = "<<((Real)(actual_non_zeroes()+U.actual_non_zeroes())- (Real) Acol.rows() )/((Real)Acol.actual_non_zeroes())<<std::endl;
-                    #endif
-                    if(use_ILUC){
-                        permutation_columns=pc1;
-                        permutation_rows=pr1;
-                    } else {
-                        permutation_columns.compose(pc1,pc2);
-                        permutation_rows.compose(pr1,pr2);
-                    }
-                    inverse_permutation_columns.invert(permutation_columns);
-                    inverse_permutation_rows.invert(permutation_rows);
-                    time_2 = clock();
-                    setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-                    return true;
-                }
-                catch(iluplusplus_error ippe){
-                    std::cerr<<"sparse_matrix::preprocessed_partialILUCDP: "<<ippe.error_message()<<" Returning 0x0 matrices."<<std::endl<<std::flush;
-                    reformat(0,0,0,COLUMN);
-                    U.reformat(0,0,0,ROW);
-                    Dinv.resize_without_initialization(0);
-                    D_l.resize_without_initialization(0);
-                    D_r.resize_without_initialization(0);
-                    Acoarse.reformat(0,0,0,ROW);
-                    permutation_rows.resize(0);
-                    permutation_columns.resize(0);
-                    inverse_permutation_rows.resize(0);
-                    inverse_permutation_columns.resize(0);
-                    return false;
-                }
+                  bool use_ILUC;
+                  if( (IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))  && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) ) && IP.get_perm_tol() > 500.0) use_ILUC = true;
+                  else use_ILUC = false;
+                  clock_t time_1,time_2;
+                  time_1 = clock();
+                  matrix_sparse<T> Arow2,Acol;
+                  bool factorization_exists;
+                  index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
+                  Real partial_setup_time;
+                  setup_time = 0.0;
+                  Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
+                  if(A.orient() == ROW){
+                      end_PQ = Arow2.preprocess(A,IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
+                  } else {
+                      Arow2.change_orientation_of_data(A);
+                      end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
+                  }
+                  if (force_finish) {
+                      last_row_to_eliminate = Arow2.rows()-1;
+                  } else {
+                      if (IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = end_PQ-1;
+                      else last_row_to_eliminate = (Arow2.rows()-1)/2;
+                  }
+                  switch (IP.get_PERMUTE_ROWS()) {
+                      case 0:  bpr = 0; epr = 0; break;
+                      case 1:  if(IP.get_EXTERNAL_FINAL_ROW() && (!force_finish)){bpr = 0; epr = 0;} else {bpr = end_PQ; epr = Arow2.rows()-1;} break;
+                      case 2:  if(force_finish){bpr = 0; epr = Arow2.rows()-1;} else {bpr = 0; epr = last_row_to_eliminate;} break;
+                      case 3:  bpr = 0; epr = Arow2.rows()-1; break;
+                      default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for PERMUTE_ROWS!"<<std::endl; 
+                               reformat(0,0,0,COLUMN);
+                               U.reformat(0,0,0,ROW);
+                               Dinv.resize_without_initialization(0);
+                               D_l.resize_without_initialization(0);
+                               D_r.resize_without_initialization(0);
+                               Acoarse.reformat(0,0,0,ROW);
+                               permutation_rows.resize(0);
+                               permutation_columns.resize(0);
+                               inverse_permutation_rows.resize(0);
+                               inverse_permutation_columns.resize(0);
+                               return false;
+                  }
+                  switch (IP.get_TOTAL_PIV()) {
+                      case 0:  bp = Acol.rows(); break;
+                      case 1:  if(force_finish){bp = end_PQ;} else {bp = last_row_to_eliminate+1;} break;
+                      case 2:  bp = 0;  break;
+                      default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for TOTAL_PIV!"<<std::endl;
+                               reformat(0,0,0,COLUMN);
+                               U.reformat(0,0,0,ROW);
+                               Dinv.resize_without_initialization(0);
+                               D_l.resize_without_initialization(0);
+                               D_r.resize_without_initialization(0);
+                               Acoarse.reformat(0,0,0,ROW);
+                               permutation_rows.resize(0);
+                               permutation_columns.resize(0);
+                               inverse_permutation_rows.resize(0);
+                               inverse_permutation_columns.resize(0);
+                               return false;
+                  }
+#ifdef INFO
+                  std::cout<<std::endl;
+                  std::cout<<"  ** matrix statistics:"<<std::endl;
+                  std::cout<<"     n                      = "<<Arow2.rows()<<std::endl;
+                  std::cout<<"     nnz                    = "<<Arow2.actual_non_zeroes()<<std::endl;
+                  std::cout<<"     density                = "<<Arow2.row_density()<<std::endl;
+                  std::cout<<"  ** factorization parameters:"<<std::endl;
+                  std::cout<<"     max. numb. nnz/row p   = "<<max_fill_in<<std::endl;
+                  std::cout<<"     tau                    = "<<threshold<<std::endl;
+                  std::cout<<"     perm tolerance         = "<<perm_tol<<std::endl;
+                  std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
+                  std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
+                  if(IP.get_EXTERNAL_FINAL_ROW())
+                      std::cout<<"     last row to eliminate  = "<<last_row_to_eliminate;
+                  else
+                      std::cout<<"     last row to eliminate decided by factorization."<<std::endl;
+                  std::cout<<std::endl;
+#endif
+                  if (use_ILUC){
+                      factorization_exists = partialILUC(Arow2,Acoarse,IP,force_finish,U,Dinv,last_row_to_eliminate,threshold,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
+                  } else {
+                      Acol.change_orientation_of_data(Arow2);
+                      factorization_exists = partialILUCDP(Arow2,Acol,Acoarse,IP,force_finish,U,Dinv,pc2,pr2,ipc2,ipr2,last_row_to_eliminate,threshold,bp,bpr,epr,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
+                  }
+                  if(!factorization_exists) return false;
+#ifdef INFO
+                  std::cout<<"     zero-pivots            = "<<zero_pivots<<std::endl;
+                  std::cout<<"     local fill-in          = "<<((Real)(actual_non_zeroes()+U.actual_non_zeroes())- (Real) Acol.rows() )/((Real)Acol.actual_non_zeroes())<<std::endl;
+#endif
+                  if(use_ILUC){
+                      permutation_columns=pc1;
+                      permutation_rows=pr1;
+                  } else {
+                      permutation_columns.compose(pc1,pc2);
+                      permutation_rows.compose(pr1,pr2);
+                  }
+                  inverse_permutation_columns.invert(permutation_columns);
+                  inverse_permutation_rows.invert(permutation_rows);
+                  time_2 = clock();
+                  setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+                  return true;
 }
 
 
@@ -9940,64 +8957,34 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
 #ifdef ILUPLUSPLUS_USES_SPARSPAK
 
 template<class T> void matrix_sparse<T>::rcm(){
-  try {
     matrix_sparse<T> A;
     A.rcm(*this);
     copy_and_destroy(A);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::rcm: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
  }
 
 template<class T> void matrix_sparse<T>::rcm(const matrix_sparse<T>& A){
-  try {
     index_list P;
     RCM<T>(A,P);
     permute(A,P,P);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::rcm: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
  }
 
 template<class T> void matrix_sparse<T>::rcm(index_list& P) const {
-  try {
     RCM<T>(*this,P);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::rcm: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::rcm(index_list& P, Integer b, Integer e) const {
-  try {
     RCM<T>(*this,P,b,e);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::rcm: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 #endif
 
 template<class T> Integer matrix_sparse<T>::choose_ddPQ(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q) const {
-  try {
     switch(IP.get_PQ_ALGORITHM()){
         case 0:   return ddPQ(P,Q,IP.get_PQ_THRESHOLD());        // standard greedy PQ;
         case 1:   return ddPQ_dyn_av(P,Q,IP.get_PQ_THRESHOLD()); // dynamic averaging;
         case 3:   return symm_ddPQ_dyn_av(P,Q,IP.get_PQ_THRESHOLD()); // symmetrized dynamic averaging;
         default:  return ddPQ(P,Q,IP.get_PQ_THRESHOLD());        // standard greedy PQ;
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::choose_ddPQ: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
@@ -10063,250 +9050,231 @@ template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, R
 
 
 template<class T> Integer matrix_sparse<T>::ddPQ_dyn_av(index_list& P, index_list& Q, Real tau) const {
-  try {
-      if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer i,j,k,count,Qcount,pos;
-      Integer n = columns();
-      Real current_max;
-      Real divisor = 0.0;
-      index_list I(n);
-      index_list J(n);
-      vector_dense<Real> W(n);
-      vector_dense<Integer> pos_dom_element(n);
-      P.resize_with_constant_value(n,-1);
-      Q.resize_with_constant_value(n,-1);
-      Real rho,h;
-      Integer nz;
-      // preselection
-       for(i=0;i<n;i++){
-          current_max = W.set(i) = 0.0;
-          J.set(i) = 0;
-          for(j=pointer[i];j<pointer[i+1];j++){
-              W.set(i) += fabs(data[j]);
-              if (fabs(data[j])> current_max){
-                  current_max = fabs(data[j]);
-                  J.set(i) = indices[j];
-                  pos_dom_element.set(i) = j;
-              }
-          }
-          divisor = W.get(i)*(pointer[i+1]-pointer[i]);
-          //divisor = W.get(i);
-          if(equal_to_zero(divisor)) W.set(i)=0.0;
-          else W.set(i) = -current_max /divisor;
-      }
-      W.quicksort(I,0,n-1);
-      J = J.permute(I); 
-      count = -1;
-      for (i=0;i<n;i++){
-          if ((P.get(I.get(i)) == -1) && (Q.get(J.get(i)) == -1) && (-W.get(i) >= tau)) {
-              rho=fabs(data[pos_dom_element.get(I.get(i))]);
-              nz = pointer[I.get(i)+1]-pointer[I.get(i)]-1;
-              for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
-                  if(Q.get(indices[k])>=0 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to  SB
-                      rho -= fabs(data[k]);
-                      nz--;
-                  }
-                  if(Q.get(indices[k])== -2 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to SF
-                      nz--;
-                  }
-              }
-              if(rho<0) continue;
-              count++;
-              P.set(I.get(i)) = count;
-              Q.set(J.get(i)) = count;
-              for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
-                  if(Q.get(indices[k])== -1 && k != pos_dom_element.get(I.get(i))){
-                      h = fabs(data[ pos_dom_element.get(I.get(i))]);
-                      if(nz*h>rho) Q.set(indices[k])= -2;
-                      else rho -= h;
-                  }
-                  nz--;
-              }
-          }
-      }
-      // complete arbitarily
-      pos = Qcount = count;
-      for (i=0;i<n;i++){
-          if(P.get(i)<0){
-              count++;
-              P.set(i) = count;
-          }
-      }
-      for (i=0;i<n;i++){
-          if(Q.get(i)<0){
-              Qcount++;
-              Q.set(i) = Qcount;
-          }
-      }
-      return pos+1;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::ddPQ_dyn_av: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer i,j,k,count,Qcount,pos;
+    Integer n = columns();
+    Real current_max;
+    Real divisor = 0.0;
+    index_list I(n);
+    index_list J(n);
+    vector_dense<Real> W(n);
+    vector_dense<Integer> pos_dom_element(n);
+    P.resize_with_constant_value(n,-1);
+    Q.resize_with_constant_value(n,-1);
+    Real rho,h;
+    Integer nz;
+    // preselection
+    for(i=0;i<n;i++){
+        current_max = W.set(i) = 0.0;
+        J.set(i) = 0;
+        for(j=pointer[i];j<pointer[i+1];j++){
+            W.set(i) += fabs(data[j]);
+            if (fabs(data[j])> current_max){
+                current_max = fabs(data[j]);
+                J.set(i) = indices[j];
+                pos_dom_element.set(i) = j;
+            }
+        }
+        divisor = W.get(i)*(pointer[i+1]-pointer[i]);
+        //divisor = W.get(i);
+        if(equal_to_zero(divisor)) W.set(i)=0.0;
+        else W.set(i) = -current_max /divisor;
+    }
+    W.quicksort(I,0,n-1);
+    J = J.permute(I); 
+    count = -1;
+    for (i=0;i<n;i++){
+        if ((P.get(I.get(i)) == -1) && (Q.get(J.get(i)) == -1) && (-W.get(i) >= tau)) {
+            rho=fabs(data[pos_dom_element.get(I.get(i))]);
+            nz = pointer[I.get(i)+1]-pointer[I.get(i)]-1;
+            for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
+                if(Q.get(indices[k])>=0 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to  SB
+                    rho -= fabs(data[k]);
+                    nz--;
+                }
+                if(Q.get(indices[k])== -2 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to SF
+                    nz--;
+                }
+            }
+            if(rho<0) continue;
+            count++;
+            P.set(I.get(i)) = count;
+            Q.set(J.get(i)) = count;
+            for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
+                if(Q.get(indices[k])== -1 && k != pos_dom_element.get(I.get(i))){
+                    h = fabs(data[ pos_dom_element.get(I.get(i))]);
+                    if(nz*h>rho) Q.set(indices[k])= -2;
+                    else rho -= h;
+                }
+                nz--;
+            }
+        }
+    }
+    // complete arbitarily
+    pos = Qcount = count;
+    for (i=0;i<n;i++){
+        if(P.get(i)<0){
+            count++;
+            P.set(i) = count;
+        }
+    }
+    for (i=0;i<n;i++){
+        if(Q.get(i)<0){
+            Qcount++;
+            Q.set(i) = Qcount;
+        }
+    }
+    return pos+1;
 }
 
 
 template<class T> Integer matrix_sparse<T>::symm_ddPQ_dyn_av(index_list& P, index_list& Q, Real tau) const {
-  try {
-      if(non_fatal_error(!square_check(),"matrix_sparse::symm_ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      #ifdef DEBUG
-          if(non_fatal_error(!test_I_matrix(),"matrix_sparse::symm_ddPQ_dyn_av: argument must be an I-matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      #endif
-      Integer i,j,k,count,Qcount,pos;
-      Integer n = columns();
-      Real current_max;
-      Real divisor = 0.0;
-      index_list I(n);
-      index_list J(n);
-      vector_dense<Real> W(n);
-      vector_dense<Integer> pos_dom_element(n);
-      P.resize_with_constant_value(n,-1);
-      Q.resize_with_constant_value(n,-1);
-      Real rho,h;
-      Integer nz;
-      // preselection
-       for(i=0;i<n;i++){
-          current_max = W.set(i) = 0.0;
-          J.set(i) = 0;
-          for(j=pointer[i];j<pointer[i+1];j++){
-              W.set(i) += fabs(data[j]);
-              if (indices[j]==i){
-                  J.set(i) = indices[j];
-                  pos_dom_element.set(i) = j;
-              }
-          }
-          divisor = W.get(i)*(pointer[i+1]-pointer[i]);
-          //divisor = W.get(i);
-          if(equal_to_zero(divisor)) W.set(i)=0.0;
-          else W.set(i) = -current_max /divisor;
-      }
-      W.quicksort(I,0,n-1);
-      J = J.permute(I); 
-      count = -1;
-      for (i=0;i<n;i++){
-          if ((P.get(I.get(i)) == -1) && (Q.get(J.get(i)) == -1) && (-W.get(i) >= tau)) {
-              rho=fabs(data[pos_dom_element.get(I.get(i))]);
-              nz = pointer[I.get(i)+1]-pointer[I.get(i)]-1;
-              for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
-                  if(Q.get(indices[k])>=0 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to  SB
-                      rho -= fabs(data[k]);
-                      nz--;
-                  }
-                  if(Q.get(indices[k])== -2 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to SF
-                      nz--;
-                  }
-              }
-              if(rho<0) continue;
-              count++;
-              P.set(I.get(i)) = count;
-              Q.set(J.get(i)) = count;
-              for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
-                  if(Q.get(indices[k])== -1 && k != pos_dom_element.get(I.get(i))){
-                      h = fabs(data[ pos_dom_element.get(I.get(i))]);
-                      if(nz*h>rho) Q.set(indices[k])= -2;
-                      else rho -= h;
-                  }
-                  nz--;
-              }
-          }
-      }
-      // complete arbitarily
-      pos = Qcount = count;
-      for (i=0;i<n;i++){
-          if(P.get(i)<0){
-              count++;
-              P.set(i) = count;
-          }
-      }
-      for (i=0;i<n;i++){
-          if(Q.get(i)<0){
-              Qcount++;
-              Q.set(i) = Qcount;
-          }
-      }
-      return pos+1;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symm_ddPQ_dyn_av: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if(non_fatal_error(!square_check(),"matrix_sparse::symm_ddPQ_dyn_av: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#ifdef DEBUG
+    if(non_fatal_error(!test_I_matrix(),"matrix_sparse::symm_ddPQ_dyn_av: argument must be an I-matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    Integer i,j,k,count,Qcount,pos;
+    Integer n = columns();
+    Real current_max;
+    Real divisor = 0.0;
+    index_list I(n);
+    index_list J(n);
+    vector_dense<Real> W(n);
+    vector_dense<Integer> pos_dom_element(n);
+    P.resize_with_constant_value(n,-1);
+    Q.resize_with_constant_value(n,-1);
+    Real rho,h;
+    Integer nz;
+    // preselection
+    for(i=0;i<n;i++){
+        current_max = W.set(i) = 0.0;
+        J.set(i) = 0;
+        for(j=pointer[i];j<pointer[i+1];j++){
+            W.set(i) += fabs(data[j]);
+            if (indices[j]==i){
+                J.set(i) = indices[j];
+                pos_dom_element.set(i) = j;
+            }
+        }
+        divisor = W.get(i)*(pointer[i+1]-pointer[i]);
+        //divisor = W.get(i);
+        if(equal_to_zero(divisor)) W.set(i)=0.0;
+        else W.set(i) = -current_max /divisor;
+    }
+    W.quicksort(I,0,n-1);
+    J = J.permute(I); 
+    count = -1;
+    for (i=0;i<n;i++){
+        if ((P.get(I.get(i)) == -1) && (Q.get(J.get(i)) == -1) && (-W.get(i) >= tau)) {
+            rho=fabs(data[pos_dom_element.get(I.get(i))]);
+            nz = pointer[I.get(i)+1]-pointer[I.get(i)]-1;
+            for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
+                if(Q.get(indices[k])>=0 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to  SB
+                    rho -= fabs(data[k]);
+                    nz--;
+                }
+                if(Q.get(indices[k])== -2 && k != pos_dom_element.get(I.get(i))) { // indices[k] belongs to SF
+                    nz--;
+                }
+            }
+            if(rho<0) continue;
+            count++;
+            P.set(I.get(i)) = count;
+            Q.set(J.get(i)) = count;
+            for (k=pointer[I.get(i)];k<pointer[I.get(i)+1];k++){
+                if(Q.get(indices[k])== -1 && k != pos_dom_element.get(I.get(i))){
+                    h = fabs(data[ pos_dom_element.get(I.get(i))]);
+                    if(nz*h>rho) Q.set(indices[k])= -2;
+                    else rho -= h;
+                }
+                nz--;
+            }
+        }
+    }
+    // complete arbitarily
+    pos = Qcount = count;
+    for (i=0;i<n;i++){
+        if(P.get(i)<0){
+            count++;
+            P.set(i) = count;
+        }
+    }
+    for (i=0;i<n;i++){
+        if(Q.get(i)<0){
+            Qcount++;
+            Q.set(i) = Qcount;
+        }
+    }
+    return pos+1;
 }
 
 
 
 template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Integer from, Integer to, Real tau) const {
-  try {
-      // selects only from "from" to "to", including "from", excluding "to"
-      if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer j,k,nz,count,Qcount;
-      Integer n = columns();
-      Real current_max;
-      Real t;
-      Integer pos;
-      index_list I(n);
-      index_list J(n);
-      vector_dense<Real> W(n);
-      P.resize_with_constant_value(n,-1);
-      Q.resize_with_constant_value(n,-1);
-      for(k=from;k<to;k++){
-          current_max = W.set(k) = 0.0;
-          J.set(k) = 0;
-          nz = 0;
-          for(j=pointer[k];j<pointer[k+1];j++){
-              if(indices[j]>=from && indices[j]<to){
-                  nz++;
-                  W.set(k) += fabs(data[j]);
-                  if (fabs(data[j])> current_max){
-                      current_max = fabs(data[j]);
-                      J.set(k) = indices[j];
-                  }
-              } // end if
-          } // end for j
-          t = W.get(k)*nz;
-          // t = W.get(k);
-          if (equal_to_zero(t))  W.set(k) = 0.0;
-          else  W.set(k) = -current_max/t;
-      }
-      W.quicksort(I,from,to-1);
-      J = J.permute(I); 
-      count = from-1;
-      for (k=from;k<to;k++){
-          if ((P.get(I.get(k)) == -1) && (Q.get(J.get(k)) == -1) && (W.get(k) >= tau)) {
-              count++;
-              P.set(I.get(k)) = count;
-              Q.set(J.get(k)) = count;
-          }
-      }
-      pos = Qcount = count;
-      for (k=from;k<to;k++){
-          if(P.get(k)<0){
-              count++;
-              P.set(k) = count;
-          }
-      }
-      for (k=from;k<to;k++){
-          if(Q.get(k)<0){
-              Qcount++;
-              Q.set(k) = Qcount;
-          }
-      }
-      for(k=0;k<from;k++) P.set(k)=k;
-      for(k=0;k<from;k++) Q.set(k)=k;
-      for(k=to;k<n;k++) P.set(k)=k;
-      for(k=to;k<n;k++) Q.set(k)=k;
-      return pos+1; // returns first index which was not selected by weights, i.e. first non-treated index
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    // selects only from "from" to "to", including "from", excluding "to"
+    if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer j,k,nz,count,Qcount;
+    Integer n = columns();
+    Real current_max;
+    Real t;
+    Integer pos;
+    index_list I(n);
+    index_list J(n);
+    vector_dense<Real> W(n);
+    P.resize_with_constant_value(n,-1);
+    Q.resize_with_constant_value(n,-1);
+    for(k=from;k<to;k++){
+        current_max = W.set(k) = 0.0;
+        J.set(k) = 0;
+        nz = 0;
+        for(j=pointer[k];j<pointer[k+1];j++){
+            if(indices[j]>=from && indices[j]<to){
+                nz++;
+                W.set(k) += fabs(data[j]);
+                if (fabs(data[j])> current_max){
+                    current_max = fabs(data[j]);
+                    J.set(k) = indices[j];
+                }
+            } // end if
+        } // end for j
+        t = W.get(k)*nz;
+        // t = W.get(k);
+        if (equal_to_zero(t))  W.set(k) = 0.0;
+        else  W.set(k) = -current_max/t;
+    }
+    W.quicksort(I,from,to-1);
+    J = J.permute(I); 
+    count = from-1;
+    for (k=from;k<to;k++){
+        if ((P.get(I.get(k)) == -1) && (Q.get(J.get(k)) == -1) && (W.get(k) >= tau)) {
+            count++;
+            P.set(I.get(k)) = count;
+            Q.set(J.get(k)) = count;
+        }
+    }
+    pos = Qcount = count;
+    for (k=from;k<to;k++){
+        if(P.get(k)<0){
+            count++;
+            P.set(k) = count;
+        }
+    }
+    for (k=from;k<to;k++){
+        if(Q.get(k)<0){
+            Qcount++;
+            Q.set(k) = Qcount;
+        }
+    }
+    for(k=0;k<from;k++) P.set(k)=k;
+    for(k=0;k<from;k++) Q.set(k)=k;
+    for(k=to;k<n;k++) P.set(k)=k;
+    for(k=to;k<n;k++) Q.set(k)=k;
+    return pos+1; // returns first index which was not selected by weights, i.e. first non-treated index
 }
 
 
 
 template<class T> void matrix_sparse<T>::symmetric_move_to_corner(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10314,23 +9282,17 @@ template<class T> void matrix_sparse<T>::symmetric_move_to_corner(index_list& P)
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
-                w.set(i) += fabs(data[j]);
-                w.set(indices[j])+= fabs(data[j]);
+            w.set(i) += fabs(data[j]);
+            w.set(indices[j])+= fabs(data[j]);
             //}
         }
     }
     P.resize(n);
     P.init();
     w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::weighted_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10339,9 +9301,9 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner(index
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
-                w.set(i) += fabs(data[j]);
-                w.set(indices[j])+= fabs(data[j]);
-                counter.set(indices[j]) += 1.0;
+            w.set(i) += fabs(data[j]);
+            w.set(indices[j])+= fabs(data[j]);
+            counter.set(indices[j]) += 1.0;
             //}
         }
     }
@@ -10349,16 +9311,10 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner(index
     P.resize(n);
     P.init();
     w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::weighted_symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::weighted2_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10368,9 +9324,9 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner(inde
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
-                w.set(i) += fabs(data[j]);
-                colsum.set(indices[j])+= fabs(data[j]);
-                colcounter.set(indices[j]) += 1.0;
+            w.set(i) += fabs(data[j]);
+            colsum.set(indices[j])+= fabs(data[j]);
+            colcounter.set(indices[j]) += 1.0;
             //}
         }
     }
@@ -10378,39 +9334,27 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner(inde
     P.resize(n);
     P.init();
     w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::weighted2_symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 // symmetric PQ (P=Q) for I-matrices
 template<class T> void matrix_sparse<T>::sym_ddPQ(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symm_ddPQ: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
     vector_dense<Real> w(n);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
-                w.set(i) += fabs(data[j]);
+            w.set(i) += fabs(data[j]);
         }
     }
     for (i=0;i<n;i++) w.set(i) *= pointer[i+1]-pointer[i];
     P.resize(n);
     P.init();
     w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::sym_ddPQ: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10431,16 +9375,10 @@ template<class T> void matrix_sparse<T>::symmetric_move_to_corner_improved(index
             if(unused.get(A.indices[j])) w.add(A.indices[j],fabs(A.data[j]));
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symmetric_move_to_corner_improved: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::diagonally_dominant_symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::diagonally_dominant_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j,current_index,counter=0;
@@ -10506,15 +9444,9 @@ template<class T> void matrix_sparse<T>::diagonally_dominant_symmetric_move_to_c
             if(unused.get(A.indices[j])==-1) w.add(A.indices[j],fabs(A.data[j]));
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::diagonally_dominant_symmetric_move_to_corner_improved: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10537,16 +9469,10 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner_impro
             if(unused.get(A.indices[j])) w.add(A.indices[j],counter.get(indices[j])*fabs(A.data[j]));
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10571,15 +9497,9 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner_impr
             if(unused.get(A.indices[j])) w.add(A.indices[j],counterrows.get(indices[j])*fabs(A.data[j]));
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::weighted2_symmetric_move_to_corner_improved: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j,posA;
@@ -10600,16 +9520,10 @@ template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner_improved(in
             if ( unused.get(indices[j]) &&  (A.indices[posA] == indices[j]) )   w.add(indices[j],fabs(data[j])*fabs(A.data[posA]));
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::sp_symmetric_move_to_corner_improved: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner_improved(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10630,66 +9544,49 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner_improved(
             if(unused.get(A.indices[j])) w.add(A.indices[j],1.0);
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner(index_list& P) const {
- try {
-      if(non_fatal_error(rows()!=columns(),"matrix_sparse::sp_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer n = rows();
-      Integer j,k,h;
-      vector_dense<Real> w(n);
-      vector_sparse_dynamic<T> x(n);
-      vector_sparse_dynamic<T> y(n);
-      array<Integer> firstA(n);
-      array<Integer> listA(n);
-      array<Integer> headA(n);
-      initialize_sparse_matrix_fields(n,pointer,indices,listA,headA,firstA);
-      for(k=0;k<n;k++){
-          //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = fabs(data[j]);
-          //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = data[j];
-          for(j=pointer[k];j<pointer[k+1];j++) if (data[j] != 0.0) x[indices[j]] = 1.0;
-          h=headA[k];
-          while(h!=-1){
-              //y[h]=data[firstA[h]];
-              //y[h]=fabs(data[firstA[h]]);
-              if (data[firstA[h]] != (T) 0) y[h] = 1.0;
-              h=listA[h];
-          }
-          update_sparse_matrix_fields(k,pointer,indices,listA,headA,firstA);
-          // not very good without absolute value in vectors //w.set(k) = (x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
-          // not very good // w.set(k) = x.scalar_product_pos_factors(y); // scalar product (positive factors are bad)
-          w.set(k) = real(x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
-          x.zero_reset();
-          y.zero_reset();
-      } 
-      P.resize(n);
-      P.init();
-      w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::sp_symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if(non_fatal_error(rows()!=columns(),"matrix_sparse::sp_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n = rows();
+    Integer j,k,h;
+    vector_dense<Real> w(n);
+    vector_sparse_dynamic<T> x(n);
+    vector_sparse_dynamic<T> y(n);
+    array<Integer> firstA(n);
+    array<Integer> listA(n);
+    array<Integer> headA(n);
+    initialize_sparse_matrix_fields(n,pointer,indices,listA,headA,firstA);
+    for(k=0;k<n;k++){
+        //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = fabs(data[j]);
+        //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = data[j];
+        for(j=pointer[k];j<pointer[k+1];j++) if (data[j] != 0.0) x[indices[j]] = 1.0;
+        h=headA[k];
+        while(h!=-1){
+            //y[h]=data[firstA[h]];
+            //y[h]=fabs(data[firstA[h]]);
+            if (data[firstA[h]] != (T) 0) y[h] = 1.0;
+            h=listA[h];
+        }
+        update_sparse_matrix_fields(k,pointer,indices,listA,headA,firstA);
+        // not very good without absolute value in vectors //w.set(k) = (x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
+        // not very good // w.set(k) = x.scalar_product_pos_factors(y); // scalar product (positive factors are bad)
+        w.set(k) = real(x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
+        x.zero_reset();
+        y.zero_reset();
+    } 
+    P.resize(n);
+    P.init();
+    w.quicksort(P,0,n-1);
 }
 
 template<class T> void matrix_sparse<T>::unit_or_zero_diagonal(vector_dense<T>& D1) const {
-  try {
-      D1.resize(dim_along_orientation(),1.0);
-      for(Integer k=0; k<pointer_size-1; k++)
-          for(Integer j=pointer[k]; j<pointer[k+1]; j++)
-              if(indices[j]==k && data[j] != (T) 0.0) D1.set(k)= data[j];   // data[j]/fabs(data[j]);
+    D1.resize(dim_along_orientation(),1.0);
+    for(Integer k=0; k<pointer_size-1; k++)
+        for(Integer j=pointer[k]; j<pointer[k+1]; j++)
+            if(indices[j]==k && data[j] != (T) 0.0) D1.set(k)= data[j];   // data[j]/fabs(data[j]);
 
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::unit_or_zero_diagonal: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 /*
@@ -10709,7 +9606,6 @@ template<class T> void matrix_sparse<T>::non_negative_diagonal(vector_dense<T>& 
 */
 
 template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner(index_list& P) const {
-  try {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symb_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
@@ -10725,763 +9621,731 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner(index_lis
     P.resize(n);
     P.init();
     w.quicksort(P,0,n-1);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_sparse<T>::symb_symmetric_move_to_corner: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 template<class T> Integer matrix_sparse<T>::preprocess(const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
-  try {
-     Integer k;
-     vector_dense<T> D1,D2;
-     index_list p1,p2,ip1,ip2;
-     if(non_fatal_error(A.rows()!=A.columns(),"matrix_sparse::preprocess: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     Integer n=A.rows();
-     Integer preprocessing_bad_at = n;
-     P.resize(n);
-     Q.resize(n);
-     invP.resize(n);
-     invQ.resize(n);
-     Drow.resize(n,1.0);
-     Dcol.resize(n,1.0);
-     if(IP.get_PREPROCESSING().dimension()==0){
-         *this = A;
-         return n;
-      } else {
-          switch (IP.get_PREPROCESSING().get(0)){
-              case TEST_ORDERING:
-                  A.test_ordering(p1,p2);
-                  permute(A,p1,p2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  NORMALIZE_COLUMNS:
-                  normalize_columns(A,D2);
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  preprocessing_bad_at = n;
-              break;
-              case   NORMALIZE_ROWS:
-                  normalize_rows(A,D1);
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+    Integer k;
+    vector_dense<T> D1,D2;
+    index_list p1,p2,ip1,ip2;
+    if(non_fatal_error(A.rows()!=A.columns(),"matrix_sparse::preprocess: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n=A.rows();
+    Integer preprocessing_bad_at = n;
+    P.resize(n);
+    Q.resize(n);
+    invP.resize(n);
+    invQ.resize(n);
+    Drow.resize(n,1.0);
+    Dcol.resize(n,1.0);
+    if(IP.get_PREPROCESSING().dimension()==0){
+        *this = A;
+        return n;
+    } else {
+        switch (IP.get_PREPROCESSING().get(0)){
+            case TEST_ORDERING:
+                A.test_ordering(p1,p2);
+                permute(A,p1,p2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  NORMALIZE_COLUMNS:
+                normalize_columns(A,D2);
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                preprocessing_bad_at = n;
+                break;
+            case   NORMALIZE_ROWS:
+                normalize_rows(A,D1);
+                D1.permute(invP);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_SPARSPAK
-              case  REVERSE_CUTHILL_MCKEE_ORDERING:
-                  A.rcm(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  REVERSE_CUTHILL_MCKEE_ORDERING:
+                A.rcm(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case  PQ_ORDERING:
-                  preprocessing_bad_at = A.choose_ddPQ(IP,ip1,ip2);
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(A,p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  //preprocessing_bad_at = n;
-              break;
-              case  MAX_WEIGHTED_MATCHING_ORDERING:
-                  A.maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(A,D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
+            case  PQ_ORDERING:
+                preprocessing_bad_at = A.choose_ddPQ(IP,ip1,ip2);
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(A,p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                //preprocessing_bad_at = n;
+                break;
+            case  MAX_WEIGHTED_MATCHING_ORDERING:
+                A.maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(A,D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_METIS
-              case  METIS_NODE_ND_ORDERING:
-                  A.metis_node_nd(p1,ip1);
-                  permute(A,p1,p1,ip1,ip1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  METIS_NODE_ND_ORDERING:
+                A.metis_node_nd(p1,ip1);
+                permute(A,p1,p1,ip1,ip1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case UNIT_OR_ZERO_DIAGONAL_SCALING:
-                  A.unit_or_zero_diagonal(D1);
-                  inverse_scale(A,D1,ROW);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+            case UNIT_OR_ZERO_DIAGONAL_SCALING:
+                A.unit_or_zero_diagonal(D1);
+                inverse_scale(A,D1,ROW);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_PARDISO
-              case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
-                  A.pardiso_maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(A,D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
+            case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
+                A.pardiso_maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(A,D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              break;
-              case  SPARSE_FIRST_ORDERING:
-                  A.sparse_first_ordering(p2);
-                  permute(A,p2,COLUMN);
-                  Q.compose_right(p2);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  DYN_AV_PQ_ORDERING:
-                  preprocessing_bad_at = A.ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(A,p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING:
-                  A.symmetric_move_to_corner(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_PQ:
-                  A.sym_ddPQ(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING:
-                  A.symb_symmetric_move_to_corner(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.symb_symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING:
-                  A.sp_symmetric_move_to_corner(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.sp_symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING:
-                  A.weighted_symmetric_move_to_corner(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.weighted_symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.weighted2_symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING:
-                  A.weighted2_symmetric_move_to_corner(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case DD_SYMM_MOVE_CORNER_ORDERING_IM:
-                  A.diagonally_dominant_symmetric_move_to_corner_improved(p1);
-                  permute(A,p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              default:
-                  std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
-              break;
-          }   // end switch
-     }  // end else
-     for(k=1;k<IP.get_PREPROCESSING().dimension();k++){
-          switch (IP.get_PREPROCESSING().get(k)){
-              case TEST_ORDERING:
-                  test_ordering(p1,p2);
-                  permute(p1,p2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  NORMALIZE_COLUMNS:
-                  normalize_columns(D2);
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  preprocessing_bad_at = n;
-              break;
-              case   NORMALIZE_ROWS:
-                  normalize_rows(D1);
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+                break;
+            case  SPARSE_FIRST_ORDERING:
+                A.sparse_first_ordering(p2);
+                permute(A,p2,COLUMN);
+                Q.compose_right(p2);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  DYN_AV_PQ_ORDERING:
+                preprocessing_bad_at = A.ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(A,p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING:
+                A.symmetric_move_to_corner(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_PQ:
+                A.sym_ddPQ(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING_IM:
+                A.symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING:
+                A.symb_symmetric_move_to_corner(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
+                A.symb_symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING:
+                A.sp_symmetric_move_to_corner(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
+                A.sp_symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING:
+                A.weighted_symmetric_move_to_corner(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
+                A.weighted_symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
+                A.weighted2_symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING:
+                A.weighted2_symmetric_move_to_corner(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case DD_SYMM_MOVE_CORNER_ORDERING_IM:
+                A.diagonally_dominant_symmetric_move_to_corner_improved(p1);
+                permute(A,p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            default:
+                std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
+                break;
+        }   // end switch
+    }  // end else
+    for(k=1;k<IP.get_PREPROCESSING().dimension();k++){
+        switch (IP.get_PREPROCESSING().get(k)){
+            case TEST_ORDERING:
+                test_ordering(p1,p2);
+                permute(p1,p2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  NORMALIZE_COLUMNS:
+                normalize_columns(D2);
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                preprocessing_bad_at = n;
+                break;
+            case   NORMALIZE_ROWS:
+                normalize_rows(D1);
+                D1.permute(invP);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_SPARSPAK
-              case  REVERSE_CUTHILL_MCKEE_ORDERING:
-                  rcm(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  REVERSE_CUTHILL_MCKEE_ORDERING:
+                rcm(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case  PQ_ORDERING:
-                  preprocessing_bad_at = choose_ddPQ(IP,ip1,ip2);
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  //preprocessing_bad_at = n;
-              break;
-              case  MAX_WEIGHTED_MATCHING_ORDERING:
-                  maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
+            case  PQ_ORDERING:
+                preprocessing_bad_at = choose_ddPQ(IP,ip1,ip2);
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                //preprocessing_bad_at = n;
+                break;
+            case  MAX_WEIGHTED_MATCHING_ORDERING:
+                maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_METIS
-              case  METIS_NODE_ND_ORDERING:
-                  metis_node_nd(p1,ip1);
-                  permute(p1,p1,ip1,ip1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  METIS_NODE_ND_ORDERING:
+                metis_node_nd(p1,ip1);
+                permute(p1,p1,ip1,ip1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case UNIT_OR_ZERO_DIAGONAL_SCALING:
-                  unit_or_zero_diagonal(D1);
-                  inverse_scale(D1,ROW);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+            case UNIT_OR_ZERO_DIAGONAL_SCALING:
+                unit_or_zero_diagonal(D1);
+                inverse_scale(D1,ROW);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_PARDISO
-              case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
-                  pardiso_maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
+            case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
+                pardiso_maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              break;
-              case  SPARSE_FIRST_ORDERING:
-                  sparse_first_ordering(p2);
-                  permute(p2,COLUMN);
-                  Q.compose_right(p2);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  DYN_AV_PQ_ORDERING:
-                  preprocessing_bad_at = ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING:
-                  symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_PQ:
-                  sym_ddPQ(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING_IM:
-                  symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING:
-                  symb_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
-                  symb_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING:
-                  sp_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
-                  sp_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING:
-                  weighted_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
-                  weighted_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
-                  weighted2_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING:
-                  weighted2_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case DD_SYMM_MOVE_CORNER_ORDERING_IM:
-                  diagonally_dominant_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              default:
-                  std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
-              break;
-          }   // end switch
-     }  // end for k
-     return preprocessing_bad_at;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::preprocess: "<<ippe.error_message()<<" Returning empty permutations and matrices."<<std::endl<<"Information on the matrix:"<<std::endl;
-     P.resize(0);
-     Q.resize(0);
-     invP.resize(0);
-     invQ.resize(0);
-     Drow.resize_without_initialization(0);
-     Dcol.resize_without_initialization(0);
-     print_detailed_info();
-     throw;
-  }
+                break;
+            case  SPARSE_FIRST_ORDERING:
+                sparse_first_ordering(p2);
+                permute(p2,COLUMN);
+                Q.compose_right(p2);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  DYN_AV_PQ_ORDERING:
+                preprocessing_bad_at = ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING:
+                symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_PQ:
+                sym_ddPQ(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING_IM:
+                symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING:
+                symb_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
+                symb_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING:
+                sp_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
+                sp_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING:
+                weighted_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
+                weighted_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
+                weighted2_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING:
+                weighted2_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case DD_SYMM_MOVE_CORNER_ORDERING_IM:
+                diagonally_dominant_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            default:
+                std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
+                break;
+        }   // end switch
+    }  // end for k
+    return preprocessing_bad_at;
 }
 
 template<class T> Integer matrix_sparse<T>::preprocess(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
-  try {
-     Integer k;
-     vector_dense<T> D1,D2;
-     index_list p1,p2,ip1,ip2;
-     if(non_fatal_error(rows()!=columns(),"matrix_sparse::preprocess: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     Integer n=rows();
-     Integer preprocessing_bad_at = n;
-     P.resize(n);
-     Q.resize(n);
-     invP.resize(n);
-     invQ.resize(n);
-     Drow.resize(n,1.0);
-     Dcol.resize(n,1.0);
-     for(k=0;k<IP.get_PREPROCESSING().dimension();k++){
-          switch (IP.get_PREPROCESSING().get(k)){
-              case TEST_ORDERING:
-                  test_ordering(p1,p2);
-                  permute(p1,p2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  NORMALIZE_COLUMNS:
-                  normalize_columns(D2);
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  preprocessing_bad_at = n;
-              break;
-              case   NORMALIZE_ROWS:
-                  normalize_rows(D1);
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+    Integer k;
+    vector_dense<T> D1,D2;
+    index_list p1,p2,ip1,ip2;
+    if(non_fatal_error(rows()!=columns(),"matrix_sparse::preprocess: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n=rows();
+    Integer preprocessing_bad_at = n;
+    P.resize(n);
+    Q.resize(n);
+    invP.resize(n);
+    invQ.resize(n);
+    Drow.resize(n,1.0);
+    Dcol.resize(n,1.0);
+    for(k=0;k<IP.get_PREPROCESSING().dimension();k++){
+        switch (IP.get_PREPROCESSING().get(k)){
+            case TEST_ORDERING:
+                test_ordering(p1,p2);
+                permute(p1,p2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  NORMALIZE_COLUMNS:
+                normalize_columns(D2);
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                preprocessing_bad_at = n;
+                break;
+            case   NORMALIZE_ROWS:
+                normalize_rows(D1);
+                D1.permute(invP);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_SPARSPAK
-              case  REVERSE_CUTHILL_MCKEE_ORDERING:
-                  rcm(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  REVERSE_CUTHILL_MCKEE_ORDERING:
+                rcm(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case  PQ_ORDERING:
-                  preprocessing_bad_at = choose_ddPQ(IP,ip1,ip2);
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  //preprocessing_bad_at = n;
-              break;
-              case  MAX_WEIGHTED_MATCHING_ORDERING:
-                  maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
-              case  SPARSE_FIRST_ORDERING:
-                  sparse_first_ordering(p2);
-                  permute(p2,COLUMN);
-                  Q.compose_right(p2);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  PQ_ORDERING:
+                preprocessing_bad_at = choose_ddPQ(IP,ip1,ip2);
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                //preprocessing_bad_at = n;
+                break;
+            case  MAX_WEIGHTED_MATCHING_ORDERING:
+                maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
+            case  SPARSE_FIRST_ORDERING:
+                sparse_first_ordering(p2);
+                permute(p2,COLUMN);
+                Q.compose_right(p2);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_METIS
-              case  METIS_NODE_ND_ORDERING:
-                  metis_node_nd(p1,ip1);
-                  permute(p1,p1,ip1,ip1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
+            case  METIS_NODE_ND_ORDERING:
+                metis_node_nd(p1,ip1);
+                permute(p1,p1,ip1,ip1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case UNIT_OR_ZERO_DIAGONAL_SCALING:
-                  unit_or_zero_diagonal(D1);
-                  inverse_scale(D1,ROW);
-                  Drow.multiply(D1);
-                  preprocessing_bad_at = n;
-              break;
+            case UNIT_OR_ZERO_DIAGONAL_SCALING:
+                unit_or_zero_diagonal(D1);
+                inverse_scale(D1,ROW);
+                Drow.multiply(D1);
+                preprocessing_bad_at = n;
+                break;
 #ifdef ILUPLUSPLUS_USES_PARDISO
-              case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
-                  pardiso_maximal_weight_inverse_scales(p1,D1,D2);
-                  // preprocess matrix
-                  inverse_scale(D1,ROW);
-                  inverse_scale(D2,COLUMN);
-                  permute(p1,ROW);
-                  // incorporate left scaling
-                  D1.permute(invP);
-                  Drow.multiply(D1);
-                  // incorporate right scaling
-                  D2.permute(invQ);
-                  Dcol.multiply(D2);
-                  // incorporate permutation
-                  P.compose_right(p1);
-                  invP.invert(P);
-                  preprocessing_bad_at = n;
-              break;
+            case  PARDISO_MAX_WEIGHTED_MATCHING_ORDERING:
+                pardiso_maximal_weight_inverse_scales(p1,D1,D2);
+                // preprocess matrix
+                inverse_scale(D1,ROW);
+                inverse_scale(D2,COLUMN);
+                permute(p1,ROW);
+                // incorporate left scaling
+                D1.permute(invP);
+                Drow.multiply(D1);
+                // incorporate right scaling
+                D2.permute(invQ);
+                Dcol.multiply(D2);
+                // incorporate permutation
+                P.compose_right(p1);
+                invP.invert(P);
+                preprocessing_bad_at = n;
+                break;
 #endif
-              case  DYN_AV_PQ_ORDERING:
-                  preprocessing_bad_at = ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
-                  p1.invert(ip1);
-                  p2.invert(ip2);
-                  permute(p1,p2,ip1,ip2);
-                  P.compose_right(p1);
-                  Q.compose_right(p2);
-                  invP.invert(P);
-                  invQ.invert(Q);
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING:
-                  symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_PQ:
-                  sym_ddPQ(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMM_MOVE_CORNER_ORDERING_IM:
-                  symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING:
-                  symb_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
-                  symb_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING:
-                  sp_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
-                  sp_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING:
-                  weighted_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
-                  weighted_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
-                  weighted2_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case WGT2_SYMM_MOVE_CORNER_ORDERING:
-                  weighted2_symmetric_move_to_corner(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              case DD_SYMM_MOVE_CORNER_ORDERING_IM:
-                  diagonally_dominant_symmetric_move_to_corner_improved(p1);
-                  permute(p1,p1);
-                  P.compose_right(p1);
-                  Q.compose_right(p1);
-                  invP.invert(P);
-                  invQ.invert(Q);
-                  preprocessing_bad_at = n;
-              break;
-              default:
-                  std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
-              break;
-          }   // end switch
-     }  // end for k
-     return preprocessing_bad_at;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::preprocess: "<<ippe.error_message()<<" Returning empty permutations and matrices."<<std::endl<<"Information on the matrix:"<<std::endl;
-     P.resize(0);
-     Q.resize(0);
-     invP.resize(0);
-     invQ.resize(0);
-     Drow.resize_without_initialization(0);
-     Dcol.resize_without_initialization(0);
-     print_detailed_info();
-     throw;
-  }
+            case  DYN_AV_PQ_ORDERING:
+                preprocessing_bad_at = ddPQ_dyn_av(ip1,ip2,IP.get_PQ_THRESHOLD());
+                p1.invert(ip1);
+                p2.invert(ip2);
+                permute(p1,p2,ip1,ip2);
+                P.compose_right(p1);
+                Q.compose_right(p2);
+                invP.invert(P);
+                invQ.invert(Q);
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING:
+                symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_PQ:
+                sym_ddPQ(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMM_MOVE_CORNER_ORDERING_IM:
+                symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING:
+                symb_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SYMB_SYMM_MOVE_CORNER_ORDERING_IM:
+                symb_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING:
+                sp_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case  SP_SYMM_MOVE_CORNER_ORDERING_IM:
+                sp_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING:
+                weighted_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT_SYMM_MOVE_CORNER_ORDERING_IM:
+                weighted_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING_IM:
+                weighted2_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case WGT2_SYMM_MOVE_CORNER_ORDERING:
+                weighted2_symmetric_move_to_corner(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            case DD_SYMM_MOVE_CORNER_ORDERING_IM:
+                diagonally_dominant_symmetric_move_to_corner_improved(p1);
+                permute(p1,p1);
+                P.compose_right(p1);
+                Q.compose_right(p1);
+                invP.invert(P);
+                invQ.invert(Q);
+                preprocessing_bad_at = n;
+                break;
+            default:
+                std::cerr<<"matrix_sparse<T>::preprocess: unknown error."<<std::endl;
+                break;
+        }   // end switch
+    }  // end for k
+    return preprocessing_bad_at;
 }
 
 
 template<class T> void matrix_sparse<T>::permute(const matrix_sparse<T>& A, const index_list& perm)  {
-  try {
     reformat(A.rows(),A.columns(),A.non_zeroes(),A.orient());
     Integer i,j,counter;
     counter = 0;
@@ -11494,34 +10358,20 @@ template<class T> void matrix_sparse<T>::permute(const matrix_sparse<T>& A, cons
         }
     }
     pointer[pointer_size-1]=counter;
-    #ifdef DEBUG
-        if(non_fatal_error(A.pointer[A.pointer_size-1] != counter,"matrix_sparse::permute: something is really strange.")) throw iluplusplus_error(UNKNOWN_ERROR);
-        check_consistency();
-    #endif
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
+#ifdef DEBUG
+    if(non_fatal_error(A.pointer[A.pointer_size-1] != counter,"matrix_sparse::permute: something is really strange.")) throw iluplusplus_error(UNKNOWN_ERROR);
+    check_consistency();
+#endif
 }
 
 
 template<class T> void matrix_sparse<T>::permute_against_orientation(const matrix_sparse<T>& A, const index_list& perm)  {
-  try {
     index_list invperm;
     invperm.invert(perm);
     permute_against_orientation_with_invperm(A,invperm);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_against_orientation: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::permute_against_orientation_with_invperm(const matrix_sparse<T>& A, const index_list& invperm)  {
-  try {
     reformat(A.rows(),A.columns(),A.non_zeroes(),A.orient());
     Integer i,j;
     for (i=0; i<dim_along_orientation(); i++){
@@ -11533,34 +10383,20 @@ template<class T> void matrix_sparse<T>::permute_against_orientation_with_invper
     }
     pointer[dim_along_orientation()]=A.pointer[dim_along_orientation()];
     normal_order();
-    #ifdef DEBUG
-        check_consistency();
-    #endif
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_against_orientation_with_invperm: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
+#ifdef DEBUG
+    check_consistency();
+#endif
 
 }
 
 template<class T> void matrix_sparse<T>::permute_along_and_against_orientation(const matrix_sparse<T>& A, const index_list& perm_along, const index_list& perm_against){
-  try {
     index_list invperm_against;
     invperm_against.invert(perm_against);
     permute_along_with_perm_and_against_orientation_with_invperm(A,perm_along,invperm_against);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_along_and_against_orientation: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::permute_along_with_perm_and_against_orientation_with_invperm(const matrix_sparse<T>& A, const index_list& perm_along, const index_list& invperm_against){
-  try {
     reformat(A.rows(),A.columns(),A.non_zeroes(),A.orient());
     Integer i,j,counter;
     counter = 0;
@@ -11574,163 +10410,89 @@ template<class T> void matrix_sparse<T>::permute_along_with_perm_and_against_ori
     }
     pointer[pointer_size-1]=counter;
     normal_order();
-    #ifdef DEBUG
-        if(A.pointer[A.pointer_size-1] != counter){
-            std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: something is really strange."<<std::endl;
-            if(perm_along.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is a permutation of size "<<perm_along.dim()<<std::endl;
-            else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is NOT a permutation of size "<<perm_along.dim()<<std::endl;
-            if(invperm_against.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is a permutation of size "<<invperm_against.dim()<<std::endl;
-            else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is NOT a permutation of size "<<invperm_against.dim()<<std::endl;
-            if(check_consistency()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is consistent."<<std::endl;
-            else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is NOT consistent."<<std::endl;
-            throw iluplusplus_error(UNKNOWN_ERROR);
-        }
-    #endif
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_along_with_perm_and_against_orientation_with_invperm: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
+#ifdef DEBUG
+    if(A.pointer[A.pointer_size-1] != counter){
+        std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: something is really strange."<<std::endl;
+        if(perm_along.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is a permutation of size "<<perm_along.dim()<<std::endl;
+        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is NOT a permutation of size "<<perm_along.dim()<<std::endl;
+        if(invperm_against.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is a permutation of size "<<invperm_against.dim()<<std::endl;
+        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is NOT a permutation of size "<<invperm_against.dim()<<std::endl;
+        if(check_consistency()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is consistent."<<std::endl;
+        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is NOT consistent."<<std::endl;
+        throw iluplusplus_error(UNKNOWN_ERROR);
+    }
+#endif
 }
 
 
 template<class T> void matrix_sparse<T>::permute(const matrix_sparse<T>& A, const index_list& perm, orientation_type O){
-  try {
     if(O==A.orient()) permute(A,perm);
     else permute_against_orientation(A,perm);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::permute(const index_list& perm, orientation_type O){
-  try {
     matrix_sparse<T> H;
     H.permute(*this,perm,O);
     interchange(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,orientation);
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::permute(const matrix_sparse<T>& A, const index_list& permP, const index_list& permQ){
-  try {
     index_list inverse;
     if(A.orientation == ROW){
         inverse.invert(permQ);
         permute_along_with_perm_and_against_orientation_with_invperm(A,permP,inverse);
     } else {
         inverse.invert(permP),
-        permute_along_with_perm_and_against_orientation_with_invperm(A,permQ,inverse);
+            permute_along_with_perm_and_against_orientation_with_invperm(A,permQ,inverse);
     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,A.orient());
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::permute(const index_list& permP, const index_list& permQ){
-  try {
     matrix_sparse<T> H;
     H.permute(*this,permP,permQ);
     copy_and_destroy(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,orientation);
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::permute(const matrix_sparse<T>& A, const index_list& permP, const index_list& permQ, const index_list& invpermP, const index_list& invpermQ){
-  try {
     if(A.orientation == ROW) permute_along_with_perm_and_against_orientation_with_invperm(A,permP,invpermQ);
     else permute_along_with_perm_and_against_orientation_with_invperm(A,permQ,invpermP);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     throw;
-  }
 }
 
 
 
 template<class T> void matrix_sparse<T>::permute_efficiently(matrix_sparse<T>& H, const index_list& permP, const index_list& permQ, const index_list& invpermP, const index_list& invpermQ){
-  try {
     H.permute(*this,permP,permQ,invpermP,invpermQ);
     interchange(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_efficiently: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,orientation);
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::permute(const index_list& permP, const index_list& permQ, const index_list& invpermP, const index_list& invpermQ){
-  try {
     matrix_sparse<T> H;
     H.permute(*this,permP,permQ,invpermP,invpermQ);
     copy_and_destroy(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,orientation);
-     throw;
-  }
 }
 
 
 template<class T> void matrix_sparse<T>::permute_efficiently(matrix_sparse<T>& H, const index_list& permP, const index_list& permQ){
-  try {
     H.permute(*this,permP,permQ);
     interchange(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::permute_efficiently: "<<ippe.error_message()<<" Returning empty matrix."<<std::endl;
-     reformat(0,0,0,orientation);
-     throw;
-  }
 }
 
 
 
 #ifdef ILUPLUSPLUS_USES_METIS
 template<class T> void matrix_sparse<T>::metis_node_nd(index_list& P, index_list& invP) const {
-  try {
     METIS_NODE_ND<T>(*this,P,invP);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::metis_node_nd: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 template<class T> void matrix_sparse<T>::metis_node_nd(Integer* P, Integer* invP) const {
-  try {
     METIS_NODE_ND<T>(*this,P,invP);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::metis_node_nd: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 #endif
 
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau) {
-  try {
     Integer pos;
     matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
@@ -11749,16 +10511,10 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
         else permute(B,permP,permQ);
     }
     return pos;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau) {
-  try {
     Integer pos;
     matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
@@ -11776,17 +10532,11 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
         permute(B,permP,permQ);
     }
     return pos;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau){
-  try {
     Integer pos;
     matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
@@ -11810,15 +10560,9 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
         bnew.permute(bold,permP);
     }
     return pos;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau){
-  try {
     Integer pos;
     matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
@@ -11842,15 +10586,9 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
         bnew.permute(bold,permP);
     }
     return pos;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::ddPQ: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer& level, Real tau){
-  try {
     const Integer maxlevel = 4;
     if (!A.square_check()){
         std::cerr<<"matrix_sparse::multilevel_PQ: matrix must be square. Doing nothing"<<std::endl;
@@ -11863,9 +10601,9 @@ template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, c
     vector_dense<T> b;
     pos_new = ddPQ(A,bold,bnew,PQorient,tau);
     b = bnew;
-    #ifdef VERBOSE
-        std::cout<<"multilevel PQ: end of level 1 at index "<<pos_new<<std::endl;
-    #endif
+#ifdef VERBOSE
+    std::cout<<"multilevel PQ: end of level 1 at index "<<pos_new<<std::endl;
+#endif
     A = *this;
     while(pos != pos_new && pos_new<n-1){
         pos = pos_new;
@@ -11874,103 +10612,61 @@ template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, c
         b = bnew;
         if(level == maxlevel) return pos;
         level++;
-    #ifdef VERBOSE
+#ifdef VERBOSE
         if(pos_new != pos) std::cout<<"multilevel PQ: end of level "<<level<<" at index "<<pos_new<<std::endl;
-    #endif
+#endif
     }
     return pos;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::multilevel_PQ: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 template<class T> bool matrix_sparse<T>::maximal_weight_inverse_scales(index_list& P, vector_dense<T>& D1, vector_dense<T>& D2) const {
-  try {
-      index_list invP;
-      return find_pmwm <matrix_sparse<T>,index_list,vector_dense<T> >(*this,invP,P,D1,D2);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::maximal_weight_inverse_scales: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    index_list invP;
+    return find_pmwm <matrix_sparse<T>,index_list,vector_dense<T> >(*this,invP,P,D1,D2);
 }
 
 template<class T> void matrix_sparse<T>::test_ordering(index_list& P, index_list& Q) const {
-  try {
-      P.resize(dimension());
-      column_perm<matrix_sparse<T>, index_list >(*this, Q);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::test_ordering: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    P.resize(dimension());
+    column_perm<matrix_sparse<T>, index_list >(*this, Q);
 }
 
 template<class T> void matrix_sparse<T>::sparse_first_ordering(index_list& Q) const {
-  try {
-      column_perm<matrix_sparse<T>, index_list >(*this, Q);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::sparse_first_ordering: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    column_perm<matrix_sparse<T>, index_list >(*this, Q);
 }
 
 #ifdef ILUPLUSPLUS_USES_PARDISO
 template<class T> int matrix_sparse<T>::pardiso_maximal_weight(int* P, double* D1, double* D2) const {
-    try {
-            int neqns = read_pointer_size()-1 ;
-            int transpose=0;
-            int partial = 0;
-            int fast = 0;
-            int pardiso_return;
-            // old: return mps_pardiso(partial,neqns,pointer,indices,data,P,D1,D2,transpose);
-            pardiso_return = mps_pardiso(fast,partial,neqns,pointer,indices,data,P,D1,D2,transpose);
-            return pardiso_return;
-   }
-   catch(...){
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight: unknown error"<<std::endl;
-     throw iluplusplus_error(UNKNOWN_ERROR);
-   }
+    int neqns = read_pointer_size()-1 ;
+    int transpose=0;
+    int partial = 0;
+    int fast = 0;
+    int pardiso_return;
+    // old: return mps_pardiso(partial,neqns,pointer,indices,data,P,D1,D2,transpose);
+    pardiso_return = mps_pardiso(fast,partial,neqns,pointer,indices,data,P,D1,D2,transpose);
+    return pardiso_return;
 }
 
 template<> int matrix_sparse<Complex>::pardiso_maximal_weight(int* P, double* D1, double* D2) const {
     Real* absdata = 0;
-    try {
-        int neqns = read_pointer_size()-1 ;
-        int transpose=0;
-        int partial = 0;
-        int fast = 0;
-        int pardiso_return;
-        int nonzeroes = read_pointer(neqns);
-        if(nonzeroes>0) absdata = new Real[nonzeroes];
-        for(Integer i=0;i<nonzeroes;i++) absdata[i] = fabs(data[i]);
-        // old: return mps_pardiso(partial,neqns,pointer,indices,data,P,D1,D2,transpose);
-        pardiso_return = mps_pardiso(fast,partial,neqns,pointer,indices,absdata,P,D1,D2,transpose);
-        delete [] absdata;
-        absdata = 0;
-        return pardiso_return;
-   }
-   catch(std::bad_alloc){
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight: error allocating memory."<<std::endl;
-     if(absdata != 0) delete [] absdata;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-   }
-   catch(...){
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight: unknown error"<<std::endl;
-     if(absdata != 0) delete [] absdata;
-     throw iluplusplus_error(UNKNOWN_ERROR);
-   }
+    int neqns = read_pointer_size()-1 ;
+    int transpose=0;
+    int partial = 0;
+    int fast = 0;
+    int pardiso_return;
+    int nonzeroes = read_pointer(neqns);
+    if(nonzeroes>0) absdata = new Real[nonzeroes];
+    for(Integer i=0;i<nonzeroes;i++) absdata[i] = fabs(data[i]);
+    // old: return mps_pardiso(partial,neqns,pointer,indices,data,P,D1,D2,transpose);
+    pardiso_return = mps_pardiso(fast,partial,neqns,pointer,indices,absdata,P,D1,D2,transpose);
+    delete [] absdata;
+    absdata = 0;
+    return pardiso_return;
 }
 
 template<class T> int matrix_sparse<T>::pardiso_maximal_weight(index_list& P, vector_dense<T>& D1, vector_dense<T>& D2) const {
-  int *Perm = 0;
-  double *scale1 = 0;
-  double *scale2 = 0;
-  try {
+    int *Perm = 0;
+    double *scale1 = 0;
+    double *scale2 = 0;
     int neqns = read_pointer_size()-1;
     int i,error;
     P.resize_without_initialization(neqns);
@@ -11989,29 +10685,13 @@ template<class T> int matrix_sparse<T>::pardiso_maximal_weight(index_list& P, ve
     if (scale1 !=0) delete [] scale1;
     if (scale1 !=0) delete [] scale2;
     return error;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight: "<<ippe.error_message()<<std::endl;
-     if (Perm !=0) delete [] Perm;
-     if (scale1 !=0) delete [] scale1;
-     if (scale1 !=0) delete [] scale2;
-     throw;
-  }
-  catch(std::bad_alloc){
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight: Error allocating memory."<<std::endl;
-     if (Perm !=0) delete [] Perm;
-     if (scale1 !=0) delete [] scale1;
-     if (scale1 !=0) delete [] scale2;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 
 template<class T> int matrix_sparse<T>::pardiso_maximal_weight_inverse_scales(index_list& P, vector_dense<T>& D1, vector_dense<T>& D2) const {
-  int *Perm = 0;
-  double *scale1 = 0;
-  double *scale2 = 0;
-  try {
+    int *Perm = 0;
+    double *scale1 = 0;
+    double *scale2 = 0;
     int neqns = read_pointer_size()-1;
     int i,error;
     P.resize_without_initialization(neqns);
@@ -12030,21 +10710,6 @@ template<class T> int matrix_sparse<T>::pardiso_maximal_weight_inverse_scales(in
     if (scale1 !=0) delete [] scale1;
     if (scale1 !=0) delete [] scale2;
     return error;
-  }
-  catch(iluplusplus_error ippe){
-     if (Perm !=0) delete [] Perm;
-     if (scale1 !=0) delete [] scale1;
-     if (scale1 !=0) delete [] scale2;
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight_inverse_scales: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
-  catch(std::bad_alloc){
-     if (Perm !=0) delete [] Perm;
-     if (scale1 !=0) delete [] scale1;
-     if (scale1 !=0) delete [] scale2;
-     std::cerr<<"matrix_sparse<T>::pardiso_maximal_weight_inverse_scales: Error allocating memory."<<std::endl;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 #endif // using pardiso
@@ -12199,34 +10864,22 @@ template<class T> matrix_oriented<T>::matrix_oriented(orientation_type o){
 }
 
 template<class T> matrix_oriented<T>::matrix_oriented(orientation_type o, Integer m, Integer n){
-  try {
-     number_rows    = 0;
-     number_columns = 0;
-     size           = 0;
-     orientation    = o;
-     data           = 0;
-     resize(o,m,n);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_oriented<T>::matrix_oriented: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    number_rows    = 0;
+    number_columns = 0;
+    size           = 0;
+    orientation    = o;
+    data           = 0;
+    resize(o,m,n);
 }
 
 template<class T> matrix_oriented<T>::matrix_oriented(const matrix_oriented& X){
-  try {
-     number_rows    = 0;
-     number_columns = 0;
-     size           = 0;
-     data           = 0;
-     resize(X.orientation,X.number_rows,X.number_columns);
-     Integer i;
-     for (i=0;i<size;i++) data[i] = X.data[i];
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_oriented<T>:::matrix_oriented(matrix_oriented): "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    number_rows    = 0;
+    number_columns = 0;
+    size           = 0;
+    data           = 0;
+    resize(X.orientation,X.number_rows,X.number_columns);
+    Integer i;
+    for (i=0;i<size;i++) data[i] = X.data[i];
 }
 
 template<class T> matrix_oriented<T>::~matrix_oriented() {
@@ -12238,18 +10891,12 @@ template<class T> matrix_oriented<T>::~matrix_oriented() {
 //***********************************************************************************************************************
 
 template<class T> matrix_oriented<T> matrix_oriented<T>::operator = (const matrix_oriented<T>& X){
-  try {
-     if(this==&X)
-         return *this;
-     resize(X.orientation,X.number_rows,X.number_columns);
-     Integer i;
-     for (i=0;i<matrix_oriented<T>::nnz;i++) data[i] = X.data[i];
-     return *this;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_oriented<T>::operator =: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(this==&X)
+        return *this;
+    resize(X.orientation,X.number_rows,X.number_columns);
+    Integer i;
+    for (i=0;i<matrix_oriented<T>::nnz;i++) data[i] = X.data[i];
+    return *this;
 }
 
 //***********************************************************************************************************************
@@ -12306,7 +10953,6 @@ template<class T> void matrix_oriented<T>::set_all(T d){
   }
 
 template<class T> void matrix_oriented<T>::resize(orientation_type o, Integer m, Integer n){
-   try {
     if(m<0) m=0;
     if(n<0) n=0;
     Integer newsize = ((Integer)(m))*((Integer)(n));
@@ -12322,15 +10968,6 @@ template<class T> void matrix_oriented<T>::resize(orientation_type o, Integer m,
     number_rows = m;
     number_columns = n;
     orientation = o;
-  }
-  catch(std::bad_alloc){
-    std::cerr<<"matrix_oriented<T>::resize: Error allocating memory. Returning empty matrix."<<std::endl;
-    number_rows = 0;
-    number_columns = 0;
-    data = 0;
-    orientation = o;
-    throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 //***********************************************************************************************************************
@@ -12338,7 +10975,6 @@ template<class T> void matrix_oriented<T>::resize(orientation_type o, Integer m,
 //***********************************************************************************************************************
 
 template<class T> void matrix_oriented<T>::extract(const matrix_sparse<T> &A, Integer m, Integer n){
-  try {
     if(non_fatal_error(n == 0,"matrix_oriented::extract: a positive number must be specified to be extracted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(m+n > A.dim_against_orientation(),"matrix_oriented::extract: the rows/columns to be extracted do not exist." )) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if (A.orient() == ROW)
@@ -12354,11 +10990,6 @@ template<class T> void matrix_oriented<T>::extract(const matrix_sparse<T> &A, In
             data[ offset + ((Integer)(A.get_index(i))) ]  = A.get_data(i);
         }
     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_oriented<T>::extract: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
 }
 
 //***********************************************************************************************************************
@@ -12443,71 +11074,47 @@ template<class T> matrix_dense<T>::matrix_dense(){
   }
 
 template<class T> matrix_dense<T>::matrix_dense(Integer m, Integer n){
-  try {
-     number_columns = 0; number_rows = 0; data = 0;
-     resize(m,n);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::matrix_dense: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    number_columns = 0; number_rows = 0; data = 0;
+    resize(m,n);
 }
 
 template<class T> matrix_dense<T>::matrix_dense(Integer m, Integer n, T d){
-  try {
-     number_columns = 0; number_rows = 0; data = 0;
-     Integer i,j;
-     resize(m,n);
-     for(i=0;i<m;i++)
-     for(j=0; j<n; j++) {
-        data[i][j]=0;
-     }
-     for(i=0; i<min(m,n); i++) data[i][i]=d;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::matrix_dense: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    number_columns = 0; number_rows = 0; data = 0;
+    Integer i,j;
+    resize(m,n);
+    for(i=0;i<m;i++)
+        for(j=0; j<n; j++) {
+            data[i][j]=0;
+        }
+    for(i=0; i<min(m,n); i++) data[i][i]=d;
 }
 
 template<class T> matrix_dense<T>::matrix_dense(const matrix_dense& X){
-  try {
     number_columns = 0; number_rows = 0; data = 0;
     Integer i,j;
     resize(X.number_rows,X.number_columns);
     for(i=0;i<number_rows;i++)
         for(j=0;j<number_columns;j++) data[i][j]=X.data[i][j];;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::matrix_dense(matrix_dense): "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 template<class T> matrix_dense<T>::matrix_dense(const matrix_sparse<T> &A) {
-  try {
-     number_columns = 0; number_rows = 0; data = 0;
-     resize(A.rows(),A.columns());
-     Integer i,j;
-     for(i=0;i<A.rows();i++)
-         for(j=0; j<A.columns(); j++)
-             data[i][j]=0;
-     if (A.orient() == ROW){
-         for(i=0;i<A.read_pointer_size()-1;i++){
-             for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++){
-                  data[i][A.read_index(j)]+=A.read_data(j);
+    number_columns = 0; number_rows = 0; data = 0;
+    resize(A.rows(),A.columns());
+    Integer i,j;
+    for(i=0;i<A.rows();i++)
+        for(j=0; j<A.columns(); j++)
+            data[i][j]=0;
+    if (A.orient() == ROW){
+        for(i=0;i<A.read_pointer_size()-1;i++){
+            for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++){
+                data[i][A.read_index(j)]+=A.read_data(j);
             }
-         }
-      } else {
-          for(i=0;i<A.read_pointer_size()-1;i++)
-              for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
-                  data[A.read_index(j)][i]+=A.read_data(j);
-      }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::matrix_dense(matrix_sparse): "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+        }
+    } else {
+        for(i=0;i<A.read_pointer_size()-1;i++)
+            for(j=A.read_pointer(i);j<A.read_pointer(i+1);j++)
+                data[A.read_index(j)][i]+=A.read_data(j);
+    }
 }
 
 
@@ -12531,63 +11138,39 @@ template<class T>  bool matrix_dense<T>::square_check() const {
 //***************************************************************************************************************************************
 
 template<class T> void matrix_dense<T>::matrix_vector_multiplication_add(const vector_dense<T>& x, vector_dense<T>& v) const {
-  try {
-     if ((number_columns != x.dimension())||(number_rows != v.dimension())){
-         std::cerr<<"matrix_dense:matrix_vector_multiplication_add(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     } else generic_matrix_vector_multiplication_addition(x,v);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_dense:matrix_vector_multiplication_add: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if ((number_columns != x.dimension())||(number_rows != v.dimension())){
+        std::cerr<<"matrix_dense:matrix_vector_multiplication_add(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else generic_matrix_vector_multiplication_addition(x,v);
 }
 
 template<class T> void matrix_dense<T>::matrix_vector_multiplication(const vector_dense<T>& x, vector_dense<T>& v) const {
-  try {
-     if (number_columns != x.dimension()){
-         std::cerr << "matrix_dense:matrix_vector_multiplication(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     } else {
-         v.resize(number_rows,0.0);
-         generic_matrix_vector_multiplication_addition(x,v);
-     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_dense:matrix_vector_multiplication: "<<ippe.error_message()<<std::endl;
-    throw;
- }
+    if (number_columns != x.dimension()){
+        std::cerr << "matrix_dense:matrix_vector_multiplication(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else {
+        v.resize(number_rows,0.0);
+        generic_matrix_vector_multiplication_addition(x,v);
+    }
 }
 
 
 template<class T> void matrix_dense<T>::matrix_matrix_multiplication_add(const matrix_dense<T>& A, const matrix_dense<T>& B) {
-  try {
-     if ((number_columns != B.number_columns)||(number_rows != A.number_rows) || (A.number_columns != B.number_rows)){
-         std::cerr<<"matrix_dense:matrix_matrix_multiplication_add: Dimension error in matrix-matrix-multiplication"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     } else generic_matrix_matrix_multiplication_addition(A,B);
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_dense:matrix_vector_multiplication_add: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if ((number_columns != B.number_columns)||(number_rows != A.number_rows) || (A.number_columns != B.number_rows)){
+        std::cerr<<"matrix_dense:matrix_matrix_multiplication_add: Dimension error in matrix-matrix-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else generic_matrix_matrix_multiplication_addition(A,B);
 }
 
 template<class T> void matrix_dense<T>::matrix_matrix_multiplication(const matrix_dense<T>& A, const matrix_dense<T>& B){
-  try {
-     if (A.number_columns != B.number_rows){
-         std::cerr<<"matrix_dense:matrix_matrix_multiplication: Dimension error in matrix-matrix-multiplication"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     } else {
-         resize(A.number_rows,B.number_columns);
-         set_all(0.0);
-         generic_matrix_matrix_multiplication_addition(A,B);
-     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_dense:matrix_vector_multiplication: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
+    if (A.number_columns != B.number_rows){
+        std::cerr<<"matrix_dense:matrix_matrix_multiplication: Dimension error in matrix-matrix-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else {
+        resize(A.number_rows,B.number_columns);
+        set_all(0.0);
+        generic_matrix_matrix_multiplication_addition(A,B);
+    }
 }
 
 template<class T> void matrix_dense<T>::matrix_transpose_vector_multiplication_add(const vector_dense<T>& x, vector_dense<T>& v) const {
@@ -12600,19 +11183,13 @@ template<class T> void matrix_dense<T>::matrix_transpose_vector_multiplication_a
   }
 
 template<class T> void matrix_dense<T>::matrix_transpose_vector_multiplication(const vector_dense<T>& x, vector_dense<T>& v) const {
-  try {
-     if (number_rows != x.dimension() ){
-         std::cerr << "matrix_dense:matrix_transpose_vector_multiplication(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     } else {
-         v.resize(number_columns,0.0);
-         generic_matrix_transpose_vector_multiplication_addition(x,v);
-     }
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"matrix_dense:matrix_transpose_vector_multiplication: "<<ippe.error_message()<<std::endl;
-    throw;
- }
+    if (number_rows != x.dimension() ){
+        std::cerr << "matrix_dense:matrix_transpose_vector_multiplication(vector_dense, vector_dense): Dimension error in matrix-vector-multiplication"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    } else {
+        v.resize(number_columns,0.0);
+        generic_matrix_transpose_vector_multiplication_addition(x,v);
+    }
 }
 
 //***************************************************************************************************************************************
@@ -12620,63 +11197,44 @@ template<class T> void matrix_dense<T>::matrix_transpose_vector_multiplication(c
 //***************************************************************************************************************************************
 
 template<class T> matrix_dense<T> matrix_dense<T>::operator*(T k) const {
-  try {
-     matrix_dense<T> Y(number_rows, number_columns,0.0);
-     Integer i,j;
-     for(i=0;i<number_rows;i++)
-         for(j=0;j<number_columns;j++) Y.data[i][j]=k*data[i][j];
-     return Y;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator*: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    matrix_dense<T> Y(number_rows, number_columns,0.0);
+    Integer i,j;
+    for(i=0;i<number_rows;i++)
+        for(j=0;j<number_columns;j++) Y.data[i][j]=k*data[i][j];
+    return Y;
 }
 
 template<class T> matrix_dense<T> matrix_dense<T>::operator+ (const matrix_dense& X) const {
-  try {
-     if ((number_rows==X.number_rows)&&(number_columns==X.number_columns)){
-          matrix_dense<T> Y(number_rows,number_columns,0.0);
-          Integer i,j;
-          for(i=0;i<number_rows;i++)
-              for(j=0;j<number_columns;j++) Y.data[i][j]=data[i][j]+X.data[i][j];
-          return Y;
-     } else {
-         std::cerr << "matrix_dense<T>::operator +: Dimensions error adding matrices."<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator+: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if ((number_rows==X.number_rows)&&(number_columns==X.number_columns)){
+        matrix_dense<T> Y(number_rows,number_columns,0.0);
+        Integer i,j;
+        for(i=0;i<number_rows;i++)
+            for(j=0;j<number_columns;j++) Y.data[i][j]=data[i][j]+X.data[i][j];
+        return Y;
+    } else {
+        std::cerr << "matrix_dense<T>::operator +: Dimensions error adding matrices."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
 }
 
 template<class T> matrix_dense<T> matrix_dense<T>::operator- (const matrix_dense& X) const {
-  try {
-     if ((number_rows==X.number_rows)&&(number_columns==X.number_columns)){
-          matrix_dense<T> Y(number_rows, number_columns,0.0);
-          Integer i,j;
-          for(i=0;i<number_rows;i++)
-              for(j=0;j<number_columns;j++) Y.data[i][j]=data[i][j]-X.data[i][j];
-          return Y;
-     } else {
-         std::cerr << "matrix_dense<T>::operator -: Dimensions error subtracting matrices."<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator -: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if ((number_rows==X.number_rows)&&(number_columns==X.number_columns)){
+        matrix_dense<T> Y(number_rows, number_columns,0.0);
+        Integer i,j;
+        for(i=0;i<number_rows;i++)
+            for(j=0;j<number_columns;j++) Y.data[i][j]=data[i][j]-X.data[i][j];
+        return Y;
+    } else {
+        std::cerr << "matrix_dense<T>::operator -: Dimensions error subtracting matrices."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
 }
 
 template<class T> matrix_dense<T> matrix_dense<T>::operator*(const matrix_dense& X) const {
-  try {
-     matrix_dense<T> Y(number_rows, X.number_columns,0.0);
-     Integer i,j,k;
-     T summe;
-     if (number_columns==X.number_rows){
+    matrix_dense<T> Y(number_rows, X.number_columns,0.0);
+    Integer i,j,k;
+    T summe;
+    if (number_columns==X.number_rows){
         for(i=0;i<number_rows;i++)
             for(j=0;j<X.number_columns;j++){
                 summe=0;
@@ -12684,36 +11242,24 @@ template<class T> matrix_dense<T> matrix_dense<T>::operator*(const matrix_dense&
                 Y.data[i][j]=summe;
             }
         return Y;
-     } else {
+    } else {
         std::cerr<<"matrix_dense<T>::operator *: Dimensions error multiplying matrices. The dimensions are: "<<std::endl<<"("<<
-             number_rows<<"x"<<number_columns<<") und ("<<X.number_rows<<"x"<<
-             X.number_columns<<")"<<std::endl;
+            number_rows<<"x"<<number_columns<<") und ("<<X.number_rows<<"x"<<
+            X.number_columns<<")"<<std::endl;
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator *: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    }
 }
 
 template<class T> matrix_dense<T>& matrix_dense<T>::operator= (const matrix_dense<T>& X){
-  try {
-     Integer i,j;
-     if(this==&X) return *this;
-     resize(X.number_rows,X.number_columns);
-     for(i=0;i<number_rows;i++)
-         for(j=0;j<number_columns;j++) data[i][j]=X.data[i][j];
-     return *this;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator =:  "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    Integer i,j;
+    if(this==&X) return *this;
+    resize(X.number_rows,X.number_columns);
+    for(i=0;i<number_rows;i++)
+        for(j=0;j<number_columns;j++) data[i][j]=X.data[i][j];
+    return *this;
 }
 
 template<class T> void matrix_dense<T>::resize(Integer m, Integer n){
-  try {
     if(m<0) m = 0;
     if(n<0) n = 0;
     Integer i;
@@ -12737,16 +11283,6 @@ template<class T> void matrix_dense<T>::resize(Integer m, Integer n){
             }
         }
     }
-  }
-  catch(std::bad_alloc){
-     std::cerr<<"matrix_dense<T>::resize: Error allocating memory. Returning empty matrix."<<std::endl;
-     for(Integer i=0;i<number_rows;i++) if (data[i] != 0) delete[] data[i];
-     if(data != 0) delete[] data;
-     data = 0;
-     number_rows = 0;
-     number_columns = 0;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
 }
 
 
@@ -12755,20 +11291,14 @@ template<class T> void matrix_dense<T>::resize(Integer m, Integer n){
 //***************************************************************************************************************************************
 
 template<class T> vector_dense<T> matrix_dense<T>::operator * (vector_dense<T> const & x) const {
-   try {
-     if (number_rows==x.dimension()){
-           vector_dense<T> res(number_columns);
-           generic_matrix_vector_multiplication_addition(x,res);
-           return res;
-     } else {
-         std::cerr << "Dimension error in matrix_dense*vector_dense"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::operator *: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if (number_rows==x.dimension()){
+        vector_dense<T> res(number_columns);
+        generic_matrix_vector_multiplication_addition(x,res);
+        return res;
+    } else {
+        std::cerr << "Dimension error in matrix_dense*vector_dense"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
 }
 
 
@@ -12777,18 +11307,12 @@ template<class T> vector_dense<T> matrix_dense<T>::operator * (vector_dense<T> c
 //***************************************************************************************************************************************
 
 template<class T> matrix_dense<T> matrix_dense<T>::transp() const {
-  try {
-     matrix_dense<T> y(number_columns, number_rows);
-     Integer i,j;
-     for(i=0;i<number_rows;i++)
-         for(j=0;j<number_columns;j++)
-             y.data[j][i]=data[i][j];
-     return y;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::transp: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    matrix_dense<T> y(number_columns, number_rows);
+    Integer i,j;
+    for(i=0;i<number_rows;i++)
+        for(j=0;j<number_columns;j++)
+            y.data[j][i]=data[i][j];
+    return y;
 }
 
 
@@ -12809,39 +11333,27 @@ template<class T> void matrix_dense<T>::diag(T d){
 }
 
 template<class T> void matrix_dense<T>::diag(const vector_dense<T>& d){
-  try {
     resize(d.dimension(),d.dimension());
     set_all(0.0);
     for(Integer i=0;i<number_rows;i++)
         data[i][i]=d.read(i);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::diag: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 template<class T> void matrix_dense<T>::random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity) {
-    try {
-        Integer k;
-        if(eps_EV <= 0.0) eps_EV = 0.0;
-        if(eps_similarity <= 0.0) eps_similarity = 0.0;
-        matrix_sparse<T> perturbed_ID_sparse;
-        matrix_dense<T> perturbed_ID_dense, inv_perturbed_ID_dense,H;
-        perturbed_ID_sparse.random_perturbed_projection_matrix(n,n,min_nnz,max_nnz,O,eps_similarity);
-        perturbed_ID_dense.expand(perturbed_ID_sparse);
-        inv_perturbed_ID_dense.invert(perturbed_ID_dense);
-        resize(n,n);
-        set_all(0.0);
-        for(k=0;k<rank;k++) data[k][k] = 1.0 +  eps_EV *(2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0);
-        H.matrix_matrix_multiplication(*this,inv_perturbed_ID_dense);
-        matrix_matrix_multiplication(perturbed_ID_dense,H);
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"matrix_dense<T>::random_multiplicatively_perturbed_projection_matrix: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    Integer k;
+    if(eps_EV <= 0.0) eps_EV = 0.0;
+    if(eps_similarity <= 0.0) eps_similarity = 0.0;
+    matrix_sparse<T> perturbed_ID_sparse;
+    matrix_dense<T> perturbed_ID_dense, inv_perturbed_ID_dense,H;
+    perturbed_ID_sparse.random_perturbed_projection_matrix(n,n,min_nnz,max_nnz,O,eps_similarity);
+    perturbed_ID_dense.expand(perturbed_ID_sparse);
+    inv_perturbed_ID_dense.invert(perturbed_ID_dense);
+    resize(n,n);
+    set_all(0.0);
+    for(k=0;k<rank;k++) data[k][k] = 1.0 +  eps_EV *(2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0);
+    H.matrix_matrix_multiplication(*this,inv_perturbed_ID_dense);
+    matrix_matrix_multiplication(perturbed_ID_dense,H);
 }
 
 template<class T> matrix_dense<T>& matrix_dense<T>::scale_rows(const vector_dense<T>& d){
@@ -12892,142 +11404,94 @@ template<class T> matrix_dense<T>& matrix_dense<T>::inverse_scale_columns(const 
 
 
 template<class T> void matrix_dense<T>::permute_columns(const matrix_dense<T>& A, const index_list& perm){
-  try {
-     if (A.number_columns==perm.dimension()){
-         resize(A.number_rows,A.number_columns);
-         for(Integer i=0;i<A.number_rows;i++)
-             for(Integer j=0;j<A.number_columns;j++)
-                 data[i][j] = A.data[i][perm.read(j)];
-     } else {
-         std::cerr << "Dimension error in matrix_dense::permute_columns"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::permute_columns: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if (A.number_columns==perm.dimension()){
+        resize(A.number_rows,A.number_columns);
+        for(Integer i=0;i<A.number_rows;i++)
+            for(Integer j=0;j<A.number_columns;j++)
+                data[i][j] = A.data[i][perm.read(j)];
+    } else {
+        std::cerr << "Dimension error in matrix_dense::permute_columns"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
 }
 
 
 template<class T> matrix_dense<T> matrix_dense<T>::permute_columns(const index_list& perm) const {
-  try {
-      matrix_dense<T> B;
-      B.permute_columns(*this,perm);
-      return B;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::permute_columns: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    matrix_dense<T> B;
+    B.permute_columns(*this,perm);
+    return B;
 }
 
 
 template<class T> void matrix_dense<T>::permute_rows(const matrix_dense<T>& A, const index_list& perm){
-  try {
-     if (A.number_rows==perm.dimension()){
-         resize(A.number_rows,A.number_columns);
-         for(Integer i=0;i<A.number_rows;i++)
-             for(Integer j=0;j<A.number_columns;j++)
-                 data[i][j] = A.data[perm.read(i)][j];
-     } else {
-         std::cerr << "Dimension error in matrix_dense::permute_rows"<<std::endl;
-         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     }
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::permute_rows: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if (A.number_rows==perm.dimension()){
+        resize(A.number_rows,A.number_columns);
+        for(Integer i=0;i<A.number_rows;i++)
+            for(Integer j=0;j<A.number_columns;j++)
+                data[i][j] = A.data[perm.read(i)][j];
+    } else {
+        std::cerr << "Dimension error in matrix_dense::permute_rows"<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
 }
 
 
 template<class T> matrix_dense<T> matrix_dense<T>::permute_rows(const index_list& perm) const {
-  try {
-      matrix_dense<T> B;
-      B.permute_rows(*this,perm);
-      return B;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::permute_rows: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    matrix_dense<T> B;
+    B.permute_rows(*this,perm);
+    return B;
 }
 
 template<class T> void matrix_dense<T>::elementwise_addition(const matrix_dense& A){
-    try {
-        #ifdef DEBUG
-            if(rows() != A.rows() || columns() != A.columns()){
-                std::cerr<<"matrix_dense<T>::elementwise_addition: dimensions incompatible."<<std::endl;
-                throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-            }
-        #endif
-        Integer i,j;
-        for(i=0;i<rows();i++)
-            for(j=0;j<columns();j++)
-                data[i][j] += A.data[i][j];
+#ifdef DEBUG
+    if(rows() != A.rows() || columns() != A.columns()){
+        std::cerr<<"matrix_dense<T>::elementwise_addition: dimensions incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-    catch(iluplusplus_error ippe){
-       std::cerr<<"matrix_dense<T>::elementwise_addition: "<<ippe.error_message()<<std::endl;
-       throw;
-    }
+#endif
+    Integer i,j;
+    for(i=0;i<rows();i++)
+        for(j=0;j<columns();j++)
+            data[i][j] += A.data[i][j];
 }
 
 template<class T> void matrix_dense<T>::elementwise_subtraction(const matrix_dense& A){
-    try {
-        #ifdef DEBUG
-            if(rows() != A.rows() || columns() != A.columns()){
-                std::cerr<<"matrix_dense<T>::elementwise_subtraction: dimensions incompatible."<<std::endl;
-                throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-            }
-        #endif
-        Integer i,j;
-        for(i=0;i<rows();i++)
-            for(j=0;j<columns();j++)
-                data[i][j] -= A.data[i][j];
+#ifdef DEBUG
+    if(rows() != A.rows() || columns() != A.columns()){
+        std::cerr<<"matrix_dense<T>::elementwise_subtraction: dimensions incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-    catch(iluplusplus_error ippe){
-       std::cerr<<"matrix_dense<T>::elementwise_subtraction: "<<ippe.error_message()<<std::endl;
-       throw;
-    }
+#endif
+    Integer i,j;
+    for(i=0;i<rows();i++)
+        for(j=0;j<columns();j++)
+            data[i][j] -= A.data[i][j];
 }
 
 template<class T> void matrix_dense<T>::elementwise_multiplication(const matrix_dense& A){
-    try {
-        #ifdef DEBUG
-            if(rows() != A.rows() || columns() != A.columns()){
-                std::cerr<<"matrix_dense<T>::elementwise_multiplication: dimensions incompatible."<<std::endl;
-                throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-            }
-        #endif
-        Integer i,j;
-        for(i=0;i<rows();i++)
-            for(j=0;j<columns();j++)
-                data[i][j] *= A.data[i][j];
+#ifdef DEBUG
+    if(rows() != A.rows() || columns() != A.columns()){
+        std::cerr<<"matrix_dense<T>::elementwise_multiplication: dimensions incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-    catch(iluplusplus_error ippe){
-       std::cerr<<"matrix_dense<T>::elementwise_multiplication: "<<ippe.error_message()<<std::endl;
-       throw;
-    }
+#endif
+    Integer i,j;
+    for(i=0;i<rows();i++)
+        for(j=0;j<columns();j++)
+            data[i][j] *= A.data[i][j];
 }
 
 template<class T> void matrix_dense<T>::elementwise_division(const matrix_dense& A){
-    try {
-        #ifdef DEBUG
-            if(rows() != A.rows() || columns() != A.columns()){
-                std::cerr<<"matrix_dense<T>::elementwise_division: dimensions incompatible."<<std::endl;
-                throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-            }
-        #endif
-        Integer i,j;
-        for(i=0;i<rows();i++)
-            for(j=0;j<columns();j++)
-                data[i][j] /= A.data[i][j];
+#ifdef DEBUG
+    if(rows() != A.rows() || columns() != A.columns()){
+        std::cerr<<"matrix_dense<T>::elementwise_division: dimensions incompatible."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     }
-    catch(iluplusplus_error ippe){
-       std::cerr<<"matrix_dense<T>::elementwise_division: "<<ippe.error_message()<<std::endl;
-       throw;
-    }
+#endif
+    Integer i,j;
+    for(i=0;i<rows();i++)
+        for(j=0;j<columns();j++)
+            data[i][j] /= A.data[i][j];
 }
 
 
@@ -13181,32 +11645,26 @@ return M;
   }
 
 template<class T> void matrix_dense<T>::expand(const matrix_sparse<T>& B) {
-      try {
-          #ifdef DEBUG
-              if(non_fatal_error(!B.check_consistency(),"matrix_dense::expand: matrix is inconsistent.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-          #endif
-          Integer i;
-          Integer j;
-          resize(B.rows(),B.columns());
-          set_all(0.0);
-          if (B.orient() == ROW){
-              for(i=0;i<B.get_pointer_size()-1;i++){ // std::cout<<"i schleife i="<<i<<"pointer[i]= "<<pointer[i]<< "pointer[i+1]= "<<pointer[i+1]<<std::endl;
-                  for(j=B.get_pointer(i);j<B.get_pointer(i+1);j++){
-                       data[i][B.get_index(j)]+=B.get_data(j);
-                 }
-              }
-          } else {
-              for(i=0;i<B.get_pointer_size()-1;i++){
-                  for(j=B.get_pointer(i);j<B.get_pointer(i+1);j++){
-                      data[B.get_index(j)][i]+=B.get_data(j);
-                  }
-              }
-          }
-      }
-     catch(iluplusplus_error ippe){
-        std::cerr <<"matrix_sparse::expand: "<<ippe.error_message()<< std::endl;
-        throw;
-     }
+#ifdef DEBUG
+    if(non_fatal_error(!B.check_consistency(),"matrix_dense::expand: matrix is inconsistent.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+#endif
+    Integer i;
+    Integer j;
+    resize(B.rows(),B.columns());
+    set_all(0.0);
+    if (B.orient() == ROW){
+        for(i=0;i<B.get_pointer_size()-1;i++){ // std::cout<<"i schleife i="<<i<<"pointer[i]= "<<pointer[i]<< "pointer[i+1]= "<<pointer[i+1]<<std::endl;
+            for(j=B.get_pointer(i);j<B.get_pointer(i+1);j++){
+                data[i][B.get_index(j)]+=B.get_data(j);
+            }
+        }
+    } else {
+        for(i=0;i<B.get_pointer_size()-1;i++){
+            for(j=B.get_pointer(i);j<B.get_pointer(i+1);j++){
+                data[B.get_index(j)][i]+=B.get_data(j);
+            }
+        }
+    }
   }
 
 template<class T>  void matrix_dense<T>::compress(Real threshold){
@@ -13276,7 +11734,6 @@ template<class T> Integer matrix_dense<T>::minusGJ(T **r, Integer k) const {
 
 
 template<class T> void matrix_dense<T>::GaussJordan(const vector_dense<T> &b, vector_dense<T> &x) const {
-  try {
     if(non_fatal_error(number_rows != number_columns,"Gauss-Jordan requires a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer k, j, i;
     Integer errorcode=0;
@@ -13302,28 +11759,13 @@ template<class T> void matrix_dense<T>::GaussJordan(const vector_dense<T> &b, ve
     for (i=0;i<size;i++)
         delete []r[i];
     delete []r;
-  }
-  catch(std::bad_alloc){
-     std::cerr<<"matrix_dense<T>::GaussJordan: Error allocating memory."<<std::endl;
-     throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::GaussJordan: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 
 template<class T> bool matrix_dense<T>::solve(const vector_dense<T> &b, vector_dense<T> &x) const {
-  try {
     Gauss(b,x);
     return true;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::solve: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
@@ -13358,7 +11800,6 @@ template<class T> void matrix_dense<T>::pivot_invert(matrix_dense<T> &r, Integer
     }
 
 template<class T> void matrix_dense<T>::invert(const matrix_dense<T> &B){
-  try {
     if(non_fatal_error(number_rows != number_columns,"Gauss-Jordan requires a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer k, j;
     Integer errorcode=0;
@@ -13384,16 +11825,10 @@ template<class T> void matrix_dense<T>::invert(const matrix_dense<T> &B){
     for (k=0;k<size;k++)
         for (j=0;j<size;j++)
             (*this)(k,j)=r.read(k,j+size);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::invert: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 template<class T> Integer matrix_dense<T>::Gauss(const vector_dense<T> &b, vector_dense<T> &x) const{
-  try {
     if(non_fatal_error((rows()!=columns()),"matrix_dense::Gauss: matrix must be square")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error((rows()!=b.dimension()),"matrix_dense::Gauss: the dimension of the right hand side is incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n=rows();
@@ -13418,8 +11853,8 @@ template<class T> Integer matrix_dense<T>::Gauss(const vector_dense<T> &b, vecto
         // matrix is singular, if no pivot can be found
         if (maxv == 0.0) {
             std::cerr << "matrix_dense::Gauss: Matrix is singular." << std::endl
-            << "A row of zeroes occurred in the " << i << "th step."<< std::endl;
-                return 0;
+                << "A row of zeroes occurred in the " << i << "th step."<< std::endl;
+            return 0;
         }
         // Swap rows
         iswap = permut[maxc];
@@ -13451,73 +11886,62 @@ template<class T> Integer matrix_dense<T>::Gauss(const vector_dense<T> &b, vecto
     }
     // return with success
     return 1;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::Gauss: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 template<class T> bool matrix_dense<T>::ILUCP(const matrix_dense<T>& A, matrix_dense<T>& U, index_list& perm, Integer fill_in, Real tau, Integer& zero_pivots){
-  try {
-      if(tau>500.0) tau=0.0;
-      else tau=std::exp(-tau*std::log(10.0));
-      if(non_fatal_error(!A.square_check(),"matrix_dense::ILUCP: A must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      if(non_fatal_error(!U.square_check(),"matrix_dense::ILUCP: U must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      if(non_fatal_error(!square_check(),"matrix_dense::ILUCP: *this must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      if(non_fatal_error(A.columns() != columns() || U.columns() != columns(),"matrix_dense::ILUCP: Dimensions are incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-      Integer n=A.rows();
-      Integer k,i,j,p;
-      zero_pivots=0;
-      Real val_larg_el;
-      Integer pos_larg_el;
-      //Real norm_L, norm_U;
-      vector_dense<T> w(n), z(n);
-      vector_dense<bool> non_pivot(n);
-      index_list inverse_perm(n);
-      if(fill_in<1) fill_in=1;
-      if(fill_in>n) fill_in=n;
-      perm.resize(n);
-      non_pivot.set_all(true);
-      for(k=0;k<n;k++) for(i=0;i<n;i++) U.data[k][i]=0.0;
-      for(k=0;k<n;k++) for(i=0;i<n;i++) data[k][i]=0.0;
-      for(k=0;k<n;k++){
-          z.set_all(0.0);
-          w.set_all(0.0);
-          for(i=0;i<n;i++) if(non_pivot[i]) z[i]=A.data[k][i];
-          for(i=0;i<k;i++)
-              for(j=0;j<n;j++)
-                  if(non_pivot[j]) z[j]-=data[k][i]*U.data[i][j];
-          val_larg_el=abs(z[0]);
-          pos_larg_el=0;
-          for(i=1;i<n;i++)
-              if(non_pivot[i])
-                  if(abs(z[i])>val_larg_el){
-                      pos_larg_el=i;
-                      val_larg_el=abs(z[i]);
-                  }
-          if(val_larg_el==0.0){
-              zero_pivots++;
-              return false;
-          }
-          for(i=0;i<n;i++) if(non_pivot[i]) U.data[k][i]=z[i];
-          p=inverse_perm.get(pos_larg_el);
-          inverse_perm.switch_index(perm.get(k),pos_larg_el);
-          perm.switch_index(k,p);
-          non_pivot[pos_larg_el]=false;
-          for(i=k+1;i<n;i++) w[i]=A.data[i][pos_larg_el];
-          for(i=0;i<k;i++)
-              for(j=k+1;j<n;j++)
-                  w[j]-=U.data[i][pos_larg_el]*data[j][i];
-          for(i=k+1;i<n;i++) data[i][k] = w[i]/U.data[k][pos_larg_el];
-          data[k][k]=1.0;
-      }   // end for k.
-      return true;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"matrix_dense<T>::ILUCP: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
+    if(tau>500.0) tau=0.0;
+    else tau=std::exp(-tau*std::log(10.0));
+    if(non_fatal_error(!A.square_check(),"matrix_dense::ILUCP: A must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(!U.square_check(),"matrix_dense::ILUCP: U must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(!square_check(),"matrix_dense::ILUCP: *this must be a square matrix.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(A.columns() != columns() || U.columns() != columns(),"matrix_dense::ILUCP: Dimensions are incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    Integer n=A.rows();
+    Integer k,i,j,p;
+    zero_pivots=0;
+    Real val_larg_el;
+    Integer pos_larg_el;
+    //Real norm_L, norm_U;
+    vector_dense<T> w(n), z(n);
+    vector_dense<bool> non_pivot(n);
+    index_list inverse_perm(n);
+    if(fill_in<1) fill_in=1;
+    if(fill_in>n) fill_in=n;
+    perm.resize(n);
+    non_pivot.set_all(true);
+    for(k=0;k<n;k++) for(i=0;i<n;i++) U.data[k][i]=0.0;
+    for(k=0;k<n;k++) for(i=0;i<n;i++) data[k][i]=0.0;
+    for(k=0;k<n;k++){
+        z.set_all(0.0);
+        w.set_all(0.0);
+        for(i=0;i<n;i++) if(non_pivot[i]) z[i]=A.data[k][i];
+        for(i=0;i<k;i++)
+            for(j=0;j<n;j++)
+                if(non_pivot[j]) z[j]-=data[k][i]*U.data[i][j];
+        val_larg_el=abs(z[0]);
+        pos_larg_el=0;
+        for(i=1;i<n;i++)
+            if(non_pivot[i])
+                if(abs(z[i])>val_larg_el){
+                    pos_larg_el=i;
+                    val_larg_el=abs(z[i]);
+                }
+        if(val_larg_el==0.0){
+            zero_pivots++;
+            return false;
+        }
+        for(i=0;i<n;i++) if(non_pivot[i]) U.data[k][i]=z[i];
+        p=inverse_perm.get(pos_larg_el);
+        inverse_perm.switch_index(perm.get(k),pos_larg_el);
+        perm.switch_index(k,p);
+        non_pivot[pos_larg_el]=false;
+        for(i=k+1;i<n;i++) w[i]=A.data[i][pos_larg_el];
+        for(i=0;i<k;i++)
+            for(j=k+1;j<n;j++)
+                w[j]-=U.data[i][pos_larg_el]*data[j][i];
+        for(i=k+1;i<n;i++) data[i][k] = w[i]/U.data[k][pos_larg_el];
+        data[k][k]=1.0;
+    }   // end for k.
+    return true;
 }
 
 template<class T>  Real matrix_dense<T>::memory() const{
@@ -13777,54 +12201,30 @@ std::ostream& operator << (std::ostream& os, const index_list& x){
 
 
 void index_list::compose(const index_list& P, const index_list& Q){
-  try {
     if(non_fatal_error(P.dimension() != Q.dimension(), "index_list::compose: Arguments must have same dimension.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     resize_without_initialization(P.dimension());
     Integer i;
     for (i=0; i<P.dimension(); i++) set(i)=P.get(Q.get(i));
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::compose: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 
 void index_list::compose(const index_list& P){
-  try {
     compose_right(P);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::compose: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 void index_list::compose_right(const index_list& P){
-  try {
     index_list H;
     H.compose(*this,P);
     interchange(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::compose_right: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
 void index_list::compose_left(const index_list& P){
-  try {
     index_list H;
     H.compose(P,*this);
     interchange(H);
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::compose_left: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 
@@ -13836,7 +12236,6 @@ bool index_list::ID_check() const {
 }
 
 bool index_list::check_if_permutation() const {
-  try {
     Integer i;
     std::vector<Integer> list(dimension(), -1);
     for(i=0;i<dimension();i++){
@@ -13845,11 +12244,6 @@ bool index_list::check_if_permutation() const {
     }
     for(i=0;i<dimension();i++) if (list[i] == -1) return false;
     return true;
-  }
-  catch(iluplusplus_error ippe){
-     std::cerr<<"index_list::check_if_permutation: "<<ippe.error_message()<<std::endl;
-     throw;
-  }
 }
 
 Real index_list::memory() const{
@@ -13888,29 +12282,17 @@ Integer index_list::equality(const index_list& v, Integer from, Integer to) cons
 
 
 Real index_list::relative_equality(const index_list& v) const {
-    try {
-        return (Real) equality(v) / (Real) dimension();
-    }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"index_list::relative_equality: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+    return (Real) equality(v) / (Real) dimension();
  }
 
 Real index_list::relative_equality(const index_list& v, Integer from, Integer to) const {
-    try {
-        #ifdef DEBUG
-            if(to <= from){
-                std::cerr<<"index_list::relative_equality: range is empty. Returning -1."<<std::endl;
-                return (Real) -1.0;
-            }
-        #endif
-        return (Real) equality(v,from,to) / (Real) (to-from);
+#ifdef DEBUG
+    if(to <= from){
+        std::cerr<<"index_list::relative_equality: range is empty. Returning -1."<<std::endl;
+        return (Real) -1.0;
     }
-    catch(iluplusplus_error ippe){
-        std::cerr<<"index_list::relative_equality: "<<ippe.error_message()<<std::endl;
-        throw;
-    }
+#endif
+    return (Real) equality(v,from,to) / (Real) (to-from);
 }
 
 
