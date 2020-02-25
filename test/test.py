@@ -156,3 +156,27 @@ def test_ILUC_random():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
+
+## ILUCP preconditioner
+
+# ILUCP currently fails for row matrices due to a not implemented permuted triangular solve
+#def test_ILUCP_laplace():
+#    n = 100
+#    A = laplace_matrix(n)
+#    b = np.ones(n)
+#    P = ilupp.ILUCPPreconditioner(A, threshold=0.0)
+#    x = P.dot(b)
+#    X = np.linspace(0, 1, n+2)[1:-1]
+#    assert np.allclose(x, X*(1-X)/2)
+#    # each L/u factor has a diagonal and an off-diagonal,
+#    # but ILU++ reports by n less for unknown reasons
+#    print('total nnz:', P.total_nnz)
+#    assert P.total_nnz <= 2 * (n + (n-1))
+
+def test_ILUCP_random():
+    A, b, x_exact = random_example(50)
+    P = ilupp.ILUCPPreconditioner(A, fill_in=1000, threshold=0.0)
+    x = b.copy()
+    P.apply(x)
+    print('Error:', np.linalg.norm(x - x_exact))
+    assert np.allclose(x, x_exact)

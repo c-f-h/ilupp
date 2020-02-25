@@ -398,7 +398,7 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp); // default threshold=-1.0, perm_tol=0.0, rp = -1
+          ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold=-1.0, Real perm_tol=0.0, Integer rp=-1, Real mem_factor=10.0);
           ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p);
           virtual Integer zero_pivots_encountered()         { return zero_pivots; }
           virtual std::string special_info() const;

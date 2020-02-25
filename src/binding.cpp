@@ -29,6 +29,7 @@ using namespace iluplusplus;
 typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
 typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
 typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
+typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
 
 template <class T>
 void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
@@ -206,6 +207,28 @@ PYBIND11_MODULE(_ilupp, m)
             }
         )
         .def_property_readonly("total_nnz", &_ILUCPreconditioner::total_nnz)
+    ;
+
+    py::class_<_ILUCPPreconditioner>(m, "ILUCPPreconditioner")
+        .def("__init__",
+            [](_ILUCPPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
+                Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor) {
+                auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+                new (&inst) _ILUCPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
+                if (!inst.exists())
+                    throw std::runtime_error("ILUCP factorization failed");
+            }
+        )
+        .def("apply",
+            [](const _ILUCPPreconditioner& pr, py::buffer x)
+            {
+                auto y = make_vector(x);
+                if (y->dim() != pr.pre_image_dimension())
+                    throw std::runtime_error("vector has wrong size for preconditioner!");
+                pr.apply_preconditioner_only(ID, *y);
+            }
+        )
+        .def_property_readonly("total_nnz", &_ILUCPPreconditioner::total_nnz)
     ;
 
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")

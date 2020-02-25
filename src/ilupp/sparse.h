@@ -514,8 +514,6 @@ template<class T> class matrix_sparse
            // Preconditioners
            // ILUCP
            // ILUCP: standard implementation, ILUCPinv: implementation with inverse dropping; old implementations have slow access for L
-           bool ILUCP4(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
-           // with linked lists for A and L, only needs Acol. With companion structure for L
            // cfh: disabled because it doesn't compile
            //bool ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
            // same as ILUCP4 only with inverse-based dropping

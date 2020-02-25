@@ -226,4 +226,164 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     return true;
 }
 
+// we use linked list for L and A, A is only needed in column format and we perform column pivoting
+// U is stored with a companion structure
+template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
+        matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in,
+        Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0)
+{
+    const clock_t time_begin = clock();
+
+    if (perm_tol > 500.0) perm_tol=0.0;
+    else perm_tol=std::exp(-perm_tol*std::log(10.0));
+
+    if (non_fatal_error(!Acol.square_check(), "matrix_sparse::ILUCP4: argument matrix must be square."))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    const Integer n = Acol.columns();
+    Integer k, i, j, p, current_row_col_U, h, pos;
+    zero_pivots=0;
+    Real norm_L, norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    vector_sparse_dynamic<T> w, z;
+    vector_dense<bool> non_pivot;
+    index_list list_L, list_U, inverse_perm;
+
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+    Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
+
+    std::vector<Integer> firstL(n), listL(n), firstA(n), listA(n), headA(n),
+        linkU(reserved_memory), rowU(reserved_memory), startU;
+
+    U.reformat(n,n,reserved_memory,ROW);
+    L.reformat(n,n,reserved_memory,COLUMN);
+    perm.resize(n);
+    w.resize(n);
+    z.resize(n);
+    non_pivot.resize(n,true);
+    inverse_perm.resize(n);
+    initialize_triangular_fields(n,listL);
+    initialize_sparse_matrix_fields(n,Acol.pointer,Acol.indices,listA,headA,firstA);
+
+    startU.resize(n, -1);
+
+    // (1.) begin for k
+    for(k=0;k<n;k++){
+        if (k == rp) perm_tol = 1.0;  // permute always
+        // (2.) initialize z
+        z.zero_reset();
+
+        // read row of A
+        h=headA[k];
+        while(h!=-1){
+            if(non_pivot[h]) z[h]=Acol.data[firstA[h]];
+            h=listA[h];
+        }
+
+        // (3.) begin while
+        h=listL[k];
+        while(h!=-1){
+            // h is current column index of k-th row of L
+            for(j=U.pointer[h];j<U.pointer[h+1];j++){
+                if(non_pivot[U.indices[j]]){
+                    z[U.indices[j]] -= L.data[firstL[h]]*U.data[j];
+                } // end if
+            } // end for
+            h=listL[h];
+        } // end while (5.)
+
+        // (6.) sort and copy data to U; update information for accessing columns of U
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm[k],perm_tol);
+        // dropping too stringent?
+        if(list_U.dimension()==0){
+            if(threshold>0.0)
+                //std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
+                z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm[k],perm_tol);
+        }
+        // still no non-zero elements?
+        if(list_U.dimension()==0){
+            zero_pivots++;
+            z[perm[k]]=1.0;
+            list_U.resize(1);
+            list_U[0]=perm[k];
+        } // end if
+        if(U.pointer[k]+list_U.dimension()>reserved_memory){
+            throw std::runtime_error("ILUCP4: Insufficient memory reserved. Increase mem_factor");
+        }
+        // copy data, update access information.
+        // copy pivot
+        U.data[U.pointer[k]] = z.read(list_U[list_U.dimension()-1]);
+        U.indices[U.pointer[k]] = list_U[list_U.dimension()-1];
+        for(j=1;j<list_U.dimension();j++){
+            pos = U.pointer[k]+j;
+            U.data[pos] = z.read(list_U[list_U.dimension()-1-j]);
+            U.indices[pos] = list_U[list_U.dimension()-1-j];
+            h = startU[U.indices[pos]];
+            startU[U.indices[pos]] = pos;
+            linkU[pos] = h;
+            rowU[pos] = k;
+        }
+        U.pointer[k+1] = U.pointer[k]+list_U.dimension();
+        if(U.data[U.pointer[k]]==0){
+            std::cerr<<"dim list_U "<<list_U.dimension()<<std::endl;
+            std::cerr<<"last element corresponding to pivot: "<<z[perm[k]]<<std::endl;
+            throw std::runtime_error("ILUCP4: Pivot is zero, because pivoting was not permitted.");
+        }
+        // store positions of columns of U, but without pivot
+        // update non-pivots.
+        // (7.) update permutations
+        p = inverse_perm[U.indices[U.pointer[k]]];
+        inverse_perm.switch_index(perm[k],U.indices[U.pointer[k]]);
+        perm.switch_index(k,p);
+        non_pivot[U.indices[U.pointer[k]]] = false;
+
+        // (8.) read w
+        w.zero_reset();
+        // read column of A
+        /* // works fine as alternative, but not really faster
+           for(i=firstA[perm[k]];i<Acol.pointer[perm[k]+1];i++)
+           w[Acol.indices[i]] = Acol.data[i];
+           */
+        for(i = Acol.pointer[perm[k]];i<Acol.pointer[perm[k]+1];i++){
+            if(Acol.indices[i]>k)
+                w[Acol.indices[i]] = Acol.data[i];
+        }     // end for i
+
+        // (9.) begin while
+        h = startU[perm[k]];
+        while(h!=-1){
+            current_row_col_U = rowU[h];
+            const T current_data_col_U = U.data[h];
+            h = linkU[h];
+            // (10.) w = w - U(i,perm(k))*l_i
+            for(j = L.pointer[current_row_col_U];j<L.pointer[current_row_col_U+1];j++){
+                w[L.indices[j]] -= current_data_col_U * L.data[j];
+            } // end for
+        }   // (11.) end while
+
+        // (12.) sort and copy data to L
+        // sort
+        w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,k+1,n);
+        if(L.pointer[k]+list_L.dimension()+1>reserved_memory){
+            throw std::runtime_error("ILUCP4: Insufficient memory reserved. Increase mem_factor");
+        }
+        // copy data
+        L.data[L.pointer[k]] = 1.0;
+        L.indices[L.pointer[k]] = k;
+        for(j = 0;j<list_L.dimension();j++){
+            L.data[L.pointer[k]+j+1] = w.read(list_L[j])/U.data[U.pointer[k]];
+            L.indices[L.pointer[k]+j+1] = list_L[j];
+        } // end for j
+        L.pointer[k+1] = L.pointer[k]+list_L.dimension()+1;
+        update_sparse_matrix_fields(k, Acol.pointer,Acol.indices,listA,headA,firstA);
+        update_triangular_fields(k, L.pointer,L.indices,listL,firstL);
+    }  // (13.) end for k
+
+    L.compress();
+    U.compress();
+
+    time_self = ((Real)clock() - (Real)time_begin) / (Real)CLOCKS_PER_SEC;
+    return true;
+}
+
+
 } // end namespace iluplusplus

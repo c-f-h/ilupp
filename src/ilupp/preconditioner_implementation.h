@@ -1092,19 +1092,22 @@ template <class T, class matrix_type, class vector_type>
 //***********************************************************************************************************************//
 
 template <class T, class matrix_type, class vector_type>
-ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp){
+ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
+        matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol,
+        Integer rp, Real mem_factor)
+{
     if(Acol.orient()==COLUMN){
-        this->preconditioner_exists = this->Precond_left.ILUCP4(Acol,
+        this->preconditioner_exists = ILUCP4(Acol, this->Precond_left,
                 this->Precond_right, this->permutation, max_fill_in, threshold,
-                perm_tol, rp, this->zero_pivots, this->setup_time);
+                perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
         this->right_matrix_usage = PERM1;
     } else {
-        this->preconditioner_exists = this->Precond_right.ILUCP4(Acol,
+        this->preconditioner_exists = ILUCP4(Acol, this->Precond_right,
                 this->Precond_left, this->permutation, max_fill_in, threshold,
-                perm_tol, rp, this->zero_pivots, this->setup_time);
+                perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
         this->left_matrix_usage = PERM1;
@@ -1120,17 +1123,19 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix
 template <class T, class matrix_type, class vector_type>
 ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p){
     if(Acol.orient()==COLUMN){
-        this->preconditioner_exists = this->Precond_left.ILUCP4(
-                Acol, this->Precond_right, this->permutation, p.get_fill_in(), p.get_threshold(),
-                p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
+        this->preconditioner_exists = ILUCP4(Acol, this->Precond_left,
+                this->Precond_right, this->permutation, p.get_fill_in(),
+                p.get_threshold(), p.get_perm_tol(), p.get_row_pos(),
+                this->zero_pivots, this->setup_time);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
         this->right_matrix_usage = PERM1;
     } else {
-        this->preconditioner_exists = this->Precond_right.ILUCP4(
-                Acol, this->Precond_left, this->permutation, p.get_fill_in(), p.get_threshold(),
-                p.get_perm_tol(), p.get_row_pos(), this->zero_pivots, this->setup_time);      // preconditioner of A.
+        this->preconditioner_exists = ILUCP4(Acol, this->Precond_right,
+                this->Precond_left, this->permutation, p.get_fill_in(),
+                p.get_threshold(), p.get_perm_tol(), p.get_row_pos(),
+                this->zero_pivots, this->setup_time);
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
         this->left_matrix_usage = PERM1;
