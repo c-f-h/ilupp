@@ -55,7 +55,6 @@ template<class T> class array
           Integer dimension() const;
           void print_info() const;
       // Accessing elements
-          const T& read(Integer j) const;
           const T& get(Integer j) const;
           T& operator[](Integer j);
           const T& operator[](Integer j) const;

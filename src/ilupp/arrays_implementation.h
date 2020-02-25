@@ -233,16 +233,6 @@ template<class T> const T& array<T>::get(Integer j) const {
      return data[j];
   }
 
-template<class T> const T& array<T>::read(Integer j) const {
-     #ifdef DEBUG
-         if(j<0||j>=data.size()){
-             std::cerr<<"array::read: index out of range. Accessing an element with index "<<j<<" in a array having size "<<data.size()<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return data[j];
-  }
-
 template<class T> T& array<T>::operator[](Integer j){
      #ifdef DEBUG
          if(j<0||j>=data.size()){
