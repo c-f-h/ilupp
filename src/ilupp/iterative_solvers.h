@@ -59,8 +59,10 @@ template <class T, class matrix_type, class vector_type> bool cgs(const precondi
 
 template <class Real> void GeneratePlaneRotation(Real&, Real&, Real&, Real&);
 template <class Real> void ApplyPlaneRotation(Real&, Real&, Real&, Real&);
-//template <class matrix_type, class vector_type> void Update(vector_type&, Integer, matrix_type&, const vector_type&, const vector_type*);
-template <class matrix_type, class vector_type> void Update(vector_type&, Integer, matrix_type&, const vector_type&, array<vector_type>&);
+
+template <class matrix_type, class vector_type>
+void Update(vector_type&, Integer, matrix_type&, const vector_type&, std::vector<vector_type>&);
+
 //template <class Real> inline Real abs(Real);
 template <class T, class matrix_type, class vector_type> bool gmres(const preconditioner<T,matrix_type,vector_type>&,
              preconditioner_application1_type, const matrix_type&, const vector_type&, vector_type&,

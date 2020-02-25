@@ -775,9 +775,8 @@ template<class Real> void ApplyPlaneRotation(Real &dx, Real &dy, Real &cs, Real 
     dx = temp;
   }
 
-/*
 template<class matrix_type, class vector_type>
-    void Update(vector_type &x, Integer k, matrix_type &H, const vector_type &s, const vector_type* v)
+    void Update(vector_type &x, Integer k, matrix_type &H, const vector_type &s, std::vector<vector_type>& v)
     {
        Integer i,j;
        vector_type y(s);
@@ -790,27 +789,6 @@ template<class matrix_type, class vector_type>
        for (j = 0; j <= k; j++) {
            x.add_scaled(y[j],v[j]);   }
     }
-*/
-
-template<class matrix_type, class vector_type>
-    void Update(vector_type &x, Integer k, matrix_type &H, const vector_type &s, array<vector_type>& v)
-    {
-       Integer i,j;
-       vector_type y(s);
-       // Backsolve:
-       for (i = k; i >= 0; i--) {
-           y[i] /= H(i,i);
-           for (j = i - 1; j >= 0; j--){
-               y[j] -= H(j,i) * y[i];   }
-       }
-       for (j = 0; j <= k; j++) {
-           x.add_scaled(y[j],v[j]);   }
-    }
-
-//template <class Real> inline Real abs(Real x){
-//    return (x > 0 ? x : -x);
-//  }
-
 
 template<class T, class matrix_type, class vector_type>
      bool gmres(const preconditioner<T,matrix_type,vector_type>& P,
@@ -884,9 +862,8 @@ template<class T, class matrix_type, class vector_type>
            #endif
            return true;
        }
-       array<vector_type> v;
-       v.erase_resize_data_field(restart+1);
-       for(i=0;i<restart+1;i++) v[i] = vector_type(size);
+       std::vector<vector_type> v(restart+1);
+       for(i=0;i<restart+1;i++) v[i].resize(size);
        while (j <= max_iter) {
            (v[0]).scale(1.0/res,r);
            s.set_all(0.0);
@@ -954,9 +931,7 @@ template<class T, class matrix_type, class vector_type>
     }
 }
 
-
 } // end namespace iluplusplus
-
 
 #endif
 
