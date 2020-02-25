@@ -177,21 +177,6 @@ std::string long_string(preprocessing_type pt){
 //                                                                                                                       *
 //************************************************************************************************************************
 
-
-
-template<class T> inline void interchange(T& x, T& y)
-     {T z=x; x=y; y=z;}
-
-/*
-template<class T> inline T min(T x, T y){
-       if (x<y) return x; else return y;
-  }
-*/
-/*
-template<class T> inline T max(T x, T y){
-       if (x<y) return y; else return x;
-  }
-*/
 template<class T> inline T conj(T x){
        #ifdef DEBUG
            std::cout<<"template<class T> inline T conj(T x): using non-specialized template. This is not a good idea. Please write a specialized template for your data type."<<std::endl;

@@ -476,17 +476,17 @@ template<class T> void vector_dense<T>::null_vector_keep_data(){
 }
 
 template<class T> void vector_dense<T>::interchange(vector_dense<T>& v){
-     iluplusplus::interchange<T*>(v.data,data);
-     iluplusplus::interchange<Integer>(v.size,size);
-  }
+    std::swap(v.data,data);
+    std::swap(v.size,size);
+}
 
 
 template<class T> void vector_dense<T>::interchange(T*& newdata, Integer& newsize){
-     #ifdef DEBUG
-         std::cerr<<"vector_dense::interchange: WARNING: making a vector using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
-     #endif
-     iluplusplus::interchange<T*>(data,newdata);
-     iluplusplus::interchange<Integer>(size,newsize);
+#ifdef DEBUG
+    std::cerr<<"vector_dense::interchange: WARNING: making a vector using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
+#endif
+    std::swap(data,newdata);
+    std::swap(size,newsize);
 }
 
 
@@ -4421,46 +4421,46 @@ template<class T> void matrix_sparse<T>::copy_and_destroy(matrix_sparse<T>& A){
 }
 
 template<class T> void matrix_sparse<T>::interchange(matrix_sparse<T>& A){
-     iluplusplus::interchange<Integer>(number_columns,A.number_columns);
-     iluplusplus::interchange<Integer>(number_rows,A.number_rows);
-     iluplusplus::interchange<Integer>(nnz,A.nnz);
-     iluplusplus::interchange<Integer>(pointer_size,A.pointer_size);
-     iluplusplus::interchange<orientation_type>(orientation,A.orientation);
-     iluplusplus::interchange<T*>(data,A.data);
-     iluplusplus::interchange<Integer*>(indices,A.indices);
-     iluplusplus::interchange<Integer*>(pointer,A.pointer);
- }
+    std::swap(number_columns,A.number_columns);
+    std::swap(number_rows,A.number_rows);
+    std::swap(nnz,A.nnz);
+    std::swap(pointer_size,A.pointer_size);
+    std::swap(orientation,A.orientation);
+    std::swap(data,A.data);
+    std::swap(indices,A.indices);
+    std::swap(pointer,A.pointer);
+}
 
 
 template<class T> void matrix_sparse<T>::interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, orientation_type& Aorientation){
-     #ifdef DEBUG
-         std::cerr<<"matrix_sparse::interchange: WARNING: making a matrix using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
-     #endif
-     iluplusplus::interchange<Integer>(number_columns,Anumber_columns);
-     iluplusplus::interchange<Integer>(number_rows,Anumber_rows);
-     iluplusplus::interchange<orientation_type>(orientation,Aorientation);
-     iluplusplus::interchange<T*>(data,Adata);
-     iluplusplus::interchange<Integer*>(indices,Aindices);
-     iluplusplus::interchange<Integer*>(pointer,Apointer);
-     if (orientation == ROW) pointer_size = number_rows+1;
-     else pointer_size = number_columns+1;
-     nnz = pointer[pointer_size-1];
-  }
+#ifdef DEBUG
+    std::cerr<<"matrix_sparse::interchange: WARNING: making a matrix using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
+#endif
+    std::swap(number_columns,Anumber_columns);
+    std::swap(number_rows,Anumber_rows);
+    std::swap(orientation,Aorientation);
+    std::swap(data,Adata);
+    std::swap(indices,Aindices);
+    std::swap(pointer,Apointer);
+    if (orientation == ROW) pointer_size = number_rows+1;
+    else pointer_size = number_columns+1;
+    nnz = pointer[pointer_size-1];
+}
 
 template<class T> void matrix_sparse<T>::interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, Integer& Annz, orientation_type& Aorientation){
-     #ifdef DEBUG
-         std::cerr<<"matrix_sparse::interchange: WARNING: making a matrix using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
-     #endif
-     iluplusplus::interchange<Integer>(number_columns,Anumber_columns);
-     iluplusplus::interchange<Integer>(number_rows,Anumber_rows);
-     iluplusplus::interchange<Integer>(nnz,Annz);
-     iluplusplus::interchange<orientation_type>(orientation,Aorientation);
-     iluplusplus::interchange<T*>(data,Adata);
-     iluplusplus::interchange<Integer*>(indices,Aindices);
-     iluplusplus::interchange<Integer*>(pointer,Apointer);
-     if (orientation == ROW) pointer_size = number_rows+1;
-     else pointer_size = number_columns+1;
-  }
+#ifdef DEBUG
+    std::cerr<<"matrix_sparse::interchange: WARNING: making a matrix using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
+#endif
+    std::swap(number_columns,Anumber_columns);
+    std::swap(number_rows,Anumber_rows);
+    std::swap(nnz,Annz);
+    std::swap(orientation,Aorientation);
+    std::swap(data,Adata);
+    std::swap(indices,Aindices);
+    std::swap(pointer,Apointer);
+    if (orientation == ROW) pointer_size = number_rows+1;
+    else pointer_size = number_columns+1;
+}
 
 //***********************************************************************************************************************
 // Class matrix_sparse: vector-valued operations                                                                        *
