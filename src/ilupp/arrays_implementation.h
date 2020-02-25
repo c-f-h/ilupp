@@ -207,17 +207,11 @@ template<class T> void array<T>::destroy() {
 
 template<class T> Integer array<T>::dimension() const {       // returns dimension of the vector
     return data.size();
-  }
-
-template<class T> Integer array<T>::dim() const {       // returns dimension of the vector
-    return data.size();
-  }
-
+}
 
 template<class T> void array<T>::print_info() const {
     std::cout<<"An array of dimension "<<data.size()<<std::endl;
-  }
-
+}
 
 template<class T>  Real array<T>::memory() const {
     return (Real)data.capacity() * sizeof(T);

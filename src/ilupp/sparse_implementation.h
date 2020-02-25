@@ -6323,8 +6323,8 @@ bool matrix_sparse<T>::partialILUCDP(
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
-                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
+                for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
@@ -6815,8 +6815,8 @@ bool matrix_sparse<T>::partialILUCDP(
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 Anew.pointer[0]=0;
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
-                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                    for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
+                    for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -7329,8 +7329,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
-                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
+                for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
@@ -7712,8 +7712,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
-                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                    for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
+                    for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -9546,10 +9546,10 @@ template<class T> void matrix_sparse<T>::permute_along_with_perm_and_against_ori
 #ifdef DEBUG
     if(A.pointer[A.pointer_size-1] != counter){
         std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: something is really strange."<<std::endl;
-        if(perm_along.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is a permutation of size "<<perm_along.dim()<<std::endl;
-        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is NOT a permutation of size "<<perm_along.dim()<<std::endl;
-        if(invperm_against.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is a permutation of size "<<invperm_against.dim()<<std::endl;
-        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is NOT a permutation of size "<<invperm_against.dim()<<std::endl;
+        if(perm_along.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is a permutation of size "<<perm_along.dimension()<<std::endl;
+        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: first index_list is NOT a permutation of size "<<perm_along.dimension()<<std::endl;
+        if(invperm_against.check_if_permutation()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is a permutation of size "<<invperm_against.dimension()<<std::endl;
+        else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: second index_list is NOT a permutation of size "<<invperm_against.dimension()<<std::endl;
         if(check_consistency()) std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is consistent."<<std::endl;
         else std::cerr<<"matrix_sparse::permute_along_with_perm_and_against_orientation_with_invperm: matrix is NOT consistent."<<std::endl;
         throw iluplusplus_error(UNKNOWN_ERROR);

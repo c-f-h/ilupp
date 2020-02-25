@@ -53,7 +53,6 @@ template<class T> class array
           array(Integer m, T t);
        // Functions, Manipulation, Information
           Integer dimension() const;
-          Integer dim() const;
           void print_info() const;
       // Accessing elements
           const T& read(Integer j) const;
