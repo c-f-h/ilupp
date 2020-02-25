@@ -881,10 +881,10 @@ template<class T> void vector_dense<T>::take_weighted_largest_elements_by_abs_va
         list.resize_without_initialization(0);
         return;
     }
-    for(i=from;i<to;i++) norm_input += absvalue_squared(weights.read(i)*data[perm[i]]);
+    for(i=from;i<to;i++) norm_input += absvalue_squared(weights[i]*data[perm[i]]);
     norm_input=sqrt(norm_input);
     for(i=from;i<to;i++){
-        product = weights.read(i)*fabs(data[perm[i]]);
+        product = weights[i]*fabs(data[perm[i]]);
         if(product > norm_input*tau){
             input_abs.data[number_elements_larger_tau]=product;
             complete_list[number_elements_larger_tau]=i; // do not need perm[i]
@@ -1006,10 +1006,10 @@ template<class T> void vector_dense<T>::take_weighted_largest_elements_by_abs_va
 #ifdef DEBUG
     if(non_fatal_error(((from<0)||(to>size)), "vector_dense::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
-    for(i=from;i<to;i++) norm += absvalue_squared(weight.read(i)*data[i]);
+    for(i=from;i<to;i++) norm += absvalue_squared(weight[i]*data[i]);
     norm=sqrt(norm);
     for(i=from;i<to;i++){
-        product=fabs(weight.read(i)*data[i]);
+        product=fabs(weight[i]*data[i]);
         if(product > norm*tau){
             input_abs.data[number_elements_larger_tau]=product;
             complete_list[number_elements_larger_tau]=i;
@@ -1293,16 +1293,6 @@ template<class T> T vector_dense<T>::get(Integer j) const {
      #ifdef DEBUG
          if(j<0||j>=size){
              std::cerr<<"vector_dense::get: index out of range. Accessing an element with index "<<j<<" in a vector having size "<<size<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return data[j];
-  }
-
-template<class T> T vector_dense<T>::read(Integer j) const {
-     #ifdef DEBUG
-         if(j<0||j>=size){
-             std::cerr<<"vector_dense::read: index out of range. Accessing an element with index "<<j<<" in a vector having size "<<size<<std::endl;
              throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
          }
      #endif
@@ -1840,9 +1830,9 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         pos_larg_el=0;
         val_larg_el=0.0;
         for(i=0;i<number_elements_larger_tau;i++){
-            if(input_abs.read(i)>val_larg_el){
+            if(input_abs[i]>val_larg_el){
                 pos_larg_el=i;
-                val_larg_el=input_abs.read(i);
+                val_larg_el=input_abs[i];
             }
         }
         if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
@@ -1886,9 +1876,9 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             pos_larg_el=0;
             val_larg_el=0.0;
             for(i=0;i<number_elements_larger_tau;i++){
-                if(input_abs.read(i)>val_larg_el){
+                if(input_abs[i]>val_larg_el){
                     pos_larg_el=i;
-                    val_larg_el=input_abs.read(i);
+                    val_larg_el=input_abs[i];
                 }
             }
             if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
@@ -1960,9 +1950,9 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         pos_larg_el=0;
         val_larg_el=0.0;
         for(i=0;i<number_elements_larger_tau;i++){
-            if(input_abs.read(i)>val_larg_el){
+            if(input_abs[i]>val_larg_el){
                 pos_larg_el=i;
-                val_larg_el=input_abs.read(i);
+                val_larg_el=input_abs[i];
             }
         }
         if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
@@ -1986,12 +1976,12 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
     for(i=0;i<nnz;i++){
         if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
-        norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+        norm += absvalue_squared(weights[pointer[i]]*data[i]);
     }
     if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            product=std::abs(data[i])*weights.read(pointer[i]);
+            product=std::abs(data[i])*weights[pointer[i]];
             if(product> norm*tau){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -2008,9 +1998,9 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
             pos_larg_el=0;
             val_larg_el=0.0;
             for(i=0;i<number_elements_larger_tau;i++){
-                if(input_abs.read(i)>val_larg_el){
+                if(input_abs[i]>val_larg_el){
                     pos_larg_el=i;
-                    val_larg_el=input_abs.read(i);
+                    val_larg_el=input_abs[i];
                 }
             }
             if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
@@ -2024,7 +2014,7 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
         }
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
-            if(std::abs(data[i])*weights.read(pointer[i])> norm*tau && pointer[i] != pivot_position){
+            if(std::abs(data[i])*weights[pointer[i]]> norm*tau && pointer[i] != pivot_position){
                 input_abs[number_elements_larger_tau]=std::abs(data[i]);
                 complete_list[number_elements_larger_tau]=pointer[i];
                 number_elements_larger_tau++;
@@ -2198,11 +2188,11 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
 #endif
     for(i=0;i<nnz;i++){
         if(from<=pointer[i] && pointer[i]<to)
-            norm += absvalue_squared(weights.read(pointer[i])*data[i]);
+            norm += absvalue_squared(weights[pointer[i]]*data[i]);
     }
     norm=sqrt(norm);
     for(i=0;i<nnz;i++){
-        product = weights.read(pointer[i])* std::abs(data[i]);
+        product = weights[pointer[i]]* std::abs(data[i]);
         if(from<=pointer[i] && pointer[i]<to && product > norm*tau){
             input_abs[number_elements_larger_tau]=product;
             complete_list[number_elements_larger_tau]=pointer[i];
@@ -2244,7 +2234,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2302,7 +2292,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2369,14 +2359,14 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
 #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            //product = (weight + weights[pointer[i]]) * std::abs(data[i]);
+            product = max(weight,weights[pointer[i]]) * std::abs(data[i]);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2389,8 +2379,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
-            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            //product = (weight + weights[pointer[i]]) * std::abs(data[i]);
+            product = max(weight,weights[pointer[i]]) * std::abs(data[i]);
             if(from<=pointer[i] && pointer[i]<to && (product >= tau) ){
                 input_abs[number_elements_larger_tau]=product;
                 complete_list[number_elements_larger_tau]=pointer[i];
@@ -2432,14 +2422,14 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
 #endif
     if(IP.get_SUM_DROPPING()){
         for(i=0;i<nnz;i++){
-            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            //product = (weight + weights[pointer[i]]) * std::abs(data[i]);
+            product = max(weight,weights[pointer[i]]) * std::abs(data[i]);
             input_abs[i]=product;
             complete_list[i]=pointer[i];
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2455,8 +2445,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
-            //product = (weight + weights.read(pointer[i])) * std::abs(data[i]);
-            product = max(weight,weights.read(pointer[i])) * std::abs(data[i]);
+            //product = (weight + weights[pointer[i]]) * std::abs(data[i]);
+            product = max(weight,weights[pointer[i]]) * std::abs(data[i]);
             if(from<=pointer[i] && pointer[i]<to){ // in right range
                 if(product >= tau){ // mark to keep
                     input_abs[number_elements_larger_tau]=product;
@@ -2518,7 +2508,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2592,7 +2582,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2677,7 +2667,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2753,7 +2743,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
         }
         input_abs.quicksort(complete_list,0,nnz-1);
         for(i=0;i<nnz;i++){
-            sum += input_abs.read(i);
+            sum += input_abs[i];
             if (sum > tau){
                 offset = i;
                 break;
@@ -2880,7 +2870,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             input_abs_U.sort(complete_list_U,0,number_elements_larger_tau_U-1,n_U);   // sort abs. vector created above from small to large. Largest elements needed are at end.
             pos_larg_element=offset;
             for(i=offset+1;i<number_elements_larger_tau_U;i++)
-                if(input_abs_U.read(i)>input_abs_U.read(pos_larg_element))
+                if(input_abs_U[i]>input_abs_U[pos_larg_element])
                     pos_larg_element=i;
             complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);
             list_U.resize_without_initialization(n_U);
@@ -2889,7 +2879,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             pos_larg_element=0;
             //if(number_elements_larger_tau_U>0)  //
             for(i=1;i<number_elements_larger_tau_U;i++)
-                if(input_abs_U.read(i)>input_abs_U.read(pos_larg_element))
+                if(input_abs_U[i]>input_abs_U[pos_larg_element])
                     pos_larg_element=i;
             complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);            
             list_U.resize_without_initialization(number_elements_larger_tau_U);
@@ -2985,7 +2975,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             input_abs_U.sort(complete_list_U,0,number_elements_larger_tau_U-1,n_U);   // sort abs. vector created above from small to large. Largest elements needed are at end.
             pos_larg_element=offset;
             for(i=offset+1;i<number_elements_larger_tau_U;i++)
-                if(input_abs_U.read(i)>input_abs_U.read(pos_larg_element))
+                if(input_abs_U[i]>input_abs_U[pos_larg_element])
                     pos_larg_element=i;
             complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);
             list_U.resize_without_initialization(n_U);
@@ -2993,7 +2983,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         } else {
             pos_larg_element=0;
             for(i=1;i<number_elements_larger_tau_U;i++)
-                if(input_abs_U.read(i)>input_abs_U.read(pos_larg_element))
+                if(input_abs_U[i]>input_abs_U[pos_larg_element])
                     pos_larg_element=i;
             complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);
             list_U.resize_without_initialization(number_elements_larger_tau_U);
@@ -3029,13 +3019,13 @@ template<class T> void vector_sparse_dynamic<T>::take_weighted_largest_elements_
     }
 #endif
     for(i=0;i<nnz;i++)
-        if (invperm[pointer[i]]<mid) norm_input_L += absvalue_squared(weights_L.read(invperm[pointer[i]])*data[i]);
+        if (invperm[pointer[i]]<mid) norm_input_L += absvalue_squared(weights_L[invperm[pointer[i]]]*data[i]);
         else norm_input_U += absvalue_squared(data[i]);
     norm_input_L=sqrt(norm_input_L);
     norm_input_U=sqrt(norm_input_U);
     for(i=0;i<nnz;i++){
         if(invperm[pointer[i]]<mid){
-            product = std::abs(weights_L.read(invperm[pointer[i]])*data[i]);
+            product = std::abs(weights_L[invperm[pointer[i]]]*data[i]);
             if (product>tau_L*norm_input_L){
                 input_abs_L[number_elements_larger_tau_L]=product;
                 //complete_list_L[number_elements_larger_tau_L]=invperm[pointer[i]];
@@ -5644,7 +5634,7 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop_along_orientat
         for(k=0;k<M.dim_against_orientation();k++){
             // copy data to w
             for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                w[i]=M.data[M.pointer[k]+i]*weights.read(M.indices[M.pointer[k]+i]);
+                w[i]=M.data[M.pointer[k]+i]*weights[M.indices[M.pointer[k]+i]];
             // take largest elements of w, store result in list
             w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
             // copy elements to *this
@@ -5669,7 +5659,7 @@ template<class T> void matrix_sparse<T>::weighted_triangular_drop_along_orientat
         for(k=0;k<M.dim_against_orientation();k++){
             // copy data to w
             for(i=0;i<M.pointer[k+1]-M.pointer[k]-1;i++)
-                w[i]=M.data[M.pointer[k]+1+i]*weights.read(M.indices[pointer[k]+1+i]);
+                w[i]=M.data[M.pointer[k]+1+i]*weights[M.indices[pointer[k]+1+i]];
             // take largest elements of w, store result in list
             w.take_largest_elements_by_abs_value_with_threshold(list,max_fill_in-1,tau,0, M.pointer[k+1]-M.pointer[k]-1);
             // copy elements to *this
@@ -5930,11 +5920,11 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
         }
         // copy data, update access information.
         // copy pivot
-        U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
+        U.data[U.pointer[k]]=z[list_U[list_U.dimension()-1]];
         U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
         for(j=1;j<list_U.dimension();j++){
             pos=U.pointer[k]+j;
-            U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+            U.data[pos]=z[list_U[list_U.dimension()-1-j]];
             U.indices[pos]=list_U[list_U.dimension()-1-j];
             h=startU[U.indices[pos]];
             startU[U.indices[pos]]=pos;
@@ -6009,7 +5999,7 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
         indices[pointer[k]]=selected_row;
         for(j=0;j<list_L.dimension();j++){
             pos = pointer[k]+j+1;
-            data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
+            data[pos] = w[list_L[j]]/U.data[U.pointer[k]];
             b = indices[pos] = list_L[j];
             h=startL[b];
             startL[b]=pos;
@@ -6300,12 +6290,12 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
         /*
            if(eliminate){  // select potential pivot
            val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
-           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm[k])) && pos_pivot>=0){ 
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z[perm[k]]) && pos_pivot>=0){ 
            pivoting = true;
            pivot = val_larg_el;
            } else {
            pivoting = false;
-           pivot = z.read(perm[k]);
+           pivot = z[perm[k]];
            }
            }
            */
@@ -6314,7 +6304,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
            if(eliminate){  // select potential pivot
            val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
            if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0){
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z[selected_row]) && pos_pivot>=0){
            std::cout<<"*1 "; 
            pivoting = true;
            pivot = val_larg_el;
@@ -6322,10 +6312,10 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
            std::cout<<"*2 "; 
            pivoting = false;
            pos_pivot = selected_row;
-           pivot = z.read(pos_pivot);
+           pivot = z[pos_pivot];
            }
            } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm[k])) && pos_pivot>=0){ 
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z[perm[k]]) && pos_pivot>=0){ 
            std::cout<<"*3 "; 
            pivoting = true;
            pivot = val_larg_el;
@@ -6333,7 +6323,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
            std::cout<<"*4 "; 
            pivoting = false;
            pos_pivot = perm[k];
-           pivot = z.read(pos_pivot);
+           pivot = z[pos_pivot];
            }
            }
            }
@@ -6341,13 +6331,13 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
         if(eliminate){  // select potential pivot
             val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
             if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+                if (std::abs(val_larg_el*perm_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
                     //pivoting = true;
                     pivot = val_larg_el;
                 } else {
                     //pivoting = false;
                     pos_pivot = selected_row;
-                    pivot = z.read(pos_pivot);
+                    pivot = z[pos_pivot];
                 }
             } else {   // pivot if possible... only if nothing else works, use corresponding column
                 if ( (std::abs(val_larg_el)>0.0) && pos_pivot>=0){ 
@@ -6356,7 +6346,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                 } else {
                     //pivoting = false;
                     pos_pivot = perm[k];
-                    pivot = z.read(pos_pivot);
+                    pivot = z[pos_pivot];
                 }
             }
         }
@@ -6366,22 +6356,22 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
            if(eliminate){  // select potential pivot
            val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
            if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(selected_row)) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
            pivoting = true;
            pivot = val_larg_el;
            } else {
            pivoting = false;
            pos_pivot = selected_row;
-           pivot = z.read(pos_pivot);
+           pivot = z[pos_pivot];
            }
            } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-           if (std::abs(val_larg_el*perm_tol)>std::abs(z.read(perm[k])) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
+           if (std::abs(val_larg_el*perm_tol)>std::abs(z[perm[k]]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
            pivoting = true;
            pivot = val_larg_el;
            } else {
            pivoting = false;
            pos_pivot = perm[k];
-           pivot = z.read(pos_pivot);
+           pivot = z[pos_pivot];
            }
            }
            }
@@ -6397,8 +6387,8 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
+                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
@@ -6409,7 +6399,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                if (pivoting) {
                Dinv[k]=1.0/val_larg_el;
                } else {
-               Dinv[k]=1.0/z.read(perm[k]); pos_pivot=perm[k];
+               Dinv[k]=1.0/z[perm[k]]; pos_pivot=perm[k];
                }
                */
             z.scale(Dinv[k]);
@@ -6597,7 +6587,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
             U.indices[U.pointer[k]]=pos_pivot;
             for(j=0;j<list_U.dimension();j++){
                 pos=U.pointer[k]+j+1;
-                U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+                U.data[pos]=z[list_U[list_U.dimension()-1-j]];
                 U.indices[pos]=list_U[list_U.dimension()-1-j];
                 if(use_norm_row_U) norm_row_U[k] += std::abs(U.data[pos]);
                 h=startU[U.indices[pos]];
@@ -6631,7 +6621,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                 }
                 for(j=0;j<rejected_U.dimension();j++){
                     pos=droppedU.pointer[k]+j;
-                    droppedU.data[pos]=z.read(rejected_U[j]);
+                    droppedU.data[pos]=z[rejected_U[j]];
                     droppedU.indices[pos]=rejected_U[j];
                 }
                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
@@ -6676,7 +6666,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
             U.pointer[k+1]=U.pointer[k]+1;
             for(j=0;j<list_U.dimension();j++){
                 pos=Anew.pointer[k_Anew]+j;
-                Anew.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+                Anew.data[pos]=z[list_U[list_U.dimension()-1-j]];
                 Anew.indices[pos]=list_U[list_U.dimension()-1-j];
             }
             Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
@@ -6808,9 +6798,9 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
             indices[pointer[k]]=selected_row;
             for(j=0;j<list_L.dimension();j++){
                 pos = pointer[k]+j+1;
-                //data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
-                //data[pos] = w.read(list_L[j])*Dinv[k];
-                data[pos] = w.read(list_L[j]); // scaling has already been performed previously
+                //data[pos] = w[list_L[j]]/U.data[U.pointer[k]];
+                //data[pos] = w[list_L[j]]*Dinv[k];
+                data[pos] = w[list_L[j]]; // scaling has already been performed previously
                 b = indices[pos] = list_L[j];
                 h=startL[b];
                 startL[b]=pos;
@@ -6861,7 +6851,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                 for(j=0;j<rejected_L.dimension();j++){
                     pos = rejected_L[j]; // row index of current element
                     droppedL_colindex[pos].push(k);  // store corresponding column index = k
-                    droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
+                    droppedL_data[pos].push(w[pos]);  // store corresponding data element.
 
                 }
             }  // end updating droppedU
@@ -6938,8 +6928,8 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 Anew.pointer[0]=0;
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
+                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -7150,16 +7140,16 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
     // Statistics for L
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(L_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-        if(max_total < L_total.read(k)) max_total =L_total.read(k);
-        if(min_total > L_total.read(k)) min_total =L_total.read(k);
-        if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
-        if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
+        if(L_total[k] == 0) prop = 1.0;
+        else prop = ((Real) L_kept[k])/((Real) L_total[k]);
+        if(max_total < L_total[k]) max_total =L_total[k];
+        if(min_total > L_total[k]) min_total =L_total[k];
+        if(max_kept < L_kept[k]) max_kept =L_kept[k];
+        if(min_kept > L_kept[k]) min_kept =L_kept[k];
         if(max_prop < prop) max_prop = prop;
         if(min_prop > prop) min_prop = prop;
-        sum1 += L_total.read(k);
-        sum2 += L_kept.read(k);
+        sum1 += L_total[k];
+        sum2 += L_kept[k];
         sum3 += prop;
     }
     average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
@@ -7167,10 +7157,10 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
     average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(L_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-        sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
-        sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
+        if(L_total[k] == 0) prop = 1.0;
+        else prop = ((Real) L_kept[k])/((Real) L_total[k]);
+        sum1 += (L_total[k]-average_total)*(L_total[k]-average_total);
+        sum2 += (L_kept[k]-average_total)*(L_kept[k]-average_total);
         sum3 += (prop-average_prop)*(prop-average_prop);
     }
     stand_dev_total = sqrt(sum1/last_row_to_eliminate);
@@ -7193,16 +7183,16 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
     // Statistics for U
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(U_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-        if(max_total < U_total.read(k)) max_total =U_total.read(k);
-        if(min_total > U_total.read(k)) min_total =U_total.read(k);
-        if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
-        if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
+        if(U_total[k] == 0) prop = 1.0;
+        else prop = ((Real) U_kept[k])/((Real) U_total[k]);
+        if(max_total < U_total[k]) max_total =U_total[k];
+        if(min_total > U_total[k]) min_total =U_total[k];
+        if(max_kept < U_kept[k]) max_kept =U_kept[k];
+        if(min_kept > U_kept[k]) min_kept =U_kept[k];
         if(max_prop < prop) max_prop = prop;
         if(min_prop > prop) min_prop = prop;
-        sum1 += U_total.read(k);
-        sum2 += U_kept.read(k);
+        sum1 += U_total[k];
+        sum2 += U_kept[k];
         sum3 += prop;
     }
     average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
@@ -7210,10 +7200,10 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
     average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(U_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-        sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
-        sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
+        if(U_total[k] == 0) prop = 1.0;
+        else prop = ((Real) U_kept[k])/((Real) U_total[k]);
+        sum1 += (U_total[k]-average_total)*(U_total[k]-average_total);
+        sum2 += (U_kept[k]-average_total)*(U_kept[k]-average_total);
         sum3 += (prop-average_prop)*(prop-average_prop);
     }
     stand_dev_total = sqrt(sum1/last_row_to_eliminate);
@@ -7442,7 +7432,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
         time_5=clock();
         time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
 #endif
-        if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && fabs(z.read(k)) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
+        if(eliminate && !force_finish && !IP.get_EXTERNAL_FINAL_ROW() && k > IP.get_MIN_ELIM_FACTOR()*n && IP.get_SMALL_PIVOT_TERMINATES() && fabs(z[k]) < IP.get_MIN_PIVOT()){  // terminate level because pivot is too small.
             eliminate = false;
             end_level_now = true;
             threshold *= threshold_Schur_factor;
@@ -7452,15 +7442,15 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
+                for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
         }
         if(eliminate){  // select pivot scale z/U
-            pivot = z.read(k);
-            Dinv[k]=1.0/z.read(k);
+            pivot = z[k];
+            Dinv[k]=1.0/z[k];
             z.scale(Dinv[k]);
             z[k]=0.0; // eliminate pivot for sorting
         }
@@ -7610,7 +7600,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             U.indices[U.pointer[k]]=k;
             for(j=0;j<list_U.dimension();j++){
                 pos=U.pointer[k]+j+1;
-                U.data[pos]=z.read(list_U[j]);
+                U.data[pos]=z[list_U[j]];
                 U.indices[pos]=list_U[j];
                 if(use_norm_row_U) norm_row_U[k] += fabs(U.data[pos]);
                 //h=startU[U.indices[pos]];
@@ -7640,7 +7630,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 }
                 for(j=0;j<rejected_U.dimension();j++){
                     pos=droppedU.pointer[k]+j;
-                    droppedU.data[pos]=z.read(rejected_U[j]);
+                    droppedU.data[pos]=z[rejected_U[j]];
                     droppedU.indices[pos]=rejected_U[j];
                 }
                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
@@ -7675,7 +7665,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             U.pointer[k+1]=U.pointer[k]+1;
             for(j=0;j<list_U.dimension();j++){
                 pos=Anew.pointer[k_Anew]+j;
-                Anew.data[pos]=z.read(list_U[j]);
+                Anew.data[pos]=z[list_U[j]];
                 Anew.indices[pos]=list_U[j];
             }
             Anew.pointer[k_Anew+1]=Anew.pointer[k_Anew]+list_U.dimension();
@@ -7781,7 +7771,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             indices[pointer[k]]=k;
             for(j=0;j<list_L.dimension();j++){
                 pos = pointer[k]+j+1;
-                data[pos] = w.read(list_L[j]); // scaling has already been performed previously
+                data[pos] = w[list_L[j]]; // scaling has already been performed previously
                 indices[pos] = list_L[j];
             } // end for j
             pointer[k+1]=pointer[k]+list_L.dimension()+1;
@@ -7789,7 +7779,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 for(j=0;j<rejected_L.dimension();j++){
                     pos = rejected_L[j]; // row index of current element
                     droppedL_colindex[pos].push(k);  // store corresponding column index = k
-                    droppedL_data[pos].push(w.read(pos));  // store corresponding data element.
+                    droppedL_data[pos].push(w[pos]);  // store corresponding data element.
                 }
             }  // end updating droppedL
         } else {  //  else branch of if(eliminate)
@@ -7835,8 +7825,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data.read(p).size();
-                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex.read(p).size();
+                    for(Integer p = 0; p < droppedL_data.dim(); p++) droppedL_data_memory += droppedL_data[p].size();
+                    for(Integer p = 0; p < droppedL_colindex.dim() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -7971,16 +7961,16 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     // Statistics for L
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(L_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-        if(max_total < L_total.read(k)) max_total =L_total.read(k);
-        if(min_total > L_total.read(k)) min_total =L_total.read(k);
-        if(max_kept < L_kept.read(k)) max_kept =L_kept.read(k);
-        if(min_kept > L_kept.read(k)) min_kept =L_kept.read(k);
+        if(L_total[k] == 0) prop = 1.0;
+        else prop = ((Real) L_kept[k])/((Real) L_total[k]);
+        if(max_total < L_total[k]) max_total =L_total[k];
+        if(min_total > L_total[k]) min_total =L_total[k];
+        if(max_kept < L_kept[k]) max_kept =L_kept[k];
+        if(min_kept > L_kept[k]) min_kept =L_kept[k];
         if(max_prop < prop) max_prop = prop;
         if(min_prop > prop) min_prop = prop;
-        sum1 += L_total.read(k);
-        sum2 += L_kept.read(k);
+        sum1 += L_total[k];
+        sum2 += L_kept[k];
         sum3 += prop;
     }
     average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
@@ -7988,10 +7978,10 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(L_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) L_kept.read(k))/((Real) L_total.read(k));
-        sum1 += (L_total.read(k)-average_total)*(L_total.read(k)-average_total);
-        sum2 += (L_kept.read(k)-average_total)*(L_kept.read(k)-average_total);
+        if(L_total[k] == 0) prop = 1.0;
+        else prop = ((Real) L_kept[k])/((Real) L_total[k]);
+        sum1 += (L_total[k]-average_total)*(L_total[k]-average_total);
+        sum2 += (L_kept[k]-average_total)*(L_kept[k]-average_total);
         sum3 += (prop-average_prop)*(prop-average_prop);
     }
     stand_dev_total = sqrt(sum1/last_row_to_eliminate);
@@ -8014,16 +8004,16 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     // Statistics for U
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; min_kept=n; max_total=0; min_total=n; max_kept=0; min_prop=1.0; max_prop=0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(U_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-        if(max_total < U_total.read(k)) max_total =U_total.read(k);
-        if(min_total > U_total.read(k)) min_total =U_total.read(k);
-        if(max_kept < U_kept.read(k)) max_kept =U_kept.read(k);
-        if(min_kept > U_kept.read(k)) min_kept =U_kept.read(k);
+        if(U_total[k] == 0) prop = 1.0;
+        else prop = ((Real) U_kept[k])/((Real) U_total[k]);
+        if(max_total < U_total[k]) max_total =U_total[k];
+        if(min_total > U_total[k]) min_total =U_total[k];
+        if(max_kept < U_kept[k]) max_kept =U_kept[k];
+        if(min_kept > U_kept[k]) min_kept =U_kept[k];
         if(max_prop < prop) max_prop = prop;
         if(min_prop > prop) min_prop = prop;
-        sum1 += U_total.read(k);
-        sum2 += U_kept.read(k);
+        sum1 += U_total[k];
+        sum2 += U_kept[k];
         sum3 += prop;
     }
     average_total     = ((Real) sum1) / ((Real)last_row_to_eliminate);
@@ -8031,10 +8021,10 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     average_prop = ((Real) sum3) / ((Real) last_row_to_eliminate);
     sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
     for(k=0;k<last_row_to_eliminate;k++){
-        if(U_total.read(k) == 0) prop = 1.0;
-        else prop = ((Real) U_kept.read(k))/((Real) U_total.read(k));
-        sum1 += (U_total.read(k)-average_total)*(U_total.read(k)-average_total);
-        sum2 += (U_kept.read(k)-average_total)*(U_kept.read(k)-average_total);
+        if(U_total[k] == 0) prop = 1.0;
+        else prop = ((Real) U_kept[k])/((Real) U_total[k]);
+        sum1 += (U_total[k]-average_total)*(U_total[k]-average_total);
+        sum2 += (U_kept[k]-average_total)*(U_kept[k]-average_total);
         sum3 += (prop-average_prop)*(prop-average_prop);
     }
     stand_dev_total = sqrt(sum1/last_row_to_eliminate);
@@ -8291,11 +8281,11 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
           }
           // copy data, update access information.
           // copy pivot
-          U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
+          U.data[U.pointer[k]]=z[list_U[list_U.dimension()-1]];
           U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
           for(j=1;j<list_U.dimension();j++){
               pos=U.pointer[k]+j;
-              U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+              U.data[pos]=z[list_U[list_U.dimension()-1-j]];
               U.indices[pos]=list_U[list_U.dimension()-1-j];
               h=startU[U.indices[pos]];
               startU[U.indices[pos]]=pos;
@@ -8352,7 +8342,7 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
           #endif
           // (12.) sort and copy data to L
           // sort
-          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
+          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L[k]),max_fill_in-1,threshold,0,n);
           if(pointer[k]+list_L.dimension()+1>reserved_memory){
               std::cerr<<"matrix_sparse::ILUCDPinv: memory reserved was insufficient."<<std::endl;
               return false;
@@ -8362,7 +8352,7 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
           indices[pointer[k]]=selected_row;
           for(j=0;j<list_L.dimension();j++){
               pos = pointer[k]+j+1;
-              data[pos] = w.read(list_L[j])/U.data[U.pointer[k]];
+              data[pos] = w[list_L[j]]/U.data[U.pointer[k]];
               b = indices[pos] = list_L[j];
               h=startL[b];
               startL[b]=pos;
@@ -8392,8 +8382,8 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
           for(j=pointer[k]+1;j<pointer[k+1];j++){
                weights_L[indices[j]] -= weights_L[k]*data[j];
           }
-          xiplus_L=1.0+weights_L.read(k+1);
-          ximinus_L=-1.0+weights_L.read(k+1);
+          xiplus_L=1.0+weights_L[k+1];
+          ximinus_L=-1.0+weights_L[k+1];
           if(fabs(xiplus_L)<fabs(ximinus_L))weights_L[k+1]=ximinus_L;
           else weights_L[k+1]=xiplus_L;
           for(j=U.pointer[k]+1;j<U.pointer[k+1];j++){
@@ -8561,11 +8551,11 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
           }
           // copy data, update access information.
           // copy pivot
-          U.data[U.pointer[k]]=z.read(list_U[list_U.dimension()-1]);
+          U.data[U.pointer[k]]=z[list_U[list_U.dimension()-1]];
           U.indices[U.pointer[k]]=list_U[list_U.dimension()-1];
           for(j=1;j<list_U.dimension();j++){
               pos=U.pointer[k]+j;
-              U.data[pos]=z.read(list_U[list_U.dimension()-1-j]);
+              U.data[pos]=z[list_U[list_U.dimension()-1-j]];
               U.indices[pos]=list_U[list_U.dimension()-1-j];
               h=startU[U.indices[pos]];
               startU[U.indices[pos]]=pos;
@@ -8619,7 +8609,7 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
           #endif
          // (12.) sort and copy data to L
          // sort
-          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L.read(k)),max_fill_in-1,threshold,0,n);
+          w.take_single_weight_largest_elements_by_abs_value_with_threshold(IP, list_L,fabs(weights_L[k]),max_fill_in-1,threshold,0,n);
           if(pointer[k]+list_L.dimension()+1>reserved_memory){
               std::cerr<<"matrix_sparse::ILUCP4inv: memory reserved was insufficient."<<std::endl;
               return false;
@@ -8628,7 +8618,7 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
           data[pointer[k]]=1.0;
           indices[pointer[k]]=k;
           for(j=0;j<list_L.dimension();j++){
-              data[pointer[k]+j+1] = w.read(list_L[j])/U.data[U.pointer[k]];
+              data[pointer[k]+j+1] = w[list_L[j]]/U.data[U.pointer[k]];
               indices[pointer[k]+j+1] = list_L[j];
           } // end for j
           pointer[k+1]=pointer[k]+list_L.dimension()+1;
@@ -8642,8 +8632,8 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
           for(j=pointer[k]+1;j<pointer[k+1];j++){
                weights_L[indices[j]] -= weights_L[k]*data[j];
           }
-          xiplus_L=1.0+weights_L.read(k+1);
-          ximinus_L=-1.0+weights_L.read(k+1);
+          xiplus_L=1.0+weights_L[k+1];
+          ximinus_L=-1.0+weights_L[k+1];
           if(fabs(xiplus_L)<fabs(ximinus_L))weights_L[k+1]=ximinus_L;
           else weights_L[k+1]=xiplus_L;
           for(j=U.pointer[k]+1;j<U.pointer[k+1];j++){
@@ -11082,7 +11072,7 @@ template<class T> void matrix_dense<T>::diag(const vector_dense<T>& d){
     resize(d.dimension(),d.dimension());
     set_all(0.0);
     for(Integer i=0;i<number_rows;i++)
-        data[i][i]=d.read(i);
+        data[i][i]=d[i];
 }
 
 
@@ -11106,7 +11096,7 @@ template<class T> matrix_dense<T>& matrix_dense<T>::scale_rows(const vector_dens
      if (number_rows==d.dimension()){
          for(Integer i=0;i<number_rows;i++)
              for(Integer j=0;j<number_columns;j++)
-                 data[i][j]*=d.read(i);
+                 data[i][j]*=d[i];
          return *this;
      } else {
          std::cerr << "Dimension error in matrix_dense::scale_rows"<<std::endl;
@@ -11117,7 +11107,7 @@ template<class T> matrix_dense<T>& matrix_dense<T>::scale_columns(const vector_d
      if (number_columns==d.dimension()){
          for(Integer i=0;i<number_rows;i++)
              for(Integer j=0;j<number_columns;j++)
-                 data[i][j]*=d.read(j);
+                 data[i][j]*=d[j];
          return *this;
      } else {
          std::cerr << "Dimension error in matrix_dense*::scale_columns"<<std::endl;
@@ -11129,7 +11119,7 @@ template<class T> matrix_dense<T>& matrix_dense<T>::inverse_scale_rows(const vec
      if (number_rows==d.dimension()){
          for(Integer i=0;i<number_rows;i++)
              for(Integer j=0;j<number_columns;j++)
-                 data[i][j]/=d.read(i);
+                 data[i][j]/=d[i];
          return *this;
      } else {
          std::cerr << "Dimension error in matrix_dense::scale_rows"<<std::endl;
@@ -11140,7 +11130,7 @@ template<class T> matrix_dense<T>& matrix_dense<T>::inverse_scale_columns(const 
      if (number_columns==d.dimension()){
          for(Integer i=0;i<number_rows;i++)
              for(Integer j=0;j<number_columns;j++)
-                 data[i][j]/=d.read(j);
+                 data[i][j]/=d[j];
          return *this;
      } else {
          std::cerr << "Dimension error in matrix_dense*::scale_columns"<<std::endl;

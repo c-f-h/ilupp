@@ -138,7 +138,6 @@ template<class T> class vector_dense
            Real distance_point_to_line(const vector_dense<T>& p, const vector_dense<T>& t) const;
            // returns distance in 2-norm of *this to the line x = p + (lambda)t, lambda\in T (i.e. the line through p in the direction of t)
       // Accessing elements
-           T read(Integer j) const;
            T get(Integer j) const;
            T& operator[](Integer j);
            const T& operator[](Integer j) const;
