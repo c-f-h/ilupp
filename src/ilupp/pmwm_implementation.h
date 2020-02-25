@@ -63,7 +63,11 @@ template<class sparse_matrix_class, class permutation> class sapTree
         // functions for allocating / deallocating memory for fields cand_weights, weights and row_pointer
 
     public:
-        sapTree();
+        sapTree()
+            : cand_nodes(), checked_nodes(), reduced_dist() {
+                root = -1;
+                lsap = -1;
+            }
 
         // Accessing
         Integer get_root() const    { return root; }
@@ -103,13 +107,6 @@ void sapTree<sparse_matrix_class, permuation>::resize_fields(Integer size) {
     row_pointer.resize(size);
     cand_weights.resize(size);
     weights.resize(size);
-}
-
-// Default constructor
-template<class sparse_matrix_class, class permutation>
-sapTree<sparse_matrix_class, permutation>::sapTree() : cand_nodes(), checked_nodes(), reduced_dist() {
-    root = -1;
-    lsap = -1;
 }
 
 template<class sparse_matrix_class, class permutation>
@@ -523,17 +520,16 @@ bool find_pmwm(const sparse_matrix_class& A, permutation& mate_row, permutation&
     return true;
 }
 
-template<class sparse_matrix_class, class permutation>
-void column_perm(const sparse_matrix_class& A, permutation& col_perm) {
-    Integer dim;
-    vector_dense<Integer> nnz_per_col;
+template<class sparse_matrix_class>
+void column_perm(const sparse_matrix_class& A, std::vector<Integer>& col_perm) {
+
+    const Integer dim = A.dimension();
     index_list indices;
-
-    dim = A.dimension();
-    nnz_per_col.resize(dim,0);
     indices.resize(dim);
-    col_perm.resize_with_constant_value(dim,-1);
+    col_perm.resize(dim);
 
+    vector_dense<Integer> nnz_per_col;
+    nnz_per_col.resize(dim,0);
     for (Integer j = 0; j < A.non_zeroes(); j++)
         nnz_per_col[A.read_index(j)]++;
 
@@ -544,7 +540,8 @@ void column_perm(const sparse_matrix_class& A, permutation& col_perm) {
             col_perm[j] = indices[j];
         }
     }
-    else col_perm.init();
+    else
+        fill_identity(col_perm);
 }
 
 } // end namespace iluplusplus

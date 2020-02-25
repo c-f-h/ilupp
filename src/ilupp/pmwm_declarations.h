@@ -54,7 +54,6 @@
  *                                                                                                          *
  *  permutation: field of Integers storing the permutation                                                  *
  *  permutation functions:                                                                                  *
- *      Integer dimension() const;              // Returns dimension                                        *
  *      operator[](Integer i)                   // Access i-th element
  *      void resize_with_constant_value(Integer n, Integer d)                                               *
  *                                              // Resizes field to n and sets all elements to d            *
@@ -94,13 +93,13 @@ namespace iluplusplus {
 //               Function Declarations
 //**************************************************************************************//
 
-template<class sparse_matrix_class, class permutation, class vector>	
-	bool find_pmwm(const sparse_matrix_class& A, permutation& invPerm, permutation& perm, vector& inverse_row_scaling, vector& inverse_col_scaling); 
 // finds perfect maximum weighted matching
+template<class sparse_matrix_class, class permutation, class vector>
+bool find_pmwm(const sparse_matrix_class& A, permutation& invPerm, permutation& perm, vector& inverse_row_scaling, vector& inverse_col_scaling);
 
-template<class sparse_matrix_class, class permutation>
-	void column_perm(const sparse_matrix_class& A, permutation& col_perm);
 // permutes columns in ascending order of non-zero elements
+template<class sparse_matrix_class>
+void column_perm(const sparse_matrix_class& A, std::vector<Integer>& col_perm);
 
 
 //**************************************************************************************//

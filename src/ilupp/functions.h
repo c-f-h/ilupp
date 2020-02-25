@@ -33,6 +33,33 @@ matrix_usage_type other_usage(matrix_usage_type);
 template<class T> inline void switchnumbers(T&, T&);
 template<class T> inline void interchange(T&, T&);
 
+template<class VT, class VInt>
+VT permute_vec(const VT& vec, const VInt& perm)
+{
+#ifdef DEBUG
+    if (x.dimension() != perm.dimension()) {
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    VT result(vec.size());
+    for (size_t i = 0; i < vec.size(); ++i)
+        result[i] = vec[perm[i]];
+    return result;
+}
+
+template <class T>
+void fill_identity(std::vector<T>& v)
+{
+    std::iota(v.begin(), v.end(), 0);
+}
+
+template <class T>
+void make_identity(std::vector<T>& v, size_t n)
+{
+    v.resize(n);
+    fill_identity(v);
+}
+
 template<class T> inline T conj(T);                             //conjugate; adjust for complex numbers
 template<> inline float conj(float);
 template<> inline double conj(double);

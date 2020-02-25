@@ -799,20 +799,6 @@ template<class T> std::istream& operator >> (std::istream& is, matrix_dense<T>& 
 void quicksort(index_list& v, index_list& list, const index_list& permutation, Integer left, Integer right);
 void quicksort(index_list& v, const index_list& permutation, Integer left, Integer right);
 
-template<class VT, class VInt>
-VT permute_vec(const VT& vec, const VInt& perm)
-{
-#ifdef DEBUG
-    if (x.dimension() != perm.dimension()) {
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-#endif
-    VT result(vec.size());
-    for (size_t i = 0; i < vec.size(); ++i)
-        result[i] = vec[perm[i]];
-    return result;
-}
-
 #ifdef ILUPLUSPLUS_USES_PARDISO // requires: libpardiso
     extern "C" {int mps_pardiso(int, int, int, int*, int*, double*, int*, double*, double*, int);
                 int pardiso_solve(int n, int* ia, int* ja, double* a, double* b, double* x, int mtype, int* peak_memory, int* perm_memory, int* nnzLU, double* time);

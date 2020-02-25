@@ -10626,16 +10626,16 @@ template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, c
 
 template<class T> bool matrix_sparse<T>::maximal_weight_inverse_scales(index_list& P, vector_dense<T>& D1, vector_dense<T>& D2) const {
     index_list invP;
-    return find_pmwm <matrix_sparse<T>,index_list,vector_dense<T> >(*this,invP,P,D1,D2);
+    return find_pmwm(*this, invP, P, D1, D2);
 }
 
 template<class T> void matrix_sparse<T>::test_ordering(index_list& P, index_list& Q) const {
     P.resize(dimension());
-    column_perm<matrix_sparse<T>, index_list >(*this, Q);
+    column_perm(*this, Q.vec());
 }
 
 template<class T> void matrix_sparse<T>::sparse_first_ordering(index_list& Q) const {
-    column_perm<matrix_sparse<T>, index_list >(*this, Q);
+    column_perm(*this, Q.vec());
 }
 
 #ifdef ILUPLUSPLUS_USES_PARDISO
@@ -11950,8 +11950,7 @@ index_list::index_list(Integer _size, Integer _reserved){
 }
 
 void index_list::init(){
-    for(Integer i=0;i<dimension();i++)
-        indices[i]=i;
+    fill_identity(vec());
 }
 
 void index_list::init(Integer n) {
@@ -11980,8 +11979,7 @@ void index_list::resize_without_initialization(Integer newsize, Integer new_memo
 }
 
 void index_list::resize(Integer newsize){
-    resize_without_initialization(newsize);
-    init();
+    make_identity(vec(), newsize);
 }
 
 void index_list::resize(Integer newsize, Integer new_memory){
