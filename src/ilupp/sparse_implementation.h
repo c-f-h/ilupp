@@ -9246,7 +9246,7 @@ template<class T> Integer matrix_sparse<T>::preprocess(
     invQ.resize(n);
     Drow.resize(n,1.0);
     Dcol.resize(n,1.0);
-    for(k=0;k<IP.get_PREPROCESSING().dimension();k++){
+    for(k=0;k<IP.get_PREPROCESSING().size();k++){
         switch (IP.get_PREPROCESSING()[k]){
             case TEST_ORDERING:
                 test_ordering(p1,p2);

@@ -59,8 +59,6 @@ class preprocessing_sequence
 class preprocessing_sequence : public std::vector<preprocessing_type> {
     public:
         // compatibility with custom array<>
-        Integer dimension() const   { return size(); }
-        Integer dim() const         { return size(); }
         preprocessing_type get(Integer k) const { return (*this)[k]; }
         preprocessing_type& set(Integer k)  { return (*this)[k]; }
 

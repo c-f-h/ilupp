@@ -1367,7 +1367,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     Integer nonzeroes = Akrow.actual_non_zeroes();
     this->preconditioner_exists = true;
     this->number_levels=0;
-    if(IP.get_PREPROCESSING().dim()<2){  // in this case, only one copy of matrix is needed (total of 2 matrices) 
+    if(IP.get_PREPROCESSING().size()<2){  // in this case, only one copy of matrix is needed (total of 2 matrices)
         max_memory_allocated = 2.0 * Amemory;
         max_memory_used = 2.0 * Amemory;
     } else {
@@ -1717,7 +1717,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
     this->intermediate_size=Arow.rows();
     time_2 = clock();
     this->setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-    if(IP.get_PREPROCESSING().dim()<2){  // in this case, only one copy of matrix is needed (total of 2 matrices) 
+    if(IP.get_PREPROCESSING().size()<2){  // in this case, only one copy of matrix is needed (total of 2 matrices)
         this->memory_allocated_to_create = max(memory_matrices + memory_allocated_factorization, 2.0*Arow.memory());  // max of factorization and preprocessing
         this->memory_used_to_create = max(memory_matrices + memory_used_factorization, 2.0*Arow.memory());
     } else {

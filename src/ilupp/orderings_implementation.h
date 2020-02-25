@@ -1456,26 +1456,26 @@ void preprocessing_sequence::set_test(){
 #endif
 
 void preprocessing_sequence::print() const {
-    for(Integer i=0; i<dimension();i++) std::cout<<"     "<<long_string(get(i))<<std::endl;
+    for(size_t i=0; i<size();i++) std::cout<<"     "<<long_string(get(i))<<std::endl;
 }
 
 std::string preprocessing_sequence::string() const {
     std::string output;
-    for(Integer i=0; i<dimension();i++){
+    for(size_t i=0; i<size();i++){
         output = (output + iluplusplus::string(get(i)));
-        if(i!=dimension()-1) output = (output + "+");
+        if(i!=size()-1) output = (output + "+");
     }
-    if(dimension() == 0) output = "none";
+    if(size() == 0) output = "none";
     return output;
 }
 
 std::string preprocessing_sequence::string_with_hyphen() const {
     std::string output;
-    for(Integer i=0; i<dimension();i++){
+    for(size_t i=0; i<size();i++){
         output = (output + iluplusplus::string(get(i)));
-        if(i!=dimension()-1) output = (output + "-");
+        if(i!=size()-1) output = (output + "-");
     }
-    if(dimension() == 0) output = "none";
+    if(size() == 0) output = "none";
     return output;
 }
 
