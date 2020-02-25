@@ -384,8 +384,8 @@ void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
     w=v;
     this->apply_preconditioner_left(use,w);
     //for(Integer i=0; i<number_levels; i++){
-    //    w.inverse_scale_at_end(D_l.get(i));
-    //    Precond_left.get(i).triangular_solve_with_smaller_matrix_permute_first(left_form,use,permutation_rows.get(i),w);
+    //    w.inverse_scale_at_end(D_l[i]);
+    //    Precond_left[i].triangular_solve_with_smaller_matrix_permute_first(left_form,use,permutation_rows[i],w);
     //}
 }
 
@@ -393,13 +393,13 @@ template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_left(matrix_usage_type use, vector_type &w) const {
     if(use == ID){
         for(Integer i=0; i<number_levels; i++){
-            w.inverse_scale_at_end(D_l.get(i));
-            Precond_left.get(i).triangular_solve_with_smaller_matrix_permute_first(left_form,use,permutation_rows.get(i),w);
+            w.inverse_scale_at_end(D_l[i]);
+            Precond_left[i].triangular_solve_with_smaller_matrix_permute_first(left_form,use,permutation_rows[i],w);
         }
     } else {
         for(Integer i=number_levels-1; i>=0; i--){
-            Precond_left.get(i).triangular_solve_with_smaller_matrix_permute_last(left_form,use,inverse_permutation_rows.get(i),w);
-            w.inverse_scale_at_end(D_l.get(i));
+            Precond_left[i].triangular_solve_with_smaller_matrix_permute_last(left_form,use,inverse_permutation_rows[i],w);
+            w.inverse_scale_at_end(D_l[i]);
         }
 
     }
@@ -409,10 +409,10 @@ template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const {
     w=v;
     //for(Integer i=number_levels-1; i>=0; i--){
-    //    w.scale_at_end(Precond_middle.get(i));
-    //    //w.inverse_scale_at_end(Precond_middle.get(i));
-    //    Precond_right.get(i).triangular_solve_with_smaller_matrix_permute_last(right_form,use,inverse_permutation_columns.get(i),w);
-    //    w.inverse_scale_at_end(D_r.get(i));
+    //    w.scale_at_end(Precond_middle[i]);
+    //    //w.inverse_scale_at_end(Precond_middle[i]);
+    //    Precond_right[i].triangular_solve_with_smaller_matrix_permute_last(right_form,use,inverse_permutation_columns[i],w);
+    //    w.inverse_scale_at_end(D_r[i]);
     //}
     this->apply_preconditioner_right(use,w);
 }
@@ -421,17 +421,17 @@ template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, vector_type &w) const {
     if(use == ID){
         for(Integer i=number_levels-1; i>=0; i--){
-            w.scale_at_end(Precond_middle.get(i));
-            //w.inverse_scale_at_end(Precond_middle.get(i));
-            Precond_right.get(i).triangular_solve_with_smaller_matrix_permute_last(right_form,use,inverse_permutation_columns.get(i),w);
-            w.inverse_scale_at_end(D_r.get(i));
+            w.scale_at_end(Precond_middle[i]);
+            //w.inverse_scale_at_end(Precond_middle[i]);
+            Precond_right[i].triangular_solve_with_smaller_matrix_permute_last(right_form,use,inverse_permutation_columns[i],w);
+            w.inverse_scale_at_end(D_r[i]);
         }
     } else {
         for(Integer i=0; i<number_levels; i++){
-            w.inverse_scale_at_end(D_r.get(i));
-            //w.inverse_scale_at_end(Precond_middle.get(i));
-            Precond_right.get(i).triangular_solve_with_smaller_matrix_permute_first(right_form,use,permutation_columns.get(i),w);
-            w.scale_at_end(Precond_middle.get(i));
+            w.inverse_scale_at_end(D_r[i]);
+            //w.inverse_scale_at_end(Precond_middle[i]);
+            Precond_right[i].triangular_solve_with_smaller_matrix_permute_first(right_form,use,permutation_columns[i],w);
+            w.scale_at_end(Precond_middle[i]);
         }
     }
 }
@@ -479,7 +479,7 @@ template <class T, class matrix_type, class vector_type>
       #ifdef DEBUG
           if(non_fatal_error(k<0||k>=number_levels, "indirect_split_triangular_multilevel_preconditioner: dim: This level does not exist.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
       #endif
-      return Precond_left.get(k).rows();
+      return Precond_left[k].rows();
   }
 
 template <class T, class matrix_type, class vector_type>
@@ -490,7 +490,7 @@ void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
     Integer i;
     vector_type v;
     for(i=0;i<number_levels;i++){
-        v.absvalue(Precond_middle.get(i),0,Precond_middle.get(i).dimension()-Precond_middle.get(i+1).dimension());
+        v.absvalue(Precond_middle[i],0,Precond_middle[i].dimension()-Precond_middle[i+1].dimension());
         v.append(filename);
     }
 }
@@ -501,9 +501,9 @@ void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
     Integer i;
     vector_type v;
     for(i=0;i<number_levels;i++){
-        v.absvalue(Precond_middle.get(i),0,Precond_middle.get(i).dimension()-Precond_middle.get(i+1).dimension());
+        v.absvalue(Precond_middle[i],0,Precond_middle[i].dimension()-Precond_middle[i+1].dimension());
         v.append_with_indices(filename,counter);
-        counter = Precond_middle.get(i).dimension()-Precond_middle.get(i+1).dimension(); // new starting position
+        counter = Precond_middle[i].dimension()-Precond_middle[i+1].dimension(); // new starting position
     }
 }
 
@@ -512,8 +512,8 @@ Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector
     Integer counter = 0;
     Integer i,j;
     for(i=0;i<number_levels;i++){
-        for(j=0; j< Precond_middle.get(i).dimension()-Precond_middle.get(i+1).dimension(); j++) 
-            if (fabs(Precond_middle.get(i).get(j))>= 1.0/tau) counter++;
+        for(j=0; j< Precond_middle[i].dimension()-Precond_middle[i+1].dimension(); j++)
+            if (fabs(Precond_middle[i][j])>= 1.0/tau) counter++;
     }
     return counter;
 }
@@ -521,31 +521,31 @@ Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector
 template <class T, class matrix_type, class vector_type>
 Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::left_nnz() const {
     Integer sum=0;
-    for(Integer k=0;k<number_levels;k++) sum += Precond_left.get(k).actual_non_zeroes()-Precond_left.get(k).rows();
+    for(Integer k=0;k<number_levels;k++) sum += Precond_left[k].actual_non_zeroes()-Precond_left[k].rows();
     return sum;
 }
 
 template <class T, class matrix_type, class vector_type>
 Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::right_nnz() const {
     Integer sum=0;
-    for(Integer k=0;k<number_levels;k++) sum += Precond_right.get(k).actual_non_zeroes()-Precond_right.get(k).rows();
+    for(Integer k=0;k<number_levels;k++) sum += Precond_right[k].actual_non_zeroes()-Precond_right[k].rows();
     return sum;
 }
 
 template <class T, class matrix_type, class vector_type>
 Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::middle_nnz() const {
     Integer sum=0;
-    for(Integer k=0;k<number_levels;k++) sum += Precond_middle.get(k).dimension();
+    for(Integer k=0;k<number_levels;k++) sum += Precond_middle[k].dimension();
     return sum;
 }
 
 template <class T, class matrix_type, class vector_type>
 Real indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::memory(Integer k) const {
     if(non_fatal_error(k<0||k>=number_levels, "indirect_split_triangular_multilevel_preconditioner: memory: This level does not exist.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    return D_l.get(k).memory() + D_r.get(k).memory() + 
-        inverse_permutation_columns.get(k).memory() + inverse_permutation_rows.get(k).memory() +
-        permutation_columns.get(k).memory() + permutation_rows.get(k).memory() +
-        Precond_left.get(k).memory() + Precond_middle.get(k).memory() + Precond_right.get(k).memory();
+    return D_l[k].memory() + D_r[k].memory() +
+        inverse_permutation_columns[k].memory() + inverse_permutation_rows[k].memory() +
+        permutation_columns[k].memory() + permutation_rows[k].memory() +
+        Precond_left[k].memory() + Precond_middle[k].memory() + Precond_right[k].memory();
 }
 
 template <class T, class matrix_type, class vector_type>
@@ -556,10 +556,10 @@ Real indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
 }
 
 template <class T, class matrix_type, class vector_type>
-  matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::left_preconditioning_matrix(Integer k) {return Precond_left.get(k);}
+  matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::left_preconditioning_matrix(Integer k) {return Precond_left[k];}
 
 template <class T, class matrix_type, class vector_type>
-  matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::right_preconditioning_matrix(Integer k){return Precond_right.get(k);}
+  matrix_type indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::right_preconditioning_matrix(Integer k){return Precond_right[k];}
 
 template <class T, class matrix_type, class vector_type>
   void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::print(Integer k) const {
@@ -578,11 +578,11 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
   void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::print_info(Integer k) const {
       std::cout<<" left matrix at level " << k << ":\n";
-      Precond_left.get(k).print_info();
+      Precond_left[k].print_info();
       std::cout<<" right matrix at level " << k << ":\n";
-      Precond_right.get(k).print_info();
+      Precond_right[k].print_info();
       std::cout<<" middle matrix at level " << k << ":\n";
-      Precond_middle.get(k).print_info();
+      Precond_middle[k].print_info();
             }
 
 template <class T, class matrix_type, class vector_type>
