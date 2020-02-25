@@ -1309,16 +1309,6 @@ template<class T> T vector_dense<T>::read(Integer j) const {
      return data[j];
   }
 
-template<class T> T vector_dense<T>::read_data(Integer j) const {
-     #ifdef DEBUG
-         if(j<0||j>=size){
-             std::cerr<<"vector_dense::read_data: index out of range. Accessing an element with index "<<j<<" in a vector having size "<<size<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return data[j];
-  }
-
 template<class T> T& vector_dense<T>::operator[](Integer j){
      #ifdef DEBUG
          if(j<0||j>=size){
@@ -1362,7 +1352,7 @@ template<class T> std::istream& operator >> (std::istream& is, vector_dense<T> &
 
 template<class T> std::ostream& operator << (std::ostream& os, const vector_dense<T> &x) {
     os<<std::endl;
-    for(Integer i=0;i<x.dimension();i++) os << x.read_data(i) << std::endl;
+    for(Integer i=0;i<x.dimension();i++) os << x[i] << std::endl;
     os<<std::endl;
     return os;
  }
@@ -3373,7 +3363,7 @@ template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data
          index_list            = begin_index_list+i;                // corresponding to this element in the list;
          index_data            = list[index_list];                  // the datum in the data_vector has the index/position "index_data"
          indices[index_matrix] = index_data+offset;                        // this position is stored now in (*this).indices
-         data[index_matrix]    = data_vector.read_data(index_data); // the datum corresponding to this position is stored in (*this).data.
+         data[index_matrix]    = data_vector[index_data]; // the datum corresponding to this position is stored in (*this).data.
      }
   }
 
@@ -4109,7 +4099,7 @@ template<class T> void matrix_sparse<T>::exponential_scale_orientation_based(con
     Integer j;
     for(i=0;i<pointer_size-1;i++)
         for(j=pointer[i];j<pointer[i+1];j++)
-            data[j] *= std::exp(D1.read_data(i)*D2.read_data(read_index(j)));
+            data[j] *= std::exp(D1[i]*D2[read_index(j)]);
   }
 
 template<class T> void matrix_sparse<T>::scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2){
@@ -4118,7 +4108,7 @@ template<class T> void matrix_sparse<T>::scale_orientation_based(const vector_de
     Integer j;
     for(i=0;i<pointer_size-1;i++)
         for(j=pointer[i];j<pointer[i+1];j++)
-            data[j] *= D1.read_data(i)*D2.read_data(read_index(j));
+            data[j] *= D1[i]*D2[read_index(j)];
   }
 
 
@@ -4139,10 +4129,10 @@ template<class T> void matrix_sparse<T>::scale(const vector_dense<T>& v, orienta
     if(o==orientation)
         for(i=0;i<pointer_size-1;i++)
             for(j=pointer[i];j<pointer[i+1];j++)
-                data[j] *= v.read_data(i);
+                data[j] *= v[i];
     else
         for(j=0;j<nnz;j++)
-          data[j] *= v.read_data(indices[j]);
+          data[j] *= v[indices[j]];
   }
 
 
@@ -4154,10 +4144,10 @@ template<class T> void matrix_sparse<T>::scale(const matrix_sparse<T>& A, const 
     if(o==orientation)
         for(i=0;i<pointer_size-1;i++)
             for(j=pointer[i];j<pointer[i+1];j++)
-                data[j] = A.data[j]*v.read_data(i);
+                data[j] = A.data[j]*v[i];
     else
         for(j=0;j<nnz;j++)
-            data[j]  = A.data[j]* v.read_data(A.indices[j]);
+            data[j]  = A.data[j]* v[A.indices[j]];
     for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
     for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
   }
@@ -4171,10 +4161,10 @@ template<class T> void matrix_sparse<T>::inverse_scale(const vector_dense<T>& v,
     if(o==orientation)
         for(i=0;i<pointer_size-1;i++)
             for(j=pointer[i];j<pointer[i+1];j++)
-                data[j] /= v.read_data(i);
+                data[j] /= v[i];
     else
         for(j=0;j<nnz;j++)
-          data[j] /= v.read_data(indices[j]);
+          data[j] /= v[indices[j]];
   }
 
 template<class T> void matrix_sparse<T>::inverse_scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o){
@@ -4185,10 +4175,10 @@ template<class T> void matrix_sparse<T>::inverse_scale(const matrix_sparse<T>& A
     if(o==orientation)
         for(i=0;i<pointer_size-1;i++)
             for(j=pointer[i];j<pointer[i+1];j++)
-                data[j] = A.data[j]/v.read_data(i);
+                data[j] = A.data[j]/v[i];
     else
         for(j=0;j<A.actual_non_zeroes();j++)
-            data[j] = A.data[j]/v.read_data(A.indices[j]);
+            data[j] = A.data[j]/v[A.indices[j]];
     for(i=0;i<pointer_size;i++) pointer[i]=A.pointer[i];
     for(i=0;i<A.actual_non_zeroes();i++) indices[i]=A.indices[i];
   }
@@ -4199,7 +4189,7 @@ template<class T> void matrix_sparse<T>::inverse_scale_orientation_based(const v
     Integer j;
     for(i=0;i<pointer_size-1;i++)
         for(j=pointer[i];j<pointer[i+1];j++)
-            data[j] /= (D1.read_data(i)*D2.read_data(read_index(j)));
+            data[j] /= (D1[i]*D2[read_index(j)]);
   }
 
 template<class T> void matrix_sparse<T>::inverse_scale(const vector_dense<T>& D1, const vector_dense<T>& D2){
@@ -10811,7 +10801,7 @@ template<class T> void matrix_dense<T>::generic_matrix_vector_multiplication_add
 
 template<class T> void matrix_dense<T>::generic_matrix_transpose_vector_multiplication_addition(const vector_dense<T>& x, vector_dense<T>& v) const {
      for(Integer i=0;i<number_columns;i++)
-         for(Integer j=0;j<number_rows;j++) v._set(j) += data[i][j] * x.read_data(i);
+         for(Integer j=0;j<number_rows;j++) v._set(j) += data[i][j] * x[i];
   }
 
 template<class T> void matrix_dense<T>::generic_matrix_matrix_multiplication_addition(const matrix_dense<T>& A, const matrix_dense<T>& B) {
@@ -11483,7 +11473,7 @@ template<class T> void matrix_dense<T>::GaussJordan(const vector_dense<T> &b, ve
     for (k=0;k<size;k++){
         for (j=0;j<size;j++)
             r[k][j]=data[k][j];
-        r[k][size]=b.read_data(k);
+        r[k][size]=b[k];
     }
     for (k=0;k<size;k++){
         pivotGJ(r,k);

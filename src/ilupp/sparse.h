@@ -140,7 +140,6 @@ template<class T> class vector_dense
       // Accessing elements
            T read(Integer j) const;
            T get(Integer j) const;
-           T  read_data(Integer j) const;
            T& operator[](Integer j);
            const T& operator[](Integer j) const;
            T& set(Integer j);

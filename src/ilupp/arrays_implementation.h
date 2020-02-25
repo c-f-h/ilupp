@@ -329,16 +329,6 @@ template<class T> const T& array<T>::read(Integer j) const {
      return data[j];
   }
 
-template<class T> const T& array<T>::read_data(Integer j) const {
-     #ifdef DEBUG
-         if(j<0||j>=size){
-             std::cerr<<"array::read_data: index out of range. Accessing an element with index "<<j<<" in a array having size "<<size<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     return data[j];
-  }
-
 template<class T> T& array<T>::operator[](Integer j){
      #ifdef DEBUG
          if(j<0||j>=size){
@@ -395,7 +385,7 @@ template<class T> std::istream& operator >> (std::istream& is, array<T> &x) {
 
 template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x) {
     os<<std::endl;
-    for(Integer i=0;i<x.dimension();i++) os << x.read_data(i) << std::endl;
+    for(Integer i=0;i<x.dimension();i++) os << x[i] << std::endl;
     os<<std::endl;
     return os;
  }

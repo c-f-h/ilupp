@@ -61,7 +61,6 @@ template<class T> class array
       // Accessing elements
           const T& read(Integer j) const;
           const T& get(Integer j) const;
-          const T& read_data(Integer j) const;
           T& operator[](Integer j);
           const T& operator[](Integer j) const;
           T& set(Integer j);
