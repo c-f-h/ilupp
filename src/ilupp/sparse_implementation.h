@@ -430,7 +430,8 @@ template<class T> T vector_dense<T>::operator * (vector_dense const &v) const { 
          }
      #endif
      T h = (T) 0;
-     for (Integer i=0;i<size;i++) h += data[i]*conj(v.data[i]);
+     for (Integer i=0;i<size;i++)
+         h += data[i] * std::conj(v.data[i]);
      return h;
   }
 
@@ -1090,7 +1091,8 @@ template<class T> Real vector_dense<T>::norm2() const {          // returns the 
 
 template<class T> Real vector_dense<T>::norm2_squared() const {          // returns the 2-norm of a vector
      Real h = (T) 0;
-     for (Integer i=0;i<size;i++) h += fabs(conj(data[i])*data[i]);
+     for (Integer i=0;i<size;i++)
+         h += std::abs(std::conj(data[i]) * data[i]);
      return h;
   }
 

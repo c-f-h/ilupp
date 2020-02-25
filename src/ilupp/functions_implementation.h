@@ -177,41 +177,6 @@ std::string long_string(preprocessing_type pt){
 //                                                                                                                       *
 //************************************************************************************************************************
 
-template<class T> inline T conj(T x){
-       #ifdef DEBUG
-           std::cout<<"template<class T> inline T conj(T x): using non-specialized template. This is not a good idea. Please write a specialized template for your data type."<<std::endl;
-       #endif
-       return x;
-  }
-
-
-template<> inline float conj(float x){
-       return x;
-  }
-
-template<> inline double conj(double x){
-       return x;
-  }
-
-template<> inline long double conj(long double x){
-       return x;
-  }
-
-template<> inline std::complex<float>  conj(std::complex<float> x){
-       return std::conj(x);
-  }
-
-
-template<> inline std::complex<double> conj(std::complex<double> x){
-       return std::conj(x);
-  }
-
-template<> inline std::complex<long double> conj(std::complex<long double> x){
-       return std::conj(x);
-  }
-
-
-
 template<class T> inline Real real(T x){
     return (Real) std::real(x);
 }
