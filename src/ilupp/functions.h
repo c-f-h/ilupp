@@ -66,24 +66,23 @@ template<class T> inline Real absvalue_squared(T);
 template<class T> inline T sqr(T);
 inline void fatal_error(bool, const std::string);
 inline bool non_fatal_error(bool, const std::string);
-Integer bin(Integer,Integer);
+
 std::string booltostring(bool);
 Integer RoundRealToInteger(Real);
 std::string string(data_type);
 std::string cap_string(data_type);
 std::string string(preprocessing_type);
 std::string long_string(preprocessing_type);
+
 template<class T> bool equal_to_zero(T);
 bool equal_to_zero(Real);
 template<class T> bool equal(T, T);
 bool equal(Real, Real);
-#ifndef ILUPLUSPLUS_USES_SPARSPAK    // if SPARSPAK is used, the file f2c.h is included, which provides macros for max and min
-    template<class T> T max(T, T);
-    Integer max(Integer, Integer);
-    Real max(Real, Real);
-    template<class T> T min(T, T);
-    Integer min(Integer, Integer);
-    Real min(Real, Real);
+
+#ifndef ILUPLUSPLUS_USES_SPARSPAK
+// if SPARSPAK is used, the file f2c.h is included, which provides macros for max and min
+using std::min;
+using std::max;
 #endif
 
 // The class iluplusplus_error                                                                                         *
@@ -94,9 +93,6 @@ class iluplusplus_error {
        public:
            iluplusplus_error();
            iluplusplus_error(error_type E);
-           ~iluplusplus_error();
-           iluplusplus_error(const iluplusplus_error& E);
-           iluplusplus_error& operator = (const iluplusplus_error& E);
            error_type& set();
            error_type get() const;
            error_type read() const;

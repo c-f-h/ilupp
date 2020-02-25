@@ -248,15 +248,6 @@ inline bool non_fatal_error(bool exp, const std::string message){
     } else return false;
   }
 
-Integer bin(Integer n, Integer k){
-      Integer b=1;
-      Integer i;
-      for(i=0;i<k;i++)  b *= n-i;
-      for(i=1;i<=k;i++) b /= i;
-      return b;
-  }
-
-
 template<class T> bool equal_to_zero(T t){
     return (fabs((Real) t) < COMPARE_EPS);
 }
@@ -275,36 +266,6 @@ bool equal(Real x, Real y){
     return (fabs(x-y)<COMPARE_EPS);
 }
 
-#ifndef ILUPLUSPLUS_USES_SPARSPAK
-
-template<class T> T max(T x, T y){
-    return ((x >= y) ? x: y);
-}
-
-Integer max(Integer x, Integer y){
-    return ((x >= y) ? x: y);
-}
-
-Real max(Real x, Real y){
-    return ((x >= y) ? x: y);
-}
-
-template<class T> T min(T x, T y){
-    return ((x <= y) ? x: y);
-}
-
-Integer min(Integer x, Integer y){
-    return ((x <= y) ? x: y);
-}
-
-Real min(Real x, Real y){
-    return ((x <= y) ? x: y);
-}
-
-
-#endif
-
-
 //************************************************************************************************************************
 //                                                                                                                       *
 //         The implementation of the class iluplusplus_error                                                             *
@@ -320,17 +281,6 @@ iluplusplus_error::iluplusplus_error(){
 
 iluplusplus_error::iluplusplus_error(error_type E){
     error = E;
-  }
-
-iluplusplus_error::~iluplusplus_error(){}
-
-iluplusplus_error::iluplusplus_error(const iluplusplus_error& E){
-      error = E.error;
-  }
-
-iluplusplus_error& iluplusplus_error::operator = (const iluplusplus_error& E){
-      error = E.error;
-      return *this;
   }
 
 void iluplusplus_error::print() const {
