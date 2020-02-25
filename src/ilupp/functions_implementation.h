@@ -91,50 +91,6 @@ std::string string(preprocessing_type pt){
     return output;
 }
 
-std::string cap_string(data_type t){
-    switch(t){
-        case SUCC_SOLVE:    return "SUCC_SOLVE";
-        case THRESHOLD:     return "THRESHOLD";
-        case FILLIN:        return "FILLIN";
-        case MEM_STORAGE:   return "MEM_STORAGE";
-        case MEM_USED:      return "MEM_USED";
-        case MEM_ALLOCATED: return "MEM_ALLOCATED";
-        case ITERATIONS:    return "ITERATIONS";
-        case ABS_ERROR:     return "ABS_ERROR";
-        case REL_RESIDUAL:  return "REL_RESIDUAL";
-        case ABS_RESIDUAL:  return "ABS_RESIDUAL";
-        case SETUP_TIME:    return "SETUP_TIME";
-        case ITER_TIME:     return "ITER_TIME";
-        case TOTAL_TIME:    return "TOTAL_TIME";
-        case MATRIX_DIM:    return "MATRIX_DIM";
-        case MATRIX_NNZ:    return "MATRIX_NNZ";
-        case LEVELS:        return "LEVELS";
-        default:            return "???";
-    }
-}
-
-std::string string(data_type t){
-    switch(t){
-        case SUCC_SOLVE:    return "successful solve";
-        case THRESHOLD:     return "threshold";
-        case FILLIN:        return "fill-in";
-        case MEM_STORAGE:   return "memory for storage";
-        case MEM_USED:      return "memory used";
-        case MEM_ALLOCATED: return "memory allocated";
-        case ITERATIONS:    return "iterations";
-        case ABS_ERROR:     return "absolute error";
-        case REL_RESIDUAL:  return "relative residual";
-        case ABS_RESIDUAL:  return "absolute residual";
-        case SETUP_TIME:    return "setup time";
-        case ITER_TIME:     return "iteration time";
-        case TOTAL_TIME:    return "total time";
-        case MATRIX_DIM:    return "dimension";
-        case MATRIX_NNZ:    return "non-zeroes";
-        case LEVELS:        return "levels";
-        default:            return "???";
-    }
-}
-
 std::string long_string(preprocessing_type pt){
     std::string output;
     switch(pt){

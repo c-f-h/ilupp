@@ -72,8 +72,6 @@ inline bool non_fatal_error(bool, const std::string);
 
 std::string booltostring(bool);
 Integer RoundRealToInteger(Real);
-std::string string(data_type);
-std::string cap_string(data_type);
 std::string string(preprocessing_type);
 std::string long_string(preprocessing_type);
 

@@ -121,12 +121,6 @@ enum iterative_method_type {BICGSTAB, CG, CGS, GMRES, CGNR, CGNE};
 // types of preconditioners
 enum preconditioner_type {PC_ILUC, PC_ILUT, PC_ILUTP, PC_ILUCP, PC_ILUCDP, PC_ML_ILUCDP, PC_DLML_ILUCDP, PC_MG_ILUCDP, PC_NOPRECOND};
 
-// types of data for analysis
-
-enum data_type {SUCC_SOLVE, THRESHOLD, FILLIN, MEM_STORAGE, MEM_USED, MEM_ALLOCATED, ITERATIONS, ABS_ERROR, REL_RESIDUAL, ABS_RESIDUAL, SETUP_TIME, ITER_TIME, TOTAL_TIME, MATRIX_DIM, MATRIX_NNZ, LEVELS};
-const data_type ITERATION_TIME = ITER_TIME;
-const data_type PRECOND_TIME   = SETUP_TIME;
-
 //**************************************************************************************//
 //               Class Declarations and specific typedefs
 //**************************************************************************************//
