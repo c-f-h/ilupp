@@ -120,7 +120,7 @@ int PERMRCM(int nr, int nc, int nnz, int* ia, int* ja, int *p)
    sia = new int[nr+1];
    sja = new int[2*nnz];
    // requires 0 indexing, returns 1-indexing upon request (i.e. true)
-   setup_symmetric_graph<int>(nr,ia,ja,sia,sja,true);
+   setup_symmetric_graph(nr,ia,ja,sia,sja,true);
    ibuff1=new int[nc+1];
    ibuff2=new int[nc+1];
    // reverse Cuthill-McKee; requires 1-indexing, returns 1-indexing
@@ -144,14 +144,13 @@ int PERMRCM(int nr, int nc, int nnz, int* ia, int* ja, int *p)
 }
 #endif // ILUPLUSPLUS_USES_SPARSPAK
 
+// pointer, indices: contain structure of non-symmetric matrix A
+// sym_pointer, sym_indices: contain structure of A+A^T
+// sym_pointer must have same length as pointer, dim+1;
+// sym_indices must have twice the length of indices
+// REQUIRES: 0-indexing. Returns 1-indexing if shift is true, 0 indexing if shift is false.
 template <class int_type> void setup_symmetric_graph(int_type dim, int_type* pointer, int_type* indices, int_type* sym_pointer, int_type* sym_indices, bool shift_index)
 {
-
-    // pointer, indices: contain data of non-symmetric matrix A
-    // sym_pointer, sym_indices: contain data of A+A^T
-    // sym_pointer must have same length as pointer, dim+1;
-    // sym_indices must have twice the length of indices
-    // REQUIRES: 0-indexing. Returns 1-indexing if shift is true, 0 indexing if shift is false.
     int_type j,k,pos,T_pos,sym_pos;
     array<int_type> T_num_element, T_pointer, T_indices;
     T_num_element.resize(dim,0);
@@ -204,66 +203,30 @@ template <class int_type> void setup_symmetric_graph(int_type dim, int_type* poi
 }
 
 
-template <class T> void setup_symmetric_graph(const matrix_sparse<T> &A, Integer* sym_pointer, Integer* sym_indices)
+// non-symmetric matrix A
+// sym_pointer, sym_indices: contain structure of A+A^T
+// sym_pointer must have same length as pointer, dim+1;
+// sym_indices must have twice the length of indices
+// requires and returns 0-indexing
+template <class T> void setup_symmetric_graph(const matrix_sparse<T> &A, std::vector<Integer>& sym_pointer, std::vector<Integer>& sym_indices)
 {
+    if (non_fatal_error(!(A.square_check()),"setup_symmetric_graph: matrix must be square"))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 
-    // non-symmetric matrix A
-    // sym_pointer, sym_indices: contain data of A+A^T
-    // sym_pointer must have same length as pointer, dim+1;
-    // sym_indices must have twice the length of indices
-    // requires and returns 0-indexing
-    Integer j,k,pos,T_pos,sym_pos,dim=A.read_pointer_size()-1;
-    array<Integer> T_num_element, T_pointer, T_indices;
-    T_num_element.resize(dim,0);
-    T_pointer.resize(dim+1);
-    T_indices.resize(A.read_pointer(dim));
-    // count number of elements in each column/row of transpose
-    for(j=0;j<A.read_pointer(dim);j++) T_num_element[A.read_index(j)]++;
-    // set-up pointer for transpose
-    T_pointer[0] = 0;
-    for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
-    // generate T_indices
-    T_num_element.resize(dim, 0);
-    for(j=0;j<dim;j++)
-        for(k=A.read_pointer(j);k<A.read_pointer(j+1);k++)
-            T_indices[T_pointer[A.read_index(k)]+(T_num_element[A.read_index(k)]++)]=j;
-    // copy data to sym_pointer, sym_indices
-    sym_pointer[0]=0;
-    for(j=0;j<dim;j++){
-        pos     = A.read_pointer(j);
-        T_pos   = T_pointer[j];
-        sym_pos = sym_pointer[j];
-        while(pos < A.read_pointer(j+1) && T_pos < T_pointer[j+1]){
-            if(A.read_index(pos) < T_indices[T_pos]){
-                sym_indices[sym_pos++] = A.read_index(pos++);
-                continue;
-            }
-            if(A.read_index(pos) > T_indices[T_pos]){
-                sym_indices[sym_pos++] = T_indices[T_pos++];
-                continue;
-            }
-            if(A.read_index(pos) == T_indices[T_pos]){
-                sym_indices[sym_pos++] = A.read_index(pos++);
-                T_pos++;
-                continue;
-            }
-        }
-        // because of while, at most one of these for-loops is non-empty
-        while(pos < A.read_pointer(j+1)){
-            sym_indices[sym_pos++] = A.read_index(pos++);
-        }
-        while(T_pos < T_pointer[j+1]){
-            sym_indices[sym_pos++] = T_indices[T_pos++];
-        }
-        sym_pointer[j+1] = sym_pos;
-    }
+    sym_pointer.resize(A.read_pointer_size());
+    sym_indices.resize(2 * A.actual_non_zeroes());
+
+    setup_symmetric_graph(A.read_pointer_size() - 1, A.pointer, A.indices,
+            &sym_pointer[0], &sym_indices[0], false);
+
+    // discard unused entries
+    sym_indices.resize(sym_pointer[A.read_pointer_size() - 1]);
 }
 
 void setup_symmetric_graph_without_diag(Integer dim, Integer* pointer, Integer* indices, Integer* sym_pointer, Integer* sym_indices)
 {
-
-    // pointer, indices: contain data of non-symmetric matrix A
-    // sym_pointer, sym_indices: contain data of A+A^T, without diagonal
+    // pointer, indices: contain structure of non-symmetric matrix A
+    // sym_pointer, sym_indices: contain structure of A+A^T, without diagonal
     // sym_pointer must have same length as pointer, dim+1;
     // sym_indices must have twice the length of indices
     // requires and returns 0-indexing
@@ -325,70 +288,24 @@ void setup_symmetric_graph_without_diag(Integer dim, Integer* pointer, Integer* 
 }
 
 
-template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T> &A, Integer* sym_pointer, Integer* sym_indices)
+// non-symmetric matrix A
+// sym_pointer, sym_indices: contain structure of A+A^T, without diagonal
+// sym_pointer must have same length as pointer, dim+1;
+// sym_indices must have twice the length of indices
+// requires and returns 0-indexing
+template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T> &A, std::vector<Integer>& sym_pointer, std::vector<Integer>& sym_indices)
 {
+    if (non_fatal_error(!(A.square_check()),"setup_symmetric_graph_without_diag: matrix must be square"))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 
-    // non-symmetric matrix A
-    // sym_pointer, sym_indices: contain data of A+A^T
-    // sym_pointer must have same length as pointer, dim+1;
-    // sym_indices must have twice the length of indices
-    // requires and returns 0-indexing
-    if(non_fatal_error(!(A.square_check()),"setup_symmetric_graph_without_diag: matrix must be square")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    Integer j,k,pos,T_pos,sym_pos,dim=A.read_pointer_size()-1;
-    array<Integer> T_num_element, T_pointer, T_indices;
-    T_num_element.resize(dim,0);
-    T_pointer.resize(dim+1);
-    T_indices.resize(A.read_pointer(dim));
-    // count number of elements in each column/row of transpose
-    for(j=0;j<A.read_pointer(dim);j++) T_num_element[A.read_index(j)]++;
-    // set-up pointer for transpose
-    T_pointer[0] = 0;
-    for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
-    // generate T_indices
-    T_num_element.resize(dim, 0);
-    for(j=0;j<dim;j++)
-        for(k=A.read_pointer(j);k<A.read_pointer(j+1);k++)
-            T_indices[T_pointer[A.read_index(k)]+(T_num_element[A.read_index(k)]++)]=j;
-    // copy data to sym_pointer, sym_indices
-    sym_pointer[0]=0;
-    for(j=0;j<dim;j++){
-        pos     = A.read_pointer(j);
-        T_pos   = T_pointer[j];
-        sym_pos = sym_pointer[j];
-        while(pos < A.read_pointer(j+1) && T_pos < T_pointer[j+1]){
-            if(A.read_index(pos) < T_indices[T_pos]){
-                if(A.read_index(pos) != j)
-                    sym_indices[sym_pos++] = A.read_index(pos++);
-                else pos++;
-                continue;
-            }
-            if(A.read_index(pos) > T_indices[T_pos]){
-                if(T_indices[T_pos] != j)
-                    sym_indices[sym_pos++] = T_indices[T_pos++];
-                else T_pos++;
-                continue;
-            }
-            if(A.read_index(pos) == T_indices[T_pos]){
-                if(A.read_index(pos) != j)
-                    sym_indices[sym_pos++] = A.read_index(pos++);
-                else pos++;
-                T_pos++;
-                continue;
-            }
-        }
-        // because of while, at most one of these for-loops is non-empty
-        while(pos < A.read_pointer(j+1)){
-            if(A.read_index(pos) != j)
-                sym_indices[sym_pos++] = A.read_index(pos++);
-            else pos++;
-        }
-        while(T_pos < T_pointer[j+1]){
-            if(T_indices[T_pos] != j)
-                sym_indices[sym_pos++] = T_indices[T_pos++];
-            else T_pos++;
-        }
-        sym_pointer[j+1] = sym_pos;
-    }
+    sym_pointer.resize(A.read_pointer_size());
+    sym_indices.resize(2 * A.actual_non_zeroes());
+
+    setup_symmetric_graph_without_diag(A.read_pointer_size() - 1,
+            A.pointer, A.indices, &sym_pointer[0], &sym_indices[0]);
+
+    // discard unused entries
+    sym_indices.resize(sym_pointer[A.read_pointer_size() - 1]);
 }
 
 
@@ -396,26 +313,14 @@ template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T
 
 template <class T> void METIS_NODE_ND(const matrix_sparse<T>& A, Integer* p,  Integer* invp)
 {
-  if(non_fatal_error(!(A.square_check()),"METIS_NODE_ND: matrix must be square")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-  Integer dim =A.read_pointer_size()-1;
-  Integer* sia = 0;
-  Integer* sja = 0;
-  try {
-   sia = new Integer[dim+1];
-   sja = new Integer[2*A.non_zeroes()];
-   setup_symmetric_graph_without_diag(A,sia,sja);
-   int options[10];
-   options[0] = 0;
-   int numflag = 0;  // ensures 0-indexing
-   METIS_NodeND(&dim, sia, sja, &numflag, options, p, invp);
-   delete [] sia; delete [] sja;
-  }
-  catch(std::bad_alloc){
-    std::cerr<<"METIS_NODE_ND: Error allocating memory."<<std::endl;
-    if(sia != 0) delete [] sia;
-    if(sja != 0) delete [] sja;
-    throw iluplusplus_error(INSUFFICIENT_MEMORY);
-  }
+    if(non_fatal_error(!(A.square_check()),"METIS_NODE_ND: matrix must be square")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    std::vector<Integer> sia, sja;
+    setup_symmetric_graph_without_diag(A,sia,sja);
+    int options[10];
+    options[0] = 0;
+    int numflag = 0;  // ensures 0-indexing
+    Integer dim =A.read_pointer_size()-1;
+    METIS_NodeND(&dim, &sia[0], &sja[0], &numflag, options, p, invp);
 }
 
 

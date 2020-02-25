@@ -37,11 +37,10 @@ namespace iluplusplus {
     template <class T> void RCM(const matrix_sparse<T>&, index_list&);
     template <class T> void RCM(const matrix_sparse<T>&, index_list&, int, int);
 #endif
-void setup_symmetric_graph(Integer, Integer*, Integer*, Integer*, Integer*);
 template <class int_type> void setup_symmetric_graph(int_type dim, int_type* pointer, int_type* indices, int_type* sym_pointer, int_type* sym_indices, bool shift_index);
 void setup_symmetric_graph_without_diag(Integer, Integer*, Integer*, Integer*, Integer*);
-template <class T> void setup_symmetric_graph(const matrix_sparse<T> &, Integer* , Integer* );
-template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T> &, Integer* , Integer* );
+template <class T> void setup_symmetric_graph(const matrix_sparse<T> &A, std::vector<Integer>& sym_pointer, std::vector<Integer>& sym_indices);
+template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T> &A, std::vector<Integer>& sym_pointer, std::vector<Integer>& sym_indices);
 #ifdef ILUPLUSPLUS_USES_METIS
     template <class T> void METIS_NODE_ND(const matrix_sparse<T>&, Integer* ,  Integer* );
     template <class T> void METIS_NODE_ND(const matrix_sparse<T>&, index_list&,  index_list& );
