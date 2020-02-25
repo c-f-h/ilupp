@@ -3520,8 +3520,8 @@ template<class T> void matrix_sparse<T>::insert(const matrix_sparse<T> &A, const
 template<class T> void matrix_sparse<T>::insert_orient(const matrix_sparse<T> &A, const vector_dense<T>& along_orient, const vector_dense<T>& against_orient, T center, Integer pos_along_orient, Integer pos_against_orient, Real threshold){
     if(non_fatal_error(A.dim_along_orientation() != against_orient.dimension() || A.dim_against_orientation() != along_orient.dimension()   ,"matrix_sparse<T>::insert_orient: dimensions of vectors to be inserted are not compatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     if(non_fatal_error(pos_along_orient < 0 || pos_against_orient < 0 || pos_along_orient > A.dim_along_orientation() ||  pos_against_orient > A.dim_against_orientation(),"matrix_sparse<T>::insert_orient: insert positions are not available.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    array<bool> selected_along_orient(along_orient.dimension(),false);
-    array<bool> selected_against_orient(against_orient.dimension(),false);
+    std::vector<bool> selected_along_orient(along_orient.dimension(),false);
+    std::vector<bool> selected_against_orient(against_orient.dimension(),false);
     Integer number_selected_along_orient = 0;
     Integer number_selected_against_orient = 0;
     bool selected_center = (std::abs(center)>threshold);

@@ -44,16 +44,13 @@ namespace iluplusplus {
 
 template<class T> class array
    {
-       protected:
-          Integer size;
-          T* data;
+       private:
+          std::vector<T> data;
        public:
         // constructors & destructors
           array();
           array(Integer m);
           array(Integer m, T t);
-          array(const array& x);
-          virtual ~array();
        // Functions, Manipulation, Information
           Integer dimension() const;
           Integer dim() const;
@@ -65,7 +62,6 @@ template<class T> class array
           const T& operator[](Integer j) const;
           T& set(Integer j);
        // Assignment
-          array<T>& operator =(const array<T>& x);        // Assignment
           void set_all(T d);
           void erase_resize_data_field(Integer newsize);  // resizes only if newsize is different
           void resize(Integer newsize);
@@ -96,11 +92,10 @@ template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x
       private:
           Multimap list;
           array<Multimap::iterator> pointers;
-          array<bool> used;
+          std::vector<bool> used;
       public:
           sorted_vector();
           sorted_vector(Integer max_size);
-          virtual ~sorted_vector();
           void resize(Integer max_size);
           Real read(Integer j) const;
           void insert(Integer pos, Real val);
@@ -117,9 +112,6 @@ template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x
           Real memory() const;
   };
 
-
 }
 
 #endif
-
-
