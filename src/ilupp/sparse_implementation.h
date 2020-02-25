@@ -4094,7 +4094,7 @@ template<class T> void matrix_sparse<T>::matrix_vector_multiplication(matrix_usa
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::transpose_in_place() {
      orientation = other_orientation(orientation);
-     switchnumbers(number_rows, number_columns);
+     std::swap(number_rows, number_columns);
      return *this;
   }
 

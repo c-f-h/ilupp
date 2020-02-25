@@ -30,7 +30,6 @@ namespace iluplusplus {
 
 orientation_type other_orientation(orientation_type);
 matrix_usage_type other_usage(matrix_usage_type);
-template<class T> inline void switchnumbers(T&, T&);
 template<class T> inline void interchange(T&, T&);
 
 template<class VT, class VInt>

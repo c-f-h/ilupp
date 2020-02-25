@@ -179,9 +179,6 @@ std::string long_string(preprocessing_type pt){
 
 
 
-template<class T> inline void switchnumbers(T& x, T& y)
-     {T z=x; x=y; y=z;}
-
 template<class T> inline void interchange(T& x, T& y)
      {T z=x; x=y; y=z;}
 
