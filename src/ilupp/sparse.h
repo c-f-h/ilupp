@@ -41,7 +41,6 @@
 
 #include "arrays.h"
 #include "functions.h"
-#include "function_class.h"
 #include "parameters.h"
 #include "orderings.h"
 

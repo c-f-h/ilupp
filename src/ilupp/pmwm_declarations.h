@@ -74,7 +74,6 @@
 
 #include "declarations.h"
 #include "functions.h"
-#include "function_class.h"
 #include "parameters.h"
 #include "orderings.h"
 #include "sparse.h"

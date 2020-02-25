@@ -40,13 +40,11 @@
 
 #include "arrays.h"
 #include "functions.h"
-#include "function_class.h"
 #include "orderings.h"
 #include "pmwm_declarations.h"
 
 
 #include "functions_implementation.h"
-#include "function_class_implementation.h"
 #include "parameters_implementation.h"
 #include "orderings_implementation.h"
 #include "pmwm_implementation.h"

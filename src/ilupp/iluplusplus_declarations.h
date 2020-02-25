@@ -101,7 +101,6 @@
 #include "declarations.h"
 #include "arrays.h"
 #include "functions.h"
-#include "function_class.h"
 #include "orderings.h"
 #include "parameters.h"
 #include "pmwm_declarations.h"

@@ -184,12 +184,6 @@ template <class T, class matrix_type, class vector_type> class ILUCPPrecondition
 template <class T, class matrix_type, class vector_type> class ILUCDPPreconditioner;
 template <class T, class matrix_type, class vector_type> class multilevelILUCDPPreconditioner;
 
-// classes for function_class.h
-
-template<class field> class function;
-template<class field> class constant_function;
-template<class field> class linear_function;
-
 // classes for orderings.h
 
 class preprocessing_sequence;
