@@ -10626,7 +10626,7 @@ template<class T> Integer matrix_sparse<T>::multilevel_PQ(matrix_sparse<T>& A, c
 
 template<class T> bool matrix_sparse<T>::maximal_weight_inverse_scales(index_list& P, vector_dense<T>& D1, vector_dense<T>& D2) const {
     index_list invP;
-    return find_pmwm(*this, invP, P, D1, D2);
+    return find_pmwm(*this, invP.vec(), P.vec(), D1, D2);
 }
 
 template<class T> void matrix_sparse<T>::test_ordering(index_list& P, index_list& Q) const {

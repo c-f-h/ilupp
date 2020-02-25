@@ -52,17 +52,10 @@
  *      Integer read_pointer(Integer j) const;	// Returns j-th element of the field pointer                *
  *      Integer read_index(Integer j) const;    // Returns j-th element of the field index                  *
  *                                                                                                          *
- *  permutation: field of Integers storing the permutation                                                  *
- *  permutation functions:                                                                                  *
- *      operator[](Integer i)                   // Access i-th element
- *      void resize_with_constant_value(Integer n, Integer d)                                               *
- *                                              // Resizes field to n and sets all elements to d            *
- *      void init()                             // Initializes permutation to identity                      *
- *                                                                                                          *
  *  vector: field of elements of type T                                                                     *
  *  vector functions:                                                                                       *
  *      Integer dimension() const;              // Returns dimension                                        *
- *      operator[](Integer i)                   // Access i-th element
+ *      operator[](Integer i)                   // Access i-th element                                      *
  *      void resize(Integer n, T d);            // Resizes field to n and sets all elements to d            *
  *                                                                                                          *
  *                                                                                                          *
@@ -94,8 +87,8 @@ namespace iluplusplus {
 //**************************************************************************************//
 
 // finds perfect maximum weighted matching
-template<class sparse_matrix_class, class permutation, class vector>
-bool find_pmwm(const sparse_matrix_class& A, permutation& invPerm, permutation& perm, vector& inverse_row_scaling, vector& inverse_col_scaling);
+template<class sparse_matrix_class, class vector>
+bool find_pmwm(const sparse_matrix_class& A, std::vector<Integer>& invPerm, std::vector<Integer>& perm, vector& inverse_row_scaling, vector& inverse_col_scaling);
 
 // permutes columns in ascending order of non-zero elements
 template<class sparse_matrix_class>
