@@ -11,7 +11,7 @@ __version__ = '0.0.1'
 def readme():
     with open(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            'README')) as fp:
+            'README.md')) as fp:
         return fp.read()
 
 class get_pybind_include(object):
@@ -112,6 +112,7 @@ setup(
     url = 'https://github.com/c-f-h/ilupp',
     description = "Python bindings for Jan Mayer's ILU++ package for incomplete LU factorization",
     long_description = readme(),
+    long_description_content_type = 'text/markdown',
     classifiers=[
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
