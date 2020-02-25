@@ -506,54 +506,14 @@ void preprocessing_sequence::set_MAX_WEIGHTED_MATCHING_ORDERING_UNIT_DIAG(){
     set(0) = MAX_WEIGHTED_MATCHING_ORDERING;
     set(1) = UNIT_OR_ZERO_DIAGONAL_SCALING;
 }
-/*
-void preprocessing_sequence::set_NORM_MAX_WEIGHTED_MATCHING_ORDERING(){
-  try {
-    resize(3);
-    set(0) = NORMALIZE_COLUMNS;
-    set(1) = NORMALIZE_ROWS;
-    set(2) = MAX_WEIGHTED_MATCHING_ORDERING;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"preprocessing_sequence::set_NORM_MAX_WEIGHTED_MATCHING_ORDERING(: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
-}
-*/
-/*
-void preprocessing_sequence::set_MAX_WEIGHTED_MATCHING_ORDERING_DD_MOV_COR_IM(){
-  try {
-    resize(2);
-    set(0) = MAX_WEIGHTED_MATCHING_ORDERING;
-    set(1) = DD_SYMM_MOVE_CORNER_ORDERING_IM;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"preprocessing_sequence::set_MAX_WEIGHTED_MATCHING_ORDERING_DD_MOV_COR_IM: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
-}
-*/
+
 void preprocessing_sequence::set_MAX_WEIGHTED_MATCHING_ORDERING_UNIT_DIAG_DD_MOV_COR_IM(){
     resize(3);
     set(0) = MAX_WEIGHTED_MATCHING_ORDERING;
     set(1) = UNIT_OR_ZERO_DIAGONAL_SCALING;
     set(2) = DD_SYMM_MOVE_CORNER_ORDERING_IM;
 }
-/*
-void preprocessing_sequence::set_NORM_MAX_WEIGHTED_MATCHING_ORDERING_DD_MOV_COR_IM(){
-  try {
-    resize(4);
-    set(0) = NORMALIZE_COLUMNS;
-    set(1) = NORMALIZE_ROWS;
-    set(2) = MAX_WEIGHTED_MATCHING_ORDERING;
-    set(3) = DD_SYMM_MOVE_CORNER_ORDERING_IM;
-  }
-  catch(iluplusplus_error ippe){
-    std::cerr<<"preprocessing_sequence::set_NORM_MAX_WEIGHTED_MATCHING_ORDERING_DD_MOV_COR_IM: "<<ippe.error_message()<<std::endl;
-    throw;
-  }
-}
-*/
+
 void preprocessing_sequence::set_SPARSE_FIRST(){
     resize(1);
     set(0) = SPARSE_FIRST_ORDERING;
