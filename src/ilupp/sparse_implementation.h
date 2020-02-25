@@ -5988,7 +5988,15 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
 }
 
 
-template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish, matrix_sparse<T>& U, vector_dense<T>& Dinv, index_list& perm, index_list& permrows, index_list& inverse_perm, index_list& inverse_permrows,Integer last_row_to_eliminate, Real threshold, Integer bp, Integer bpr, Integer epr, Integer& zero_pivots, Real& time_self, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used){
+template<class T>
+bool matrix_sparse<T>::partialILUCDP(
+        const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol,
+        matrix_sparse<T>& Anew, const iluplusplus_precond_parameter& IP, bool force_finish,
+        matrix_sparse<T>& U, vector_dense<T>& Dinv, index_list& perm, index_list& permrows,
+        index_list& inverse_perm, index_list& inverse_permrows,Integer last_row_to_eliminate,
+        Real threshold, Integer bp, Integer bpr, Integer epr, Integer& zero_pivots, Real& time_self,
+        Real mem_factor, Real& total_memory_allocated, Real& total_memory_used)
+{
     time_self = 0.0;
     total_memory_allocated = 0.0;
     Integer n = Acol.columns();
@@ -6450,17 +6458,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                     case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
                     case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
                     case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,rejected_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                    default:
-                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
-                            reformat(0,0,0,COLUMN);
-                            U.reformat(0,0,0,ROW);
-                            Dinv.resize_without_initialization(0);
-                            Anew.reformat(0,0,0,ROW);
-                            perm.resize(0);
-                            permrows.resize(0);
-                            inverse_perm.resize(0);
-                            inverse_permrows.resize(0);
-                            return false;
+                    default: throw std::runtime_error("matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value.");
                 }
             } else {
                 switch (IP.get_DROP_TYPE_U()){
@@ -6469,17 +6467,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                     case 2: z.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_U,weightsU,weightU,max_fill_in-1,threshold,0,n); // weighted dropping
                     case 3: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
                     case 4: z.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_U,weightU,max_fill_in,threshold-1,0,n,k,bandwidth_U,last_row_to_eliminate); break;
-                    default:
-                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value."<<std::endl;
-                            reformat(0,0,0,COLUMN);
-                            U.reformat(0,0,0,ROW);
-                            Dinv.resize_without_initialization(0);
-                            Anew.reformat(0,0,0,ROW);
-                            perm.resize(0);
-                            permrows.resize(0);
-                            inverse_perm.resize(0);
-                            inverse_permrows.resize(0);
-                            return false;
+                    default: throw std::runtime_error("matrix_sparse::partialILUCDP: DROP_TYPE_U does not have permissible value.");
                 }
             }
         }
@@ -6663,17 +6651,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                     case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
                     case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
                     case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,rejected_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                    default:
-                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
-                            reformat(0,0,0,COLUMN);
-                            U.reformat(0,0,0,ROW);
-                            Dinv.resize_without_initialization(0);
-                            Anew.reformat(0,0,0,ROW);
-                            perm.resize(0);
-                            permrows.resize(0);
-                            inverse_perm.resize(0);
-                            inverse_permrows.resize(0);
-                            return false;
+                    default: throw std::runtime_error("matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value.");
                 }
             } else {
                 switch (IP.get_DROP_TYPE_L()){
@@ -6682,17 +6660,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                     case 2: w.take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(IP,list_L,weightsL,weightL,max_fill_in-1,threshold,0,n); break;
                     case 3: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
                     case 4: w.take_single_weight_bw_largest_elements_by_abs_value_with_threshold(IP,list_L,weightL,max_fill_in-1,threshold,0,n,k,bandwidth_L,last_row_to_eliminate); break;
-                    default:
-                            std::cerr<<"matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value."<<std::endl;
-                            reformat(0,0,0,COLUMN);
-                            U.reformat(0,0,0,ROW);
-                            Dinv.resize_without_initialization(0);
-                            Anew.reformat(0,0,0,ROW);
-                            perm.resize(0);
-                            permrows.resize(0);
-                            inverse_perm.resize(0);
-                            inverse_permrows.resize(0);
-                            return false;
+                    default: throw std::runtime_error("matrix_sparse::partialILUCDP: DROP_TYPE_L does not have permissible value.");
                 }
             }
 #ifdef VERBOSE
@@ -6747,16 +6715,7 @@ template<class T> bool matrix_sparse<T>::partialILUCDP(const matrix_sparse<T>& A
                             case -2: row_reorder_weight.add(b,std::abs(data[pos])); break;
                             case -3: row_reorder_weight.add(b,std::abs(data[pos])*norm_row_U[b]); break;
                             case -4: row_reorder_weight.add(b,std::abs(data[pos])/std::abs(Dinv[b])*norm_row_U[b]); break;
-                            default: std::cerr<<"matrix_sparse::partialILUCDP: FINAL_ROW_CRIT has undefined value. Please set to correct value."<<std::endl;
-                                     reformat(0,0,0,COLUMN);
-                                     U.reformat(0,0,0,ROW);
-                                     Dinv.resize_without_initialization(0);
-                                     Anew.reformat(0,0,0,ROW);
-                                     perm.resize(0);
-                                     permrows.resize(0);
-                                     inverse_perm.resize(0);
-                                     inverse_permrows.resize(0);
-                                     return false;
+                            default: throw std::runtime_error("matrix_sparse::partialILUCDP: FINAL_ROW_CRIT has undefined value. Please set to correct value.");
                         }
                     }
                 }
@@ -7978,110 +7937,98 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
 }
 
 
-template<class T> bool matrix_sparse<T>::preprocessed_partialILUCDP(const iluplusplus_precond_parameter& IP, bool force_finish, const matrix_sparse<T>& A, matrix_sparse<T>& Acoarse, matrix_sparse<T>& U, vector_dense<T>& Dinv,
-          index_list& permutation_rows, index_list& permutation_columns, index_list& inverse_permutation_rows, index_list& inverse_permutation_columns, vector_dense<T>& D_l, vector_dense<T>& D_r,
-          Integer max_fill_in, Real threshold, Real perm_tol, Integer& zero_pivots, Real& setup_time, Real mem_factor, Real& total_memory_allocated, Real& total_memory_used)
-              {
-                  bool use_ILUC;
-                  if( (IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))  && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) ) && IP.get_perm_tol() > 500.0) use_ILUC = true;
-                  else use_ILUC = false;
-                  clock_t time_1,time_2;
-                  time_1 = clock();
-                  matrix_sparse<T> Arow2,Acol;
-                  bool factorization_exists;
-                  index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
-                  Real partial_setup_time;
-                  setup_time = 0.0;
-                  Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
-                  if(A.orient() == ROW){
-                      Arow2 = A;
-                      end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
-                  } else {
-                      Arow2.change_orientation_of_data(A);
-                      end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
-                  }
-                  if (force_finish) {
-                      last_row_to_eliminate = Arow2.rows()-1;
-                  } else {
-                      if (IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = end_PQ-1;
-                      else last_row_to_eliminate = (Arow2.rows()-1)/2;
-                  }
-                  switch (IP.get_PERMUTE_ROWS()) {
-                      case 0:  bpr = 0; epr = 0; break;
-                      case 1:  if(IP.get_EXTERNAL_FINAL_ROW() && (!force_finish)){bpr = 0; epr = 0;} else {bpr = end_PQ; epr = Arow2.rows()-1;} break;
-                      case 2:  if(force_finish){bpr = 0; epr = Arow2.rows()-1;} else {bpr = 0; epr = last_row_to_eliminate;} break;
-                      case 3:  bpr = 0; epr = Arow2.rows()-1; break;
-                      default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for PERMUTE_ROWS!"<<std::endl; 
-                               reformat(0,0,0,COLUMN);
-                               U.reformat(0,0,0,ROW);
-                               Dinv.resize_without_initialization(0);
-                               D_l.resize_without_initialization(0);
-                               D_r.resize_without_initialization(0);
-                               Acoarse.reformat(0,0,0,ROW);
-                               permutation_rows.resize(0);
-                               permutation_columns.resize(0);
-                               inverse_permutation_rows.resize(0);
-                               inverse_permutation_columns.resize(0);
-                               return false;
-                  }
-                  switch (IP.get_TOTAL_PIV()) {
-                      case 0:  bp = Acol.rows(); break;
-                      case 1:  if(force_finish){bp = end_PQ;} else {bp = last_row_to_eliminate+1;} break;
-                      case 2:  bp = 0;  break;
-                      default: std::cerr<<"matrix_sparse::preprocessed_partialILUCDP::choose permissible value for TOTAL_PIV!"<<std::endl;
-                               reformat(0,0,0,COLUMN);
-                               U.reformat(0,0,0,ROW);
-                               Dinv.resize_without_initialization(0);
-                               D_l.resize_without_initialization(0);
-                               D_r.resize_without_initialization(0);
-                               Acoarse.reformat(0,0,0,ROW);
-                               permutation_rows.resize(0);
-                               permutation_columns.resize(0);
-                               inverse_permutation_rows.resize(0);
-                               inverse_permutation_columns.resize(0);
-                               return false;
-                  }
+template<class T>
+bool matrix_sparse<T>::preprocessed_partialILUCDP(
+        const iluplusplus_precond_parameter& IP, bool force_finish, const matrix_sparse<T>& A,
+        matrix_sparse<T>& Acoarse, matrix_sparse<T>& U, vector_dense<T>& Dinv,
+        index_list& permutation_rows, index_list& permutation_columns, index_list& inverse_permutation_rows,
+        index_list& inverse_permutation_columns, vector_dense<T>& D_l, vector_dense<T>& D_r,
+        Integer max_fill_in, Real threshold, Real perm_tol, Integer& zero_pivots, Real& setup_time,
+        Real mem_factor, Real& total_memory_allocated, Real& total_memory_used)
+{
+    bool use_ILUC;
+    if( (IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))
+            && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) )
+            && IP.get_perm_tol() > 500.0)
+        use_ILUC = true;
+    else
+        use_ILUC = false;
+
+    clock_t time_1,time_2;
+    time_1 = clock();
+    matrix_sparse<T> Arow2,Acol;
+    bool factorization_exists;
+    index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
+    Real partial_setup_time;
+    setup_time = 0.0;
+    Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
+    if(A.orient() == ROW){
+        Arow2 = A;
+        end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
+    } else {
+        Arow2.change_orientation_of_data(A);
+        end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
+    }
+    if (force_finish) {
+        last_row_to_eliminate = Arow2.rows()-1;
+    } else {
+        if (IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = end_PQ-1;
+        else last_row_to_eliminate = (Arow2.rows()-1)/2;
+    }
+    switch (IP.get_PERMUTE_ROWS()) {
+        case 0:  bpr = 0; epr = 0; break;
+        case 1:  if(IP.get_EXTERNAL_FINAL_ROW() && (!force_finish)){bpr = 0; epr = 0;} else {bpr = end_PQ; epr = Arow2.rows()-1;} break;
+        case 2:  if(force_finish){bpr = 0; epr = Arow2.rows()-1;} else {bpr = 0; epr = last_row_to_eliminate;} break;
+        case 3:  bpr = 0; epr = Arow2.rows()-1; break;
+        default: throw std::runtime_error("matrix_sparse::preprocessed_partialILUCDP::choose permissible value for PERMUTE_ROWS!");
+    }
+    switch (IP.get_TOTAL_PIV()) {
+        case 0:  bp = Acol.rows(); break;
+        case 1:  if(force_finish){bp = end_PQ;} else {bp = last_row_to_eliminate+1;} break;
+        case 2:  bp = 0;  break;
+        default: throw std::runtime_error("matrix_sparse::preprocessed_partialILUCDP::choose permissible value for TOTAL_PIV!");
+    }
 #ifdef INFO
-                  std::cout<<std::endl;
-                  std::cout<<"  ** matrix statistics:"<<std::endl;
-                  std::cout<<"     n                      = "<<Arow2.rows()<<std::endl;
-                  std::cout<<"     nnz                    = "<<Arow2.actual_non_zeroes()<<std::endl;
-                  std::cout<<"     density                = "<<Arow2.row_density()<<std::endl;
-                  std::cout<<"  ** factorization parameters:"<<std::endl;
-                  std::cout<<"     max. numb. nnz/row p   = "<<max_fill_in<<std::endl;
-                  std::cout<<"     tau                    = "<<threshold<<std::endl;
-                  std::cout<<"     perm tolerance         = "<<perm_tol<<std::endl;
-                  std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
-                  std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
-                  if(IP.get_EXTERNAL_FINAL_ROW())
-                      std::cout<<"     last row to eliminate  = "<<last_row_to_eliminate;
-                  else
-                      std::cout<<"     last row to eliminate decided by factorization."<<std::endl;
-                  std::cout<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"  ** matrix statistics:"<<std::endl;
+    std::cout<<"     n                      = "<<Arow2.rows()<<std::endl;
+    std::cout<<"     nnz                    = "<<Arow2.actual_non_zeroes()<<std::endl;
+    std::cout<<"     density                = "<<Arow2.row_density()<<std::endl;
+    std::cout<<"  ** factorization parameters:"<<std::endl;
+    std::cout<<"     max. numb. nnz/row p   = "<<max_fill_in<<std::endl;
+    std::cout<<"     tau                    = "<<threshold<<std::endl;
+    std::cout<<"     perm tolerance         = "<<perm_tol<<std::endl;
+    std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
+    std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
+    if(IP.get_EXTERNAL_FINAL_ROW())
+        std::cout<<"     last row to eliminate  = "<<last_row_to_eliminate;
+    else
+        std::cout<<"     last row to eliminate decided by factorization."<<std::endl;
+    std::cout<<std::endl;
 #endif
-                  if (use_ILUC){
-                      factorization_exists = partialILUC(Arow2,Acoarse,IP,force_finish,U,Dinv,last_row_to_eliminate,threshold,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
-                  } else {
-                      Acol.change_orientation_of_data(Arow2);
-                      factorization_exists = partialILUCDP(Arow2,Acol,Acoarse,IP,force_finish,U,Dinv,pc2,pr2,ipc2,ipr2,last_row_to_eliminate,threshold,bp,bpr,epr,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
-                  }
-                  if(!factorization_exists) return false;
+    if (use_ILUC){
+        factorization_exists = partialILUC(Arow2,Acoarse,IP,force_finish,U,Dinv,last_row_to_eliminate,threshold,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
+    } else {
+        Acol.change_orientation_of_data(Arow2);
+        factorization_exists = partialILUCDP(Arow2,Acol,Acoarse,IP,force_finish,U,Dinv,pc2,pr2,ipc2,ipr2,last_row_to_eliminate,threshold,bp,bpr,epr,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
+    }
+    if(!factorization_exists) return false;
 #ifdef INFO
-                  std::cout<<"     zero-pivots            = "<<zero_pivots<<std::endl;
-                  std::cout<<"     local fill-in          = "<<((Real)(actual_non_zeroes()+U.actual_non_zeroes())- (Real) Acol.rows() )/((Real)Acol.actual_non_zeroes())<<std::endl;
+    std::cout<<"     zero-pivots            = "<<zero_pivots<<std::endl;
+    std::cout<<"     local fill-in          = "<<((Real)(actual_non_zeroes()+U.actual_non_zeroes())- (Real) Acol.rows() )/((Real)Acol.actual_non_zeroes())<<std::endl;
 #endif
-                  if(use_ILUC){
-                      permutation_columns=pc1;
-                      permutation_rows=pr1;
-                  } else {
-                      permutation_columns.compose(pc1,pc2);
-                      permutation_rows.compose(pr1,pr2);
-                  }
-                  inverse_permutation_columns.invert(permutation_columns);
-                  inverse_permutation_rows.invert(permutation_rows);
-                  time_2 = clock();
-                  setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-                  return true;
+    if(use_ILUC){
+        permutation_columns=pc1;
+        permutation_rows=pr1;
+    } else {
+        permutation_columns.compose(pc1,pc2);
+        permutation_rows.compose(pr1,pr2);
+    }
+    inverse_permutation_columns.invert(permutation_columns);
+    inverse_permutation_rows.invert(permutation_rows);
+    time_2 = clock();
+    setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+    return true;
 }
 
 
