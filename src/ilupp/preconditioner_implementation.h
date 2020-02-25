@@ -1121,31 +1121,9 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
 }
 
 template <class T, class matrix_type, class vector_type>
-ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p){
-    if(Acol.orient()==COLUMN){
-        this->preconditioner_exists = ILUCP4(Acol, this->Precond_left,
-                this->Precond_right, this->permutation, p.get_fill_in(),
-                p.get_threshold(), p.get_perm_tol(), p.get_row_pos(),
-                this->zero_pivots, this->setup_time);
-        this->left_form=LOWER_TRIANGULAR;
-        this->right_form=PERMUTED_UPPER_TRIANGULAR;
-        this->left_matrix_usage = NOPERM;
-        this->right_matrix_usage = PERM1;
-    } else {
-        this->preconditioner_exists = ILUCP4(Acol, this->Precond_right,
-                this->Precond_left, this->permutation, p.get_fill_in(),
-                p.get_threshold(), p.get_perm_tol(), p.get_row_pos(),
-                this->zero_pivots, this->setup_time);
-        this->left_form=PERMUTED_LOWER_TRIANGULAR;
-        this->right_form=UPPER_TRIANGULAR;
-        this->left_matrix_usage = PERM1;
-        this->right_matrix_usage = NOPERM;
-    }
-    this->pre_image_size=this->Precond_left.rows();
-    this->image_size=this->Precond_right.columns();
-    this->intermediate_size=this->Precond_left.columns();
-    this->memory_allocated_to_create=0.0;
-    this->memory_used_to_create=0.0;
+ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p)
+    : ILUCPPreconditioner<T,matrix_type,vector_type>(Acol, p.get_fill_in(), p.get_threshold(), p.get_perm_tol(), p.get_row_pos())
+{
 }
 
 template <class T, class matrix_type, class vector_type>
@@ -1228,24 +1206,10 @@ ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const mat
 
 
 template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p){
-    if(Acol.orient()==COLUMN && Arow.orient()==ROW){
-        this->preconditioner_exists = this->Precond_left.ILUCDP(
-                Arow, Acol, this->Precond_right, this->permutation, this->permutation2, p.get_fill_in(), p.get_threshold(),
-                p.get_perm_tol(), p.get_begin_perm_row(), this->zero_pivots, this->setup_time);      // preconditioner of A.
-        this->left_form=PERMUTED_LOWER_TRIANGULAR;
-        this->right_form=PERMUTED_UPPER_TRIANGULAR;
-        this->left_matrix_usage = PERM2;
-        this->right_matrix_usage = PERM1;
-    } else {
-        std::cerr<<"ILUCDPPreconditioner::ILUCDPPreconditioner: Matrix needs to be provided in CSR and CSC format."<<std::endl;
-    }
-    this->pre_image_size=this->Precond_left.rows();
-    this->image_size=this->Precond_right.columns();
-    this->intermediate_size=this->Precond_left.columns();
-    this->memory_allocated_to_create=0.0;
-    this->memory_used_to_create=0.0;
-}
+ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p)
+    :   ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(Arow, Acol, p.get_fill_in(),
+            p.get_threshold(), p.get_perm_tol(), p.get_begin_perm_row())
+{}
 
 template <class T, class matrix_type, class vector_type>
   Integer ILUCDPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
