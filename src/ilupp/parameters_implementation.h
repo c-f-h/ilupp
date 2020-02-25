@@ -303,7 +303,7 @@ void iluplusplus_precond_parameter::print() const {
         std::cout<<"   BANDWIDTH_OFFSET:        "<<BANDWIDTH_OFFSET<<std::endl;
         std::cout<<"   SIZE_TABLE_POS_WEIGHTS:  "<<SIZE_TABLE_POS_WEIGHTS<<std::endl;
         std::cout<<"   SIZE_TABLE_POS_WEIGHTS:  "<<SIZE_TABLE_POS_WEIGHTS<<std::endl;
-        std::cout<<"   TABLE_POSITIONAL_WEIGHTS:"; TABLE_POSITIONAL_WEIGHTS.print_info();
+        std::cout<<"   TABLE_POSITIONAL_WEIGHTS: size " << TABLE_POSITIONAL_WEIGHTS.size() << std::endl;
         std::cout<<"Details on Algorithms"<<std::endl;
         std::cout<<"   PQ_ALGORITHM:            "<<PQ_ALGORITHM<<std::endl;
         std::cout<<"   PQ_THRESHOLD:            "<<PQ_THRESHOLD<<std::endl;
@@ -317,22 +317,26 @@ void iluplusplus_precond_parameter::print() const {
 
 
 void iluplusplus_precond_parameter::make_table(){
-  try {
-    TABLE_POSITIONAL_WEIGHTS.erase_resize_data_field(SIZE_TABLE_POS_WEIGHTS+1);
+    TABLE_POSITIONAL_WEIGHTS.resize(SIZE_TABLE_POS_WEIGHTS+1);
     Integer k;
     switch(WEIGHT_TABLE_TYPE){
-        case 1:  for(k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++) TABLE_POSITIONAL_WEIGHTS.set(k)=exp(5.0-(10.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k); break;
-        case 2:  for(k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++) TABLE_POSITIONAL_WEIGHTS.set(k)=0.01*(1000.0-(1000.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k); break;
-        case 3:  for(k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++) TABLE_POSITIONAL_WEIGHTS.set(k)=1.0; break;
-        case 4:  for(k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++) TABLE_POSITIONAL_WEIGHTS.set(k)=exp(2.0-(6.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k); break;
-        case 5:  for(k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++) TABLE_POSITIONAL_WEIGHTS.set(k)=exp(4.0-(6.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k); break;
-        default: std::cerr<<"make_table: please use acceptable value for WEIGHT_TABLE_TYPE"<<std::endl; exit(1);
+        case 1:  for (k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++)
+                     TABLE_POSITIONAL_WEIGHTS[k] = exp(5.0-(10.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k);
+                 break;
+        case 2:  for (k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++)
+                     TABLE_POSITIONAL_WEIGHTS[k] = 0.01*(1000.0-(1000.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k);
+                 break;
+        case 3:  for (k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++)
+                     TABLE_POSITIONAL_WEIGHTS[k] = 1.0;
+                 break;
+        case 4:  for (k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++)
+                     TABLE_POSITIONAL_WEIGHTS[k] = exp(2.0-(6.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k);
+                 break;
+        case 5:  for (k=0;k<=SIZE_TABLE_POS_WEIGHTS;k++)
+                     TABLE_POSITIONAL_WEIGHTS[k] = exp(4.0-(6.0/(Real) SIZE_TABLE_POS_WEIGHTS)*(Real) k);
+                 break;
+        default: throw std::runtime_error("make_table: please use acceptable value for WEIGHT_TABLE_TYPE");
     }
-  }
-  catch(iluplusplus_error){
-     std::cerr<<"iluplusplus_precond_parameter::make_table: Error allocating memory."<<std::endl;
-     throw;
-  }
 }
 
 void iluplusplus_precond_parameter::use_only_standard_dropping1(){

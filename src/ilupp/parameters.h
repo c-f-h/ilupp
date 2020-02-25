@@ -213,7 +213,7 @@ class iluplusplus_precond_parameter
          Real                     BANDWIDTH_MULTIPLIER;   // see below
          Integer                  BANDWIDTH_OFFSET;       // maximal bandwidth = BANDWIDTH_OFFSET + BANDWIDTH_MULTIPLIER*n
          Integer                  SIZE_TABLE_POS_WEIGHTS; // size of table used -1
-         array<Real>              TABLE_POSITIONAL_WEIGHTS;
+         std::vector<Real>        TABLE_POSITIONAL_WEIGHTS;
          Integer                  WEIGHT_TABLE_TYPE;      // type of table used.
          bool                     SCALE_WEIGHT_INVDIAG;   // indicates if dropping threshold is scaled by inverse of diagonal element, i.e. final weight is scaled by 1/|d(i,i)|.
          bool                     SCALE_WGT_MAXINVDIAG;   // indicates if dropping threshold is scaled by maximal inverse of diagonal element, i.e. final weight is scaled by msx 1/|d(i,i)|.
@@ -299,7 +299,7 @@ class iluplusplus_precond_parameter
          Real                     get_BANDWIDTH_MULTIPLIER() const      {return BANDWIDTH_MULTIPLIER;}
          Integer                  get_BANDWIDTH_OFFSET() const          {return BANDWIDTH_OFFSET;}
          Integer                  get_SIZE_TABLE_POS_WEIGHTS() const    {return SIZE_TABLE_POS_WEIGHTS;}
-         Real                     get_TABLE_POSITIONAL_WEIGHTS(Integer k) const {return TABLE_POSITIONAL_WEIGHTS.get(k);}
+         Real                     get_TABLE_POSITIONAL_WEIGHTS(Integer k) const {return TABLE_POSITIONAL_WEIGHTS[k];}
          Integer                  get_WEIGHT_TABLE_TYPE() const         {return WEIGHT_TABLE_TYPE;}
          bool                     get_SCALE_WEIGHT_INVDIAG() const      {return SCALE_WEIGHT_INVDIAG;}
          bool                     get_SCALE_WGT_MAXINVDIAG() const      {return SCALE_WGT_MAXINVDIAG;}
