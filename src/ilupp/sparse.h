@@ -392,16 +392,29 @@ template<class T> class matrix_sparse
            Real row_density() const;
            Real column_density() const;
            void scalar_multiply(T d);  // multiplies matrix itself with d (and overwrites it)
-           void scale(const vector_dense<T>& v, orientation_type o); // multplies the o's with the entries of v.
+
+           //////////////////////////////////////////////
+           // scaling the rows and columns of matrices //
+           //////////////////////////////////////////////
+
+           // multiply the o's with the entries of v
+           void scale(const vector_dense<T>& v, orientation_type o);
+           // put the result of scaling A into this
            void scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o);
-           void scale(const vector_dense<T>& D1, const vector_dense<T>& D2); //scales rows with D1, columns with D2
-           void exponential_scale(const vector_dense<T>& D1, const vector_dense<T>& D2); // same as above, except D1, D2 contains natural logarithm of scaling factors
-           void scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2); //scales with D1 along orientation, with D2 against
-           void exponential_scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2); // same as above, except D1, D2 contains natural logarithm of scaling factors
-           void inverse_scale(const vector_dense<T>& v, orientation_type o); // divides the o's with the entries of v.
+           // scale rows with D1, columns with D2
+           void scale(const vector_dense<T>& D1, const vector_dense<T>& D2);
+           // scale with D1 along orientation, with D2 against
+           void scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2);
+
+           // divide the o's with the entries of v
+           void inverse_scale(const vector_dense<T>& v, orientation_type o);
+           // put the result of inverse scaling A into this
            void inverse_scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o);
-           void inverse_scale(const vector_dense<T>& D1, const vector_dense<T>& D2); //scales rows with 1/D1, columns with 1/D2
-           void inverse_scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2); //scales with 1/D1 along orientation, with 1/D2 against
+           // scale rows with 1/D1, columns with 1/D2
+           void inverse_scale(const vector_dense<T>& D1, const vector_dense<T>& D2);
+           // scale with 1/D1 along orientation, with 1/D2 against
+           void inverse_scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2);
+
            void normalize_columns(vector_dense<T>& D_r);
            void normalize_rows(vector_dense<T>& D_l);
            void normalize_columns(const matrix_sparse<T>& A, vector_dense<T>& D_r);
@@ -487,8 +500,8 @@ template<class T> class matrix_sparse
            void upper_triangular_solve(const vector_dense<T>& b, vector_dense<T>& x) const;
            void triangular_solve(special_matrix_type form, matrix_usage_type use, const vector_dense<T>& b, vector_dense<T>& x) const;
            void triangular_solve(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const;
-           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const;
-           void triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
+           void triangular_solve_perm(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const;
+           void triangular_solve_perm(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
            void triangular_solve_with_smaller_matrix(special_matrix_type form, matrix_usage_type use, vector_dense<T>& x) const; // solve is performed for bottom part of matrix
            void triangular_solve_with_smaller_matrix_permute_first(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
            //not needed // void triangular_solve_with_smaller_matrix_permute_first_return_small(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const;
@@ -546,8 +559,13 @@ template<class T> class matrix_sparse
            int solve_pardiso(const vector_dense<T>& b, vector_dense<T>& x,int& peak_memory, int& perm_memory, int& nnzLU, double& solve_time) const;
 #endif
            void unit_or_zero_diagonal(vector_dense<T>& D1) const; // D1 contains a vector with entries 0 +/- 1 s.t. the scaled matrix along orientation has a nonnegative diagonal
-           Integer preprocess(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol); // preprocess as indicated by L; returns first index, where preprocessing was not successful.
-           Integer preprocess(const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol); // preprocess as indicated by L; returns first index, where preprocessing was not successful.
+
+           // preprocess as indicated by L; returns first index, where preprocessing was not successful.
+           Integer preprocess(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol);
+
+           // preprocess as indicated by L; returns first index, where preprocessing was not successful.
+           Integer preprocess(const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol);
+
            bool test_I_matrix() const; // requires element w/ absolute value 1 on diagonal and elements with absolute value of no more than 1 otherwise.
            bool test_normalized_I_matrix() const; // also requires 1 on diagonal
            Real test_diag_dominance(Integer i) const; // test diagonal dominance along orientation of a single row i or column i.
@@ -567,12 +585,24 @@ template<class T> class matrix_sparse
            void permute(const index_list& permP, const index_list& permQ, const index_list& invpermP, const index_list& invpermQ);
            void permute_efficiently(matrix_sparse<T>& H, const index_list& permP, const index_list& permQ, const index_list& invpermP, const index_list& invpermQ); // H is a help-matrix (work space), contains original matrix *this after permuting
            void permute_efficiently(matrix_sparse<T>& H, const index_list& permP, const index_list& permQ); // H is a help-matrix (work space), contains original matrix *this after permuting
-           Integer ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau);   // applies ddPQ to a matrix and returns permuted matrix.
-           Integer ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau);   // applies ddPQ to a matrix and returns permuted matrix.
-           Integer ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau);   // applies ddPQ to a matrix and vector and returns permuted matrix and vector.     
-           Integer ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau);   // applies ddPQ to a matrix and vector and returns permuted matrix and vector.     
-           void sym_ddPQ(index_list& P) const; // symmetrized PQ (P=Q) for I-matrices.
-           Integer multilevel_PQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer& level, Real tau);   // applies ddPQ to a matrix and vector and returns permuted matrix and vector.
+
+           ////////////////////
+           // PQ permutation //
+           ////////////////////
+
+           // apply ddPQ to a matrix and returns permuted matrix
+           Integer ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau);
+           // apply ddPQ to a matrix and returns permuted matrix
+           Integer ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau);
+           // apply ddPQ to a matrix and vector and returns permuted matrix and vector
+           Integer ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau);
+           // apply ddPQ to a matrix and vector and returns permuted matrix and vector
+           Integer ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau);
+           // symmetrized PQ (P=Q) for I-matrices
+           void sym_ddPQ(index_list& P) const;
+           // apply ddPQ to a matrix and vector and returns permuted matrix and vector
+           Integer multilevel_PQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer& level, Real tau);
+
            void sparse_first_ordering(index_list& Q) const;  // moves sparse columns of a row matrix to the beginning
            void symmetric_move_to_corner(index_list& P) const; // returns a permutation P, that moves elements into corners by absolute value (1-norm) |a_(k,:)| + |a_(:,k)|
            void symmetric_move_to_corner_improved(index_list& P) const; // same as above, but only considers the the appropriate k x k block in step k

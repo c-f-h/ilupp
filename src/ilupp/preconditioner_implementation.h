@@ -634,15 +634,15 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             break;
         case PERMUTED_LOWER_TRIANGULAR:
             if(left_matrix_usage == PERM1)
-                Precond_left.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation,v,w);
+                Precond_left.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation,v,w);
             else
-                Precond_left.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation2,v,w);
+                Precond_left.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation2,v,w);
             break;
         case PERMUTED_UPPER_TRIANGULAR:
             if(left_matrix_usage == PERM1)
-                Precond_left.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation,v,w);
+                Precond_left.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation,v,w);
             else
-                Precond_left.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation2,v,w);
+                Precond_left.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation2,v,w);
             break;
         default:
             std::cerr<<"indirect_split_pseudo_triangular_preconditioner::apply_preconditioner_left: only triangular forms are allowed."<<std::endl;
@@ -660,15 +660,15 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             break;
         case PERMUTED_LOWER_TRIANGULAR:
             if(left_matrix_usage == PERM1)
-                Precond_left.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation,w);
+                Precond_left.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation,w);
             else
-                Precond_left.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation2,w);
+                Precond_left.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation2,w);
             break;
         case PERMUTED_UPPER_TRIANGULAR:
             if(left_matrix_usage == PERM1)
-                Precond_left.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation,w);
+                Precond_left.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation,w);
             else
-                Precond_left.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation2,w);
+                Precond_left.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation2,w);
             break;
         default:
             std::cerr<<"indirect_split_pseudo_triangular_preconditioner::apply_preconditioner_left: only triangular forms are allowed."<<std::endl;
@@ -686,15 +686,15 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             break;
         case PERMUTED_LOWER_TRIANGULAR:
             if(right_matrix_usage == PERM1)
-                Precond_right.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation,v,w);
+                Precond_right.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation,v,w);
             else
-                Precond_right.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation2,v,w);
+                Precond_right.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation2,v,w);
             break;
         case PERMUTED_UPPER_TRIANGULAR:
             if(right_matrix_usage == PERM1)
-                Precond_right.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation,v,w);
+                Precond_right.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation,v,w);
             else
-                Precond_right.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation2,v,w);
+                Precond_right.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation2,v,w);
             break;
         default:
             std::cerr<<"indirect_split_pseudo_triangular_preconditioner::apply_preconditioner_right: only triangular forms are allowed."<<std::endl;
@@ -712,15 +712,15 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             break;
         case PERMUTED_LOWER_TRIANGULAR:
             if(right_matrix_usage == PERM1)
-                Precond_right.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation,w);
+                Precond_right.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation,w);
             else
-                Precond_right.triangular_solve(PERMUTED_LOWER_TRIANGULAR,use,permutation2,w);
+                Precond_right.triangular_solve_perm(PERMUTED_LOWER_TRIANGULAR,use,permutation2,w);
             break;
         case PERMUTED_UPPER_TRIANGULAR:
             if(right_matrix_usage == PERM1)
-                Precond_right.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation,w);
+                Precond_right.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation,w);
             else
-                Precond_right.triangular_solve(PERMUTED_UPPER_TRIANGULAR,use,permutation2,w);
+                Precond_right.triangular_solve_perm(PERMUTED_UPPER_TRIANGULAR,use,permutation2,w);
             break;
         default:
             std::cerr<<"indirect_split_pseudo_triangular_preconditioner::apply_preconditioner_left: only triangular forms are allowed."<<std::endl;

@@ -4083,15 +4083,6 @@ template<class T> void matrix_sparse<T>::scalar_multiply(T d) {
   }
 
 
-template<class T> void matrix_sparse<T>::exponential_scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2){
-    if(non_fatal_error( ((D1.dimension() != this->dim_along_orientation() )||(D2.dimension() != this->dim_against_orientation())), "matrix_sparse::scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    Integer i;
-    Integer j;
-    for(i=0;i<pointer_size-1;i++)
-        for(j=pointer[i];j<pointer[i+1];j++)
-            data[j] *= std::exp(D1[i]*D2[read_index(j)]);
-  }
-
 template<class T> void matrix_sparse<T>::scale_orientation_based(const vector_dense<T>& D1, const vector_dense<T>& D2){
     if(non_fatal_error( ((D1.dimension() != this->dim_along_orientation())||(D2.dimension() != this->dim_against_orientation())), "matrix_sparse::scale: matrix and vector have incompatible dimensions.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer i;
@@ -4101,11 +4092,6 @@ template<class T> void matrix_sparse<T>::scale_orientation_based(const vector_de
             data[j] *= D1[i]*D2[read_index(j)];
   }
 
-
-template<class T> void matrix_sparse<T>::exponential_scale(const vector_dense<T>& D1, const vector_dense<T>& D2){
-      if(orientation == ROW) this->exponential_scale_orientation_based(D1,D2);
-      else  this->exponential_scale_orientation_based(D2,D1);
-  }
 
 template<class T> void matrix_sparse<T>::scale(const vector_dense<T>& D1, const vector_dense<T>& D2){
       if(orientation == ROW) this->scale_orientation_based(D1,D2);
@@ -5392,9 +5378,11 @@ template<class T> void matrix_sparse<T>::triangular_solve_with_smaller_matrix_pe
     for(i=0;i<number_rows;i++) x[offset+i]=w[perm[i]];
 }
 
-template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const{
-    if(non_fatal_error(!(square_check()),"matrix_sparse::triangular_solve: matrix needs to be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    if(non_fatal_error(b.dimension() != number_rows, "matrix_sparse::triangular_solve: size of rhs is incompatible.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+template<class T> void matrix_sparse<T>::triangular_solve_perm(special_matrix_type form, matrix_usage_type use, const index_list& perm, const vector_dense<T>& b, vector_dense<T>& x) const{
+    if(non_fatal_error(!(square_check()),"matrix_sparse::triangular_solve_perm: matrix needs to be square."))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error(b.dimension() != number_rows, "matrix_sparse::triangular_solve_perm: size of rhs is incompatible."))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 
     if (x.dimension() != b.dimension())
         x.resize(b.dimension(),0);
@@ -5407,9 +5395,9 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
           time_1 = clock();
      #endif
     if ( ((form==PERMUTED_LOWER_TRIANGULAR) && (orientation==ROW) && (use==ID)) ||
-         ((form==PERMUTED_UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==TRANSPOSE)) )
+         ((form==PERMUTED_UPPER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
-        std::cerr<<"matrix_sparse<T>::triangular_solve with permutation: this particular form of solving should not be needed!!"<<std::endl;
+        std::cerr<<"matrix_sparse<T>::triangular_solve_perm: this particular form of solving should not be needed!!"<<std::endl;
         throw iluplusplus_error(OTHER_ERROR);
         /*  not adapted, this is still the non-permuted form
         for(k=0;k<number_rows;k++) diagonal_is_nonzero = (diagonal_is_nonzero && (k==indices[pointer[k+1]-1]));
@@ -5425,8 +5413,8 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
          ((form==PERMUTED_UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
     {   // untested, requires inverse perm (called perm as well)
         # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: PERMUTED_LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: PERMUTED_UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
+            if (use==ID )std::cout<<"      triangular_solve_perm: using: PERMUTED_LOWER_TRIANGULAR,COLUMN,ID"<<std::endl;
+            else         std::cout<<"      triangular_solve_perm: using: PERMUTED_UPPER_TRIANGULAR,ROW,TRANSPOSE"<<std::endl;
         #endif
         Integer k,j;
         vector_dense<T> y;
@@ -5448,14 +5436,14 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
          ((form==PERMUTED_LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==TRANSPOSE)) )
     {
         # ifdef VERYVERBOSE
-            if (use==ID )std::cout<<"      triangular_solve: using: PERMUTED_UPPER_TRIANGULAR,ROW,ID"<<std::endl;
-            else         std::cout<<"      triangular_solve: using: PERMUTED_LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
+            if (use==ID )std::cout<<"      triangular_solve_perm: using: PERMUTED_UPPER_TRIANGULAR,ROW,ID"<<std::endl;
+            else         std::cout<<"      triangular_solve_perm: using: PERMUTED_LOWER_TRIANGULAR,COLUMN,TRANSPOSE"<<std::endl;
         #endif
         vector_dense<T> y;
         y=b;
         for(k=number_rows-1;k>=0;k--){
             for(j=pointer[k]+1;j<pointer[k+1];j++) y[k]-= data[j]*x[indices[j]];
-            non_fatal_error(data[pointer[k]]==0,"matrix_sparse::triangular_solve with permutation: pivot must be non-zero.");
+            non_fatal_error(data[pointer[k]]==0,"matrix_sparse::triangular_solve_perm: pivot must be non-zero.");
             x[perm[k]] = y[k]/data[pointer[k]];
         }   // end for k
         #ifdef VERYVERBOSE
@@ -5468,7 +5456,7 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
     if ( ((form==PERMUTED_UPPER_TRIANGULAR )&& (orientation==COLUMN) && (use==ID)) ||
          ((form==PERMUTED_LOWER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)))
     {
-        std::cerr<<"matrix_sparse<T>::triangular_solve with permutation: this particular form of solving should not be needed!!"<<std::endl;
+        std::cerr<<"matrix_sparse<T>::triangular_solve_perm: this particular form of solving should not be needed!!"<<std::endl;
         throw iluplusplus_error(OTHER_ERROR);
         /* not adapted, this is still the non-permuted form
         for(k=0;k<number_rows;k++) diagonal_is_nonzero = (diagonal_is_nonzero && (k==indices[pointer[k+1]-1]));
@@ -5494,18 +5482,12 @@ template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type fo
         return;
         */
     }  // end if
-    std::cerr<<"matrix_sparse::triangular_solve with permutation: unknown matrix usage, trying without permutation"<<std::endl;
-    triangular_solve(form,use,b,x);
-     #ifdef VERYVERBOSE
-          time_2 = clock();
-          time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-          std::cout<<std::endl<<"          triangular_solve "<<time<<std::endl<<std::flush;
-     #endif
+    throw std::runtime_error("matrix_sparse::triangular_solve_perm: unknown matrix usage");
 }
 
-template<class T> void matrix_sparse<T>::triangular_solve(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const {
+template<class T> void matrix_sparse<T>::triangular_solve_perm(special_matrix_type form, matrix_usage_type use, const index_list& perm, vector_dense<T>& x) const {
     vector_dense<T> b = x;
-    triangular_solve(form, use, perm, b, x);
+    triangular_solve_perm(form, use, perm, b, x);
 }
 
 
