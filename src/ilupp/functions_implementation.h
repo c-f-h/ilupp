@@ -177,34 +177,6 @@ std::string long_string(preprocessing_type pt){
 //                                                                                                                       *
 //************************************************************************************************************************
 
-template<class T> inline Real real(T x){
-    return (Real) std::real(x);
-}
-
-template<> inline Real real(float x){
-    return (Real) x;
-}
-
-template<> inline Real real(double x){
-    return (Real) x;
-}
-
-template<> inline Real real(long double x){
-    return (Real) x;
-}
-
-template<> inline Real real(std::complex<float> x){
-    return (Real) std::real(x);
-}
-
-template<> inline Real real(std::complex<double> x){
-    return (Real) std::real(x);
-}
-
-template<> inline Real real(std::complex<long double> x){
-    return (Real) std::real(x);
-}
-
 inline float fabs(std::complex<float> x){
        return std::abs(x);
 }

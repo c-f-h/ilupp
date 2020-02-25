@@ -58,14 +58,6 @@ void make_identity(std::vector<T>& v, size_t n)
     fill_identity(v);
 }
 
-template<class T> inline Real real(T);                             //conjugate; adjust for complex numbers
-template<> inline Real real(float);
-template<> inline Real real(double);
-template<> inline Real real(long double);
-template<> inline Real real(std::complex<float>);
-template<> inline Real real(std::complex<double>);
-template<> inline Real real(std::complex<long double>);
-
 inline float fabs(std::complex<float>);
 inline double fabs(std::complex<double>);
 inline long double fabs(std::complex<long double>);

@@ -9324,7 +9324,7 @@ template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner(index_list&
         update_sparse_matrix_fields(k,pointer,indices,listA,headA,firstA);
         // not very good without absolute value in vectors //w[k] = (x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
         // not very good // w[k] = x.scalar_product_pos_factors(y); // scalar product (positive factors are bad)
-        w[k] = real(x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
+        w[k] = std::real(x*y); // scalar product (negative elements are good and should be eliminated first, because they increase the pivot)
         x.zero_reset();
         y.zero_reset();
     } 
