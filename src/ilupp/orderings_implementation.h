@@ -163,7 +163,7 @@ template <class int_type> void setup_symmetric_graph(int_type dim, int_type* poi
     T_pointer[0] = 0;
     for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
     // generate T_indices
-    T_num_element.set_all(0);
+    T_num_element.resize(dim, 0);
     for(j=0;j<dim;j++)
         for(k=pointer[j];k<pointer[j+1];k++)
             T_indices[T_pointer[indices[k]]+(T_num_element[indices[k]]++)]=j;
@@ -223,7 +223,7 @@ template <class T> void setup_symmetric_graph(const matrix_sparse<T> &A, Integer
     T_pointer[0] = 0;
     for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
     // generate T_indices
-    T_num_element.set_all(0);
+    T_num_element.resize(dim, 0);
     for(j=0;j<dim;j++)
         for(k=A.read_pointer(j);k<A.read_pointer(j+1);k++)
             T_indices[T_pointer[A.read_index(k)]+(T_num_element[A.read_index(k)]++)]=j;
@@ -278,7 +278,7 @@ void setup_symmetric_graph_without_diag(Integer dim, Integer* pointer, Integer* 
     T_pointer[0] = 0;
     for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
     // generate T_indices
-    T_num_element.set_all(0);
+    T_num_element.resize(dim, 0);
     for(j=0;j<dim;j++)
         for(k=pointer[j];k<pointer[j+1];k++)
             T_indices[T_pointer[indices[k]]+(T_num_element[indices[k]]++)]=j;
@@ -345,7 +345,7 @@ template <class T> void setup_symmetric_graph_without_diag(const matrix_sparse<T
     T_pointer[0] = 0;
     for(j=0;j<dim;j++) T_pointer[j+1] = T_pointer[j] + T_num_element[j];
     // generate T_indices
-    T_num_element.set_all(0);
+    T_num_element.resize(dim, 0);
     for(j=0;j<dim;j++)
         for(k=A.read_pointer(j);k<A.read_pointer(j+1);k++)
             T_indices[T_pointer[A.read_index(k)]+(T_num_element[A.read_index(k)]++)]=j;

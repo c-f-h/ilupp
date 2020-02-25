@@ -58,7 +58,6 @@ template<class T> class array
           T& operator[](Integer j);
           const T& operator[](Integer j) const;
        // Assignment
-          void set_all(T d);
           void erase_resize_data_field(Integer newsize);  // resizes only if newsize is different
           void resize(Integer newsize);
           void resize(Integer newsize, T d);

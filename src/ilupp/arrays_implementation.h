@@ -264,19 +264,13 @@ template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x
 // Class array: Generating special arrays                                                                                     *
 //*************************************************************************************************************************************
 
-
-template<class T> void array<T>::set_all(T d){
-     for(Integer k=0; k<data.size(); k++) data[k]=d;
-  }
-
 template<class T> void array<T>::resize(Integer newsize){
-     erase_resize_data_field(newsize);
-  }
+    erase_resize_data_field(newsize);
+}
 
 template<class T> void array<T>::resize(Integer newsize, T d){
-     erase_resize_data_field(newsize);
-     set_all(d);
-  }
+    data.resize(newsize, d);
+}
 
 }
 
