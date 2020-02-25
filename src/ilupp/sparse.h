@@ -399,8 +399,6 @@ template<class T> class matrix_sparse
 
            // multiply the o's with the entries of v
            void scale(const vector_dense<T>& v, orientation_type o);
-           // put the result of scaling A into this
-           void scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o);
            // scale rows with D1, columns with D2
            void scale(const vector_dense<T>& D1, const vector_dense<T>& D2);
            // scale with D1 along orientation, with D2 against
@@ -408,8 +406,6 @@ template<class T> class matrix_sparse
 
            // divide the o's with the entries of v
            void inverse_scale(const vector_dense<T>& v, orientation_type o);
-           // put the result of inverse scaling A into this
-           void inverse_scale(const matrix_sparse<T>& A, const vector_dense<T>& v, orientation_type o);
            // scale rows with 1/D1, columns with 1/D2
            void inverse_scale(const vector_dense<T>& D1, const vector_dense<T>& D2);
            // scale with 1/D1 along orientation, with 1/D2 against
@@ -417,11 +413,8 @@ template<class T> class matrix_sparse
 
            void normalize_columns(vector_dense<T>& D_r);
            void normalize_rows(vector_dense<T>& D_l);
-           void normalize_columns(const matrix_sparse<T>& A, vector_dense<T>& D_r);
-           void normalize_rows(const matrix_sparse<T>& A, vector_dense<T>& D_l);
            void normalize();
            void normalize(vector_dense<T>& D_l, vector_dense<T>& D_r);
-           void normalize(const matrix_sparse<T>& A, vector_dense<T>& D_l, vector_dense<T>& D_r);
            bool numerical_zero_check(Real threshold) const; // returns true, if Frobenius norm is less than threshold.
            void insert_orient(const matrix_sparse<T> &A, const vector_dense<T>& along_orient, const vector_dense<T>& against_orient, T center, Integer pos_along_orient, Integer pos_against_orient, Real threshold);
            // inserts all elements in along_orient, against_orient, center whose abs. value is larger than threshold.
@@ -560,11 +553,8 @@ template<class T> class matrix_sparse
 #endif
            void unit_or_zero_diagonal(vector_dense<T>& D1) const; // D1 contains a vector with entries 0 +/- 1 s.t. the scaled matrix along orientation has a nonnegative diagonal
 
-           // preprocess as indicated by L; returns first index, where preprocessing was not successful.
+           // preprocess as indicated by L; returns first index where preprocessing was not successful
            Integer preprocess(const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol);
-
-           // preprocess as indicated by L; returns first index, where preprocessing was not successful.
-           Integer preprocess(const matrix_sparse<T>& A, const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q, index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol);
 
            bool test_I_matrix() const; // requires element w/ absolute value 1 on diagonal and elements with absolute value of no more than 1 otherwise.
            bool test_normalized_I_matrix() const; // also requires 1 on diagonal
