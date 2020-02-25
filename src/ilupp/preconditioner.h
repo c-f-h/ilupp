@@ -154,7 +154,8 @@ template <class T, class matrix_type, class vector_type>
        public:
           virtual Integer left_nnz() const = 0;
           virtual Integer right_nnz() const = 0;
-          virtual Integer total_nnz() const;
+          virtual Integer total_nnz() const         { return left_nnz() + right_nnz(); }
+
           virtual bool compatibility_check(preconditioner_application1_type PA1, const matrix_type& A, const vector_type& b) const;
           using preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only;
           virtual void apply_preconditioner_only(matrix_usage_type use, const vector_type &x, vector_type &y) const;
@@ -186,11 +187,10 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
        public:
           const matrix_type& left_matrix() const    { return Precond_left; }
-          const matrix_type& right_matrix() const    { return Precond_right; }
+          const matrix_type& right_matrix() const   { return Precond_right; }
+          virtual Integer left_nnz() const          { return Precond_left.actual_non_zeroes(); }
+          virtual Integer right_nnz() const         { return Precond_right.actual_non_zeroes(); }
 
-          virtual Integer left_nnz() const;
-          virtual Integer right_nnz() const;
-          virtual Integer total_nnz() const;
           virtual void print_info() const;
   };
 
@@ -255,7 +255,7 @@ template <class T, class matrix_type, class vector_type>
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;
           virtual Integer middle_nnz() const;
-          virtual Integer total_nnz() const;
+          virtual Integer total_nnz() const             { return left_nnz() + right_nnz() + middle_nnz(); }
           virtual matrix_type left_preconditioning_matrix(Integer k);
           virtual matrix_type right_preconditioning_matrix(Integer k);
           virtual void print(Integer k) const;
@@ -291,18 +291,14 @@ template <class T, class matrix_type, class vector_type>
        public:
           const matrix_type& left_matrix() const    { return Precond_left; }
           const matrix_type& right_matrix() const   { return Precond_right; }
+          virtual Integer left_nnz() const          { return Precond_left.actual_non_zeroes(); }
+          virtual Integer right_nnz() const         { return Precond_right.actual_non_zeroes(); }
+          virtual const index_list& extract_permutation() const    { return permutation; }
+          virtual const index_list& extract_permutation2() const   { return permutation2; }
 
-          virtual Integer left_nnz() const;
-          virtual Integer right_nnz() const;
-          virtual Integer total_nnz() const;
           virtual void print_info() const;
-          virtual index_list extract_permutation() const;
-          virtual index_list extract_permutation2() const;
           virtual void eliminate_permutations(matrix_type& A, vector_type &b);
   };
-
-
-
 
 
 //***********************************************************************************************************************//
@@ -325,7 +321,7 @@ template <class T, class matrix_type, class vector_type>
           virtual void read_binary(std::string filename);
           virtual void write_binary(std::string filename) const;
           virtual void print_info() const;
-          virtual Integer total_nnz() const;
+          virtual Integer total_nnz() const     { return 0; }
   };
 
 
@@ -363,7 +359,6 @@ template <class T, class matrix_type, class vector_type>
           virtual void read_binary(std::string filename);
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;
-          virtual Integer total_nnz() const;
   };
 
 
@@ -381,13 +376,12 @@ template <class T, class matrix_type, class vector_type>
           Integer zero_pivots;
        public:
           ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor); // default threshold=-1.0, pt = 0.0,  rp=0
-          virtual Integer zero_pivots_encountered();
+          virtual Integer zero_pivots_encountered()         { return zero_pivots; }
           virtual std::string special_info() const;
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
-          virtual Integer left_nnz() const;
-          virtual Integer right_nnz() const;
-          virtual Integer total_nnz() const;
+          virtual Integer left_nnz() const                  { return this->Precond_left.actual_non_zeroes() - this->image_size; }
+          virtual Integer right_nnz() const                 { return this->Precond_right.actual_non_zeroes(); }
   };
 
 
@@ -406,7 +400,7 @@ template <class T, class matrix_type, class vector_type>
        public:
           ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp); // default threshold=-1.0, perm_tol=0.0, rp = -1
           ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p);
-          virtual Integer zero_pivots_encountered();
+          virtual Integer zero_pivots_encountered()         { return zero_pivots; }
           virtual std::string special_info() const;
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);

@@ -290,12 +290,6 @@ void split_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_start
 
 
 template <class T, class matrix_type, class vector_type>
-    Integer split_preconditioner<T,matrix_type,vector_type>::total_nnz() const {
-        return left_nnz() + right_nnz();
-    }
-
-
-template <class T, class matrix_type, class vector_type>
     bool split_preconditioner<T,matrix_type,vector_type>::compatibility_check(preconditioner_application1_type PA1,const matrix_type& A, const vector_type& b) const
     {
       bool system_check = ( A.rows()!=b.dimension());
@@ -369,15 +363,6 @@ void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::unappl
     std::cerr<<"indirect_split_triangular_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
     throw iluplusplus_error(OTHER_ERROR);
 }
-
-template <class T, class matrix_type, class vector_type>
-   Integer indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::left_nnz() const {return Precond_left.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::right_nnz() const {return Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::total_nnz() const {return Precond_left.actual_non_zeroes()+Precond_right.actual_non_zeroes();}
 
 template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::print_info() const {
@@ -552,11 +537,6 @@ Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector
     Integer sum=0;
     for(Integer k=0;k<number_levels;k++) sum += Precond_middle.get(k).dimension();
     return sum;
-}
-
-template <class T, class matrix_type, class vector_type>
-Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::total_nnz() const {
-    return left_nnz()+right_nnz()+middle_nnz();
 }
 
 template <class T, class matrix_type, class vector_type>
@@ -772,31 +752,12 @@ template <class T, class matrix_type, class vector_type>
     }
 
 template <class T, class matrix_type, class vector_type>
-          Integer indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::left_nnz() const {return Precond_left.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-          Integer indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::right_nnz() const {return Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-  Integer indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::total_nnz() const {return Precond_left.actual_non_zeroes()+Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
   void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::print_info() const {
       std::cout<<"The left matrix of the preconditioner:"<<std::endl;
       Precond_left.print_info();
       std::cout<<"The right matrix of the preconditioner:"<<std::endl;
       Precond_right.print_info();
   }
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::extract_permutation() const {
-    return permutation;
-}
-
-template <class T, class matrix_type, class vector_type>
-index_list indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::extract_permutation2() const {
-    return permutation2;
-}
 
 template <class T, class matrix_type, class vector_type>
 void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type>::eliminate_permutations(matrix_type& A, vector_type &b){
@@ -939,11 +900,6 @@ template <class T, class matrix_type, class vector_type>
       std::cout<<"  image size:     "<<this->image_size<<std::endl;
 }
 
-template <class T, class matrix_type, class vector_type>
-  Integer NullPreconditioner<T,matrix_type,vector_type>::total_nnz() const {
-      return 0;
-}
-
 //***********************************************************************************************************************//
 //                                                                                                                       //
 //         The class: ILUC Preconditioner (Saad):                                                                         //
@@ -1061,10 +1017,6 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
   Integer ILUTPreconditioner<T,matrix_type,vector_type>::right_nnz() const {return this->Precond_right.actual_non_zeroes();}
 
- template <class T, class matrix_type, class vector_type>
-         Integer ILUTPreconditioner<T,matrix_type,vector_type>::total_nnz() const {return this->left_nnz()+this->right_nnz();}
-
-
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
@@ -1080,9 +1032,6 @@ ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix
         this->preconditioner_exists = ILUTP2(A, this->Precond_left,
                 this->Precond_right, this->permutation, max_fill_in, threshold,
                 perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
-        //const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm,
-        //Integer max_fill_in, Real threshold, Real perm_tol, Integer bp,
-        //Integer& zero_pivots, Real& time_self, Real mem_factor)
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
@@ -1104,9 +1053,6 @@ ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix
     this->memory_allocated_to_create=0.0;
     this->memory_used_to_create=0.0;
 }
-
-template <class T, class matrix_type, class vector_type>
-  Integer ILUTPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
 
 template <class T, class matrix_type, class vector_type>
   std::string ILUTPPreconditioner<T,matrix_type,vector_type>::special_info() const {
@@ -1138,16 +1084,6 @@ template <class T, class matrix_type, class vector_type>
       this->pre_image_size=this->Precond_left.rows();
   }
 
-template <class T, class matrix_type, class vector_type>
-          Integer ILUTPPreconditioner<T,matrix_type,vector_type>::left_nnz() const {return this->Precond_left.actual_non_zeroes()-this->image_size;}
-
-template <class T, class matrix_type, class vector_type>
-          Integer ILUTPPreconditioner<T,matrix_type,vector_type>::right_nnz() const {return this->Precond_right.actual_non_zeroes();}
-
-template <class T, class matrix_type, class vector_type>
-          Integer ILUTPPreconditioner<T,matrix_type,vector_type>::total_nnz() const {return this->left_nnz()+this->right_nnz();}
-
-
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
@@ -1158,13 +1094,17 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
 ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp){
     if(Acol.orient()==COLUMN){
-        this->preconditioner_exists = this->Precond_left.ILUCP4(Acol,this->Precond_right,this->permutation,max_fill_in,threshold,perm_tol,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
+        this->preconditioner_exists = this->Precond_left.ILUCP4(Acol,
+                this->Precond_right, this->permutation, max_fill_in, threshold,
+                perm_tol, rp, this->zero_pivots, this->setup_time);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
         this->right_matrix_usage = PERM1;
     } else {
-        this->preconditioner_exists = this->Precond_right.ILUCP4(Acol,this->Precond_left,this->permutation,max_fill_in,threshold,perm_tol,rp,this->zero_pivots,this->setup_time);      // preconditioner of A.
+        this->preconditioner_exists = this->Precond_right.ILUCP4(Acol,
+                this->Precond_left, this->permutation, max_fill_in, threshold,
+                perm_tol, rp, this->zero_pivots, this->setup_time);
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
         this->left_matrix_usage = PERM1;
@@ -1202,9 +1142,6 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix
     this->memory_allocated_to_create=0.0;
     this->memory_used_to_create=0.0;
 }
-
-template <class T, class matrix_type, class vector_type>
-  Integer ILUCPPreconditioner<T,matrix_type,vector_type>::zero_pivots_encountered(){return this->zero_pivots;}
 
 template <class T, class matrix_type, class vector_type>
   std::string ILUCPPreconditioner<T,matrix_type,vector_type>::special_info() const {
