@@ -58,12 +58,15 @@ void make_identity(std::vector<T>& v, size_t n)
     fill_identity(v);
 }
 
-inline float fabs(std::complex<float>);
-inline double fabs(std::complex<double>);
-inline long double fabs(std::complex<long double>);
+float fabs(float x)                              { return std::abs(x); }
+double fabs(double x)                            { return std::abs(x); }
+long double fabs(long double x)                  { return std::abs(x); }
+float fabs(std::complex<float> x)                { return std::abs(x); }
+double fabs(std::complex<double> x)              { return std::abs(x); }
+long double fabs(std::complex<long double> x)    { return std::abs(x); }
 
-template<class T> inline Real absvalue_squared(T);
-template<class T> inline T sqr(T);
+template<class T> inline Real absvalue_squared(T x)     { return std::abs(x * std::conj(x)); }
+template<class T> inline T sqr(T x)                     { return x * x; }
 inline void fatal_error(bool, const std::string);
 inline bool non_fatal_error(bool, const std::string);
 

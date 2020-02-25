@@ -177,63 +177,6 @@ std::string long_string(preprocessing_type pt){
 //                                                                                                                       *
 //************************************************************************************************************************
 
-inline float fabs(std::complex<float> x){
-       return std::abs(x);
-}
-
-inline double fabs(std::complex<double> x){
-       return std::abs(x);
-}
-
-inline long double fabs(std::complex<long double> x){
-       return std::abs(x);
-}
-
-inline float fabs(float x){
-       return std::fabs(x);
-}
-
-inline double fabs(double x){
-       return std::fabs(x);
-}
-
-inline long double fabs(long double x){
-       return std::fabs(x);
-}
-
-template<class T> inline Real absvalue_squared(T x){
-       return fabs(x*conj(x));
-  }
-
-template<> inline Real absvalue_squared(float x){
-       return (Real) x*x;
-  }
-
-template<> inline Real absvalue_squared(double x){
-       return (Real) x*x;
-  }
-
-template<> inline Real absvalue_squared(long double x){
-       return (Real) x*x;
-  }
-
-template<> inline Real absvalue_squared(std::complex<float> x){
-       return (Real) norm(x);
-  }
-
-template<> inline Real absvalue_squared(std::complex<double> x){
-       return (Real) norm(x);
-  }
-
-template<> inline Real absvalue_squared(std::complex<long double> x){
-       return (Real) norm(x);
-  }
-
-
-template<class T> inline T sqr(T x){
-       return x*x;
-  }
-
 inline void fatal_error(bool exp, const std::string message){
     if(exp){
         std::cerr << message <<std::endl;
