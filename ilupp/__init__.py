@@ -108,9 +108,7 @@ class ILUppPreconditioner(_BaseWrapper):
                 params.fill_in = fill_in
 
         Ad, Ai, Ap, Ao = _matrix_fields(A)
-
-        self.pr = _ilupp.MultilevelILUCDPPreconditioner()
-        self.pr.setup(Ad, Ai, Ap, Ao, params)
+        self.pr = _ilupp.MultilevelILUCDPPreconditioner(Ad, Ai, Ap, Ao, params)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property

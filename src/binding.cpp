@@ -27,7 +27,7 @@ namespace py = pybind11;
 using namespace iluplusplus;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Wrappers
+// Utility functions
 ////////////////////////////////////////////////////////////////////////////////
 
 template <class T>
@@ -127,15 +127,16 @@ py::list wrap_all_factor_matrices(const indirect_split_pseudo_triangular_precond
     return result;
 }
 
+template <class T, class matrix_type, class vector_type>
+py::list wrap_all_factor_matrices(const indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>& pr)
+{
+    // not implemented
+    return py::list();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Wrappers
 ////////////////////////////////////////////////////////////////////////////////
-
-typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
-typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
-typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
-typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
-typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
 
 std::tuple<py::array_t<Real>, Integer, Real, Real>
 solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
@@ -169,6 +170,37 @@ solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
     }
 }
 
+// default wrapping function which wraps members common to all preconditioners
+template <class P>
+py::class_<P> wrapPreconditioner(py::module& m, const char* classname)
+{
+    return py::class_<P>(m, classname)
+        .def("apply",
+            [](const P& pr, py::buffer x)
+            {
+                auto y = make_vector(x);
+                if (y->dim() != pr.pre_image_dimension())
+                    throw std::runtime_error("vector has wrong size for preconditioner!");
+                pr.apply_preconditioner_only(ID, *y);
+            }
+        )
+        .def_property_readonly("total_nnz", [](const P& pr) { return pr.total_nnz(); })
+        .def("factors_info", [](const P& pr) { return wrap_all_factor_matrices(pr); })
+        .def_property_readonly("memory_used_calculations", &P::memory_used_calculations)
+        .def_property_readonly("memory_allocated_calculations", &P::memory_allocated_calculations)
+        .def_property_readonly("memory", [](const P& pr) { return pr.memory(); })
+        .def_property_readonly("exists", &P::exists)
+        .def_property_readonly("special_info", &P::special_info)
+        .def("print_info", [](const P& pr) { pr.print_info(); })
+    ;
+}
+
+typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
+typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
+typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
+typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
+typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
+
 PYBIND11_MODULE(_ilupp, m)
 {
     // optional module docstring
@@ -176,124 +208,63 @@ PYBIND11_MODULE(_ilupp, m)
 
     m.def("solve", &solve, "Solve a linear system using ILU");
 
-    py::class_<_MultilevelILUCDPPreconditioner>(m, "MultilevelILUCDPPreconditioner")
-        .def(py::init<>())
-        .def("setup",
+    wrapPreconditioner<_MultilevelILUCDPPreconditioner>(m, "MultilevelILUCDPPreconditioner")
+        .def("__init__",
             [](_MultilevelILUCDPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, iluplusplus_precond_parameter param)
             {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+                new (&pr) _MultilevelILUCDPPreconditioner();
                 pr.make_preprocessed_multilevelILUCDP(*A, param);
+                if (!pr.exists())
+                    throw std::runtime_error("Multilevel ILUCDP factorization failed");
             }
-        )
-        .def("apply",
-            [](const _MultilevelILUCDPPreconditioner& pr, py::buffer x)
-            {
-                auto y = make_vector(x);
-                if (y->dim() != pr.pre_image_dimension())
-                    throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner_only(ID, *y);
-            }
-        )
-        .def_property_readonly("memory_used_calculations", &_MultilevelILUCDPPreconditioner::memory_used_calculations)
-        .def_property_readonly("memory_allocated_calculations", &_MultilevelILUCDPPreconditioner::memory_allocated_calculations)
-        .def_property_readonly("memory", [](const _MultilevelILUCDPPreconditioner& pr) { return pr.memory(); })
-        .def_property_readonly("exists", &_MultilevelILUCDPPreconditioner::exists)
-        .def_property_readonly("special_info", &_MultilevelILUCDPPreconditioner::special_info)
-        .def_property_readonly("total_nnz", [](const _MultilevelILUCDPPreconditioner& pr) { return pr.total_nnz(); })
-        .def("print_info", [](const _MultilevelILUCDPPreconditioner& pr) { pr.print_info(); })
-        .def_property_readonly("dim", &_MultilevelILUCDPPreconditioner::dim)
-    ;
+        );
 
-    py::class_<_ILUTPreconditioner>(m, "ILUTPreconditioner")
+    // ILUT - ILU with thresholding (Saad)
+    wrapPreconditioner<_ILUTPreconditioner>(m, "ILUTPreconditioner")
         .def("__init__",
-            [](_ILUTPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
+            [](_ILUTPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&inst) _ILUTPreconditioner(*A, max_fill_in, threshold);
-                if (!inst.exists())
+                new (&pr) _ILUTPreconditioner(*A, max_fill_in, threshold);
+                if (!pr.exists())
                     throw std::runtime_error("ILUT factorization failed");
             }
-        )
-        .def("apply",
-            [](const _ILUTPreconditioner& pr, py::buffer x)
-            {
-                auto y = make_vector(x);
-                if (y->dim() != pr.pre_image_dimension())
-                    throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner_only(ID, *y);
-            }
-        )
-        .def_property_readonly("total_nnz", &_ILUTPreconditioner::total_nnz)
-        .def("factors_info", [](const _ILUTPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
-    ;
+        );
 
-    // ILUTP - ILUT with pivoting
-    py::class_<_ILUTPPreconditioner>(m, "ILUTPPreconditioner")
+    // ILUTP - ILUT with pivoting (Saad)
+    wrapPreconditioner<_ILUTPPreconditioner>(m, "ILUTPPreconditioner")
         .def("__init__",
-            [](_ILUTPPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
+            [](_ILUTPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
                     Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&inst) _ILUTPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
-                if (!inst.exists())
-                    throw std::runtime_error("ILUC factorization failed");
+                new (&pr) _ILUTPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
+                if (!pr.exists())
+                    throw std::runtime_error("ILUTP factorization failed");
             }
-        )
-        .def("apply",
-            [](const _ILUTPPreconditioner& pr, py::buffer x)
-            {
-                auto y = make_vector(x);
-                if (y->dim() != pr.pre_image_dimension())
-                    throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner_only(ID, *y);
-            }
-        )
-        .def_property_readonly("total_nnz", &_ILUTPPreconditioner::total_nnz)
-        .def("factors_info", [](const _ILUTPPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
-    ;
+        );
 
-    py::class_<_ILUCPreconditioner>(m, "ILUCPreconditioner")
+    // ILUC - Crout ILU (Li, Saad, Chow)
+    wrapPreconditioner<_ILUCPreconditioner>(m, "ILUCPreconditioner")
         .def("__init__",
-            [](_ILUCPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
+            [](_ILUCPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&inst) _ILUCPreconditioner(*A, max_fill_in, threshold);
-                if (!inst.exists())
+                new (&pr) _ILUCPreconditioner(*A, max_fill_in, threshold);
+                if (!pr.exists())
                     throw std::runtime_error("ILUC factorization failed");
             }
-        )
-        .def("apply",
-            [](const _ILUCPreconditioner& pr, py::buffer x)
-            {
-                auto y = make_vector(x);
-                if (y->dim() != pr.pre_image_dimension())
-                    throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner_only(ID, *y);
-            }
-        )
-        .def_property_readonly("total_nnz", &_ILUCPreconditioner::total_nnz)
-        .def("factors_info", [](const _ILUCPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
-    ;
+        );
 
-    py::class_<_ILUCPPreconditioner>(m, "ILUCPPreconditioner")
+    // ILUCP - Crout ILU with pivoting (Mayer)
+    wrapPreconditioner<_ILUCPPreconditioner>(m, "ILUCPPreconditioner")
         .def("__init__",
-            [](_ILUCPPreconditioner& inst, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
+            [](_ILUCPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
                 Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&inst) _ILUCPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
-                if (!inst.exists())
+                new (&pr) _ILUCPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
+                if (!pr.exists())
                     throw std::runtime_error("ILUCP factorization failed");
             }
-        )
-        .def("apply",
-            [](const _ILUCPPreconditioner& pr, py::buffer x)
-            {
-                auto y = make_vector(x);
-                if (y->dim() != pr.pre_image_dimension())
-                    throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner_only(ID, *y);
-            }
-        )
-        .def_property_readonly("total_nnz", &_ILUCPPreconditioner::total_nnz)
-        .def("factors_info", [](const _ILUCPPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
-    ;
+        );
 
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
         .def(py::init<>())
