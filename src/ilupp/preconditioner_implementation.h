@@ -918,8 +918,6 @@ ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_t
         this->preconditioner_exists = ILUC2(A, this->Precond_right, this->Precond_left, max_fill_in, threshold);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
-        //this->Precond_left.transpose_in_place();
-        //this->Precond_right.transpose_in_place();
     }
     this->setup_time = ((Real)clock() - (Real) time_begin) / (Real) CLOCKS_PER_SEC;
     this->pre_image_size=this->Precond_left.rows();
@@ -1108,6 +1106,8 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
         this->preconditioner_exists = ILUCP4(Acol, this->Precond_right,
                 this->Precond_left, this->permutation, max_fill_in, threshold,
                 perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
+        this->Precond_left.transpose_in_place();
+        this->Precond_right.transpose_in_place();
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
         this->left_matrix_usage = PERM1;

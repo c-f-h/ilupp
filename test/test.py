@@ -52,8 +52,15 @@ def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
         assert pred(A, P)
     return test
 
+def is_lower_triangular(A):
+    return all(i >= j for (i,j) in zip(*A.nonzero()))
+def is_upper_triangular(A):
+    return all(i <= j for (i,j) in zip(*A.nonzero()))
+
 def _assert_factors_correct(A, P):
     L, U = P.factors()
+    assert is_lower_triangular(L)
+    assert is_upper_triangular(U)
     LU = L.dot(U)
     return np.allclose(A.A, LU.A)
 
@@ -86,9 +93,6 @@ class TestCases(unittest.TestCase):
 
     # ILUCP currently fails for CSR matrices due to a not implemented permuted triangular solve
     del vars()['test_ILUCPPreconditioner_laplace']
-
-    # the correct evaluation of the factors needs a right permutation for pivoted ILUC (not implemented)
-    del vars()['test_ILUCPPreconditioner_laplace_factorscorrect']
 
 
 ########################################
