@@ -38,7 +38,6 @@
 
 #include "declarations.h"
 
-#include "arrays.h"
 #include "functions.h"
 #include "orderings.h"
 #include "pmwm_declarations.h"
@@ -6106,8 +6105,8 @@ bool matrix_sparse<T>::partialILUCDP(
     index_list list_L, list_U;
     index_list rejected_L, rejected_U;
     matrix_sparse<T> droppedU;  // matrix containing dropped elements of U. Used to calculate an improved Schur complement.
-    array< std::queue<T> > droppedL_data;
-    array< std::queue<Integer> > droppedL_colindex;
+    std::vector< std::queue<T> > droppedL_data;
+    std::vector< std::queue<Integer> > droppedL_colindex;
     Real droppedL_data_memory = 0.0;
     Real droppedL_colindex_memory = 0.0;
     vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
@@ -6317,8 +6316,10 @@ bool matrix_sparse<T>::partialILUCDP(
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Acol.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
-                for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                for(size_t p = 0; p < droppedL_data.size(); p++)
+                    droppedL_data_memory += droppedL_data[p].size();
+                for(size_t p = 0; p < droppedL_colindex.size(); p++)
+                    droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
@@ -6809,8 +6810,10 @@ bool matrix_sparse<T>::partialILUCDP(
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 Anew.pointer[0]=0;
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
-                    for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                    for(size_t p = 0; p < droppedL_data.size(); p++)
+                        droppedL_data_memory += droppedL_data[p].size();
+                    for(size_t p = 0; p < droppedL_colindex.size(); p++)
+                        droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -7205,8 +7208,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     std::vector<Integer> firstU(n), firstL(n), firstA(n), listA(n), headA(n), listU(n),listL(n);
     std::vector<Integer> firstUdropped, listUdropped; 
 
-    array< std::queue<T> > droppedL_data;
-    array< std::queue<Integer> > droppedL_colindex;
+    std::vector< std::queue<T> > droppedL_data;
+    std::vector< std::queue<Integer> > droppedL_colindex;
     matrix_sparse<T> droppedU;
     vector_sparse_dynamic<T> w,z;
 #ifdef STATISTICS
@@ -7320,8 +7323,10 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
             reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
             Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
             if(use_improved_SCHUR){ 
-                for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
-                for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                for(size_t p = 0; p < droppedL_data.size(); p++)
+                    droppedL_data_memory += droppedL_data[p].size();
+                for(size_t p = 0; p < droppedL_colindex.size(); p++)
+                    droppedL_colindex_memory += droppedL_colindex[p].size();
                 droppedL_data_memory *= sizeof(T);
                 droppedL_colindex_memory *= sizeof(Integer);
             }
@@ -7704,8 +7709,10 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
                 reserved_memory_Anew = (Integer) min((((Real)(max_fill_in))*((Real)(n_Anew))),(2.0*((Real)n_Anew/(Real) n)*mem_factor*Arow.non_zeroes()));
                 Anew.reformat(n_Anew,n_Anew,reserved_memory_Anew,ROW);
                 if(use_improved_SCHUR){ 
-                    for(Integer p = 0; p < droppedL_data.dimension(); p++) droppedL_data_memory += droppedL_data[p].size();
-                    for(Integer p = 0; p < droppedL_colindex.dimension() ; p++) droppedL_colindex_memory += droppedL_colindex[p].size();
+                    for(size_t p = 0; p < droppedL_data.size(); p++)
+                        droppedL_data_memory += droppedL_data[p].size();
+                    for(size_t p = 0; p < droppedL_colindex.size(); p++)
+                        droppedL_colindex_memory += droppedL_colindex[p].size();
                     droppedL_data_memory *= sizeof(T);
                     droppedL_colindex_memory *= sizeof(Integer);
                 }
@@ -8069,12 +8076,12 @@ template<class T> bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow,
       if(max_fill_in<1) max_fill_in = 1;
       if(max_fill_in>n) max_fill_in = n;
       Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
-      array<Integer> linkU(reserved_memory); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
-      array<Integer> rowU(reserved_memory);   // row indices of elements of U.data.
-      array<Integer> startU(n); // startU[i] points to start of points to an index of data belonging to column i 
-      array<Integer> linkL(reserved_memory); //h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
-      array<Integer> colL(reserved_memory);  // column indices of elements of data.
-      array<Integer> startL(n); // startL[i] points to start of points to an index of data belonging to row i 
+      std::vector<Integer> linkU(reserved_memory); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
+      std::vector<Integer> rowU(reserved_memory);   // row indices of elements of U.data.
+      std::vector<Integer> startU(n); // startU[i] points to start of points to an index of data belonging to column i
+      std::vector<Integer> linkL(reserved_memory); //h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
+      std::vector<Integer> colL(reserved_memory);  // column indices of elements of data.
+      std::vector<Integer> startL(n); // startL[i] points to start of points to an index of data belonging to row i
       U.reformat(n,n,reserved_memory,ROW);
       U.pointer[0]=0;
       weights_L[0]=1.0;
@@ -8338,18 +8345,18 @@ template<class T> bool matrix_sparse<T>::ILUCP4inv(const matrix_sparse<T>& Acol,
       vector_dense<T> weights_L(n+1);
       vector_dense<T> weights_U(n+1);
       Real xiplus_L,ximinus_L;
-      array<Integer> firstL(n);
-      array<Integer>listL(n);
-      array<Integer> firstA(n);
-      array<Integer> listA(n);
-      array<Integer> headA(n);
+      std::vector<Integer> firstL(n);
+      std::vector<Integer>listL(n);
+      std::vector<Integer> firstA(n);
+      std::vector<Integer> listA(n);
+      std::vector<Integer> headA(n);
       index_list inverse_perm(n);
       if(max_fill_in<1) max_fill_in = 1;
       if(max_fill_in>n) max_fill_in = n;
       Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
-      array<Integer> linkU(reserved_memory); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
-      array<Integer> rowU(reserved_memory); // row indices of elements of U.data.
-      array<Integer> startU(reserved_memory); // startU[i] points to start of points to an index of U.data belonging to column i 
+      std::vector<Integer> linkU(reserved_memory); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
+      std::vector<Integer> rowU(reserved_memory); // row indices of elements of U.data.
+      std::vector<Integer> startU(reserved_memory); // startU[i] points to start of points to an index of U.data belonging to column i
       U.reformat(n,n,reserved_memory,ROW);
       U.pointer[0]=0;
       reformat(n,n,reserved_memory,COLUMN);
