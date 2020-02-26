@@ -1,15 +1,16 @@
 import numpy as np
 import scipy.sparse
 import ilupp
+import unittest
 
-def laplace_matrix(n):
+def laplace_matrix(n, format='csr'):
     h = 1.0 / (n + 1)
     d = np.ones(n) / (h**2)
-    return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).tocsr()
+    return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).asformat(format)
 
-def laplace_Matrix_2d(n):
+def laplace_Matrix_2d(n, format='csr'):
     A, I = laplace_matrix(n), scipy.sparse.eye(n)
-    return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).tocsr()
+    return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).asformat(format)
 
 def example_2d(n):
     A = laplace_Matrix_2d(n)
@@ -18,17 +19,66 @@ def example_2d(n):
     b = A.dot(x_exact)
     return A, b, x_exact
 
-def random_example(n):
-    A = scipy.sparse.random(n, n, density=0.1, random_state=39273, format='csc') + 10*scipy.sparse.eye(n)
+def example_laplace(n):
+    A = laplace_matrix(n)
+    b = np.ones(n)
+    X = np.linspace(0, 1, n+2)[1:-1]
+    x_exact = X*(1-X)/2
+    return A, b, x_exact
+
+def example_random(n, format='csc'):
+    A = (scipy.sparse.random(n, n, density=0.1, random_state=39273) + 10*scipy.sparse.eye(n)).asformat(format)
     x_exact = np.ones(n)
     b = A.dot(x_exact)
     return A, b, x_exact
 
 ########################################
+# auto-generated test cases
+
+def _gen_solve_in_one_step(Precond, params, example_func, example_args):
+    def test(self):
+        A, b, x_exact = example_func(*example_args)
+        P = Precond(A, **params)
+        x = b.copy()
+        P.apply(x)
+        print('Error:', np.linalg.norm(x - x_exact))
+        assert np.allclose(x, x_exact)
+    return test
+
+def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
+    def test(self):
+        A, b, x_exact = example_func(*example_args)
+        P = Precond(A, **params)
+        assert pred(P)
+    return test
+
+class TestCases(unittest.TestCase):
+    for P in [
+            ilupp.ILUTPreconditioner,
+            ilupp.ILUTPPreconditioner,
+            ilupp.ILUCPreconditioner,
+            ilupp.ILUCPPreconditioner,
+    ]:
+        n = 50
+        case_name = f'test_{P.__name__}_random'
+        vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_random, (50,))
+        case_name = f'test_{P.__name__}_laplace'
+        vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_laplace, (50,))
+        case_name = f'test_{P.__name__}_total_nnz'
+        # each L/u factor has a diagonal and an off-diagonal,
+        # but ILU++ reports less in some cases because of unit diagonals
+        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
+                lambda pr: pr.total_nnz <= 2 * (50 + (50-1)))
+
+    # ILUCP currently fails for CSR matrices due to a not implemented permuted triangular solve
+    del vars()['test_ILUCPPreconditioner_laplace']
+
+
+########################################
 
 ## multilevel preconditioner
 
-def test_ml_solve_laplace_PQ():
+def test_ml_solve_laplace2d_PQ():
     A, b, x_exact = example_2d(30)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_PQ()
@@ -37,7 +87,7 @@ def test_ml_solve_laplace_PQ():
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
 
-def test_ml_solve_laplace_MWM():
+def test_ml_solve_laplace2d_MWM():
     A, b, x_exact = example_2d(30)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING()
@@ -46,7 +96,7 @@ def test_ml_solve_laplace_MWM():
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
 
-def test_ml_solve_laplace_MWM_sPQ():
+def test_ml_solve_laplace2d_MWM_sPQ():
     A, b, x_exact = example_2d(30)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING_SYM_PQ()
@@ -55,7 +105,7 @@ def test_ml_solve_laplace_MWM_sPQ():
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
 
-def test_ml_solve_laplace_SF():
+def test_ml_solve_laplace2d_SF():
     A, b, x_exact = example_2d(30)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_SPARSE_FIRST()
@@ -65,7 +115,7 @@ def test_ml_solve_laplace_SF():
     assert np.allclose(x_exact, x)
 
 def test_ml_solve_random():
-    A, b, x_exact = random_example(50)
+    A, b, x_exact = example_random(50)
     x = ilupp.solve(A, b, atol=1e-8)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
@@ -81,101 +131,8 @@ def test_ml_precond_laplace():
     print('total nnz:', P.total_nnz, 'memory:', P.memory)
 
 def test_ml_precond_random():
-    A, b, x_exact = random_example(50)
+    A, b, x_exact = example_random(50)
     P = ilupp.ILUppPreconditioner(A, threshold=1000)
-    x = b.copy()
-    P.apply(x)
-    print('Error:', np.linalg.norm(x - x_exact))
-    assert np.allclose(x, x_exact)
-
-## ILUT preconditioner
-
-def test_ILUT_laplace():
-    n = 100
-    A = laplace_matrix(n)
-    b = np.ones(n)
-    P = ilupp.ILUTPreconditioner(A, threshold=0.0)
-    x = P.dot(b)
-    X = np.linspace(0, 1, n+2)[1:-1]
-    assert np.allclose(x, X*(1-X)/2)
-    # each L/u factor has a diagonal and an off-diagonal,
-    # but ILU++ reports by n less for unknown reasons
-    print('total nnz:', P.total_nnz)
-    assert P.total_nnz <= 2 * (n + (n-1))
-
-def test_ILUT_random():
-    A, b, x_exact = random_example(50)
-    P = ilupp.ILUTPreconditioner(A, fill_in=1000, threshold=0.0)
-    x = b.copy()
-    P.apply(x)
-    print('Error:', np.linalg.norm(x - x_exact))
-    assert np.allclose(x, x_exact)
-
-## ILUTP preconditioner
-
-def test_ILUTP_laplace():
-    n = 100
-    A = laplace_matrix(n)
-    b = np.ones(n)
-    P = ilupp.ILUTPPreconditioner(A, threshold=0.0)
-    x = P.dot(b)
-    X = np.linspace(0, 1, n+2)[1:-1]
-    assert np.allclose(x, X*(1-X)/2)
-    # each L/u factor has a diagonal and an off-diagonal,
-    # but ILU++ reports by n less for unknown reasons
-    print('total nnz:', P.total_nnz)
-    assert P.total_nnz <= 2 * (n + (n-1))
-
-def test_ILUTP_random():
-    A, b, x_exact = random_example(50)
-    P = ilupp.ILUTPPreconditioner(A, fill_in=1000, threshold=0.0)
-    x = b.copy()
-    P.apply(x)
-    print('Error:', np.linalg.norm(x - x_exact))
-    assert np.allclose(x, x_exact)
-
-## ILUC preconditioner
-
-def test_ILUC_laplace():
-    n = 100
-    A = laplace_matrix(n)
-    b = np.ones(n)
-    P = ilupp.ILUCPreconditioner(A, threshold=0.0)
-    x = P.dot(b)
-    X = np.linspace(0, 1, n+2)[1:-1]
-    assert np.allclose(x, X*(1-X)/2)
-    # each L/u factor has a diagonal and an off-diagonal,
-    # but ILU++ reports by n less for unknown reasons
-    print('total nnz:', P.total_nnz)
-    assert P.total_nnz <= 2 * (n + (n-1))
-
-def test_ILUC_random():
-    A, b, x_exact = random_example(50)
-    P = ilupp.ILUCPreconditioner(A, fill_in=1000, threshold=0.0)
-    x = b.copy()
-    P.apply(x)
-    print('Error:', np.linalg.norm(x - x_exact))
-    assert np.allclose(x, x_exact)
-
-## ILUCP preconditioner
-
-# ILUCP currently fails for row matrices due to a not implemented permuted triangular solve
-#def test_ILUCP_laplace():
-#    n = 100
-#    A = laplace_matrix(n)
-#    b = np.ones(n)
-#    P = ilupp.ILUCPPreconditioner(A, threshold=0.0)
-#    x = P.dot(b)
-#    X = np.linspace(0, 1, n+2)[1:-1]
-#    assert np.allclose(x, X*(1-X)/2)
-#    # each L/u factor has a diagonal and an off-diagonal,
-#    # but ILU++ reports by n less for unknown reasons
-#    print('total nnz:', P.total_nnz)
-#    assert P.total_nnz <= 2 * (n + (n-1))
-
-def test_ILUCP_random():
-    A, b, x_exact = random_example(50)
-    P = ilupp.ILUCPPreconditioner(A, fill_in=1000, threshold=0.0)
     x = b.copy()
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
