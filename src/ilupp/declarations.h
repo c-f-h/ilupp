@@ -137,11 +137,6 @@ class sorted_vector;
 
 class preprocessing_sequence;
 
-// classes for pmwm_declarations.h
-
-struct dist;
-
-
 // classes for matrix_sparse.h
 
 // general declarations for templates

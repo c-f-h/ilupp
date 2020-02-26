@@ -93,26 +93,6 @@ bool find_pmwm(const sparse_matrix_class& A, std::vector<Integer>& invPerm, std:
 template<class sparse_matrix_class>
 void column_perm(const sparse_matrix_class& A, std::vector<Integer>& col_perm);
 
-
-//**************************************************************************************//
-//               Structure dist
-//**************************************************************************************//
-
-// This structure stores the reduced distances from the root node to a column node "index" in 
-// "value" and its unreduced weight c(i,j) with respect to the actual matching in "weight".
-struct dist {
-	Integer index;
-	Real value;
-	Real weight;
-	bool operator<(const dist d) const {
-		return (value<d.value);
-	}
-	bool operator>(const dist d) const {
-		return (value>d.value);
-	}
-};
-
-
 } // end namespace iluplusplus
 
 #endif /*PMWM_DECLARATIONS_H_*/

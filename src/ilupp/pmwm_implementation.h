@@ -35,6 +35,21 @@ namespace iluplusplus{
 //               Class sapTree (for storing shortest alternating path trees)
 //**************************************************************************************//
 
+// This structure stores the reduced distances from the root node to a column node "index" in
+// "value" and its unreduced weight c(i,j) with respect to the actual matching in "weight".
+struct dist {
+	Integer index;
+	Real value;
+	Real weight;
+	bool operator<(const dist d) const {
+		return (value<d.value);
+	}
+	bool operator>(const dist d) const {
+		return (value>d.value);
+	}
+};
+
+
 template<class sparse_matrix_class> class sapTree
 {
     private:
