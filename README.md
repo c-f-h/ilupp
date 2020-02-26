@@ -1,4 +1,4 @@
-# ilupp -- Python bindings for ILU++
+# ilupp -- Python bindings for ILU++   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp)
 
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
