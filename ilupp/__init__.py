@@ -151,6 +151,10 @@ class ILUTPPreconditioner(_BaseWrapper):
                 fill_in, threshold, perm_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
+    @property
+    def permutation(self):
+        return self.pr.permutation
+
 class ILUCPreconditioner(_BaseWrapper):
     """An ILUC (Crout ILU) preconditioner. Implements the scipy LinearOperator protocol.
 
@@ -177,3 +181,7 @@ class ILUCPPreconditioner(_BaseWrapper):
         self.pr = _ilupp.ILUCPPreconditioner(Ad, Ai, Ap, Ao,
                 fill_in, threshold, perm_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
+
+    @property
+    def permutation(self):
+        return self.pr.permutation

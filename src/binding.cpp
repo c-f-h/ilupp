@@ -84,6 +84,13 @@ py::array wrap_vector_owning(size_t size, T* data)
     return py::array_t<T>(size, data, free_when_done);
 }
 
+template <class T>
+py::array wrap_vector_copying(const std::vector<T>& vec)
+{
+    // py::array copies when it doesn't receive a base object
+    return py::array_t<T>(vec.size(), &vec[0]);
+}
+
 // Return a tuple (data, indices, indptr, is_csr) where the first three are numpy arrays.
 // The memory is stolen from the rvalue ref A and A set to 0.
 py::tuple wrap_matrix(matrix&& A)
@@ -241,6 +248,9 @@ PYBIND11_MODULE(_ilupp, m)
                 if (!pr.exists())
                     throw std::runtime_error("ILUTP factorization failed");
             }
+        )
+        .def_property_readonly("permutation",
+            [](_ILUTPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
         );
 
     // ILUC - Crout ILU (Li, Saad, Chow)
@@ -264,6 +274,9 @@ PYBIND11_MODULE(_ilupp, m)
                 if (!pr.exists())
                     throw std::runtime_error("ILUCP factorization failed");
             }
+        )
+        .def_property_readonly("permutation",
+            [](_ILUCPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
         );
 
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
