@@ -22,6 +22,7 @@ def _matrix_fields(A):
     if A.shape[0] != A.shape[1]:
         raise ValueError("A must be a square matrix!")
 
+    A.sort_indices()    # most ILU algorithms require the indices to be ascending
     return A.data, A.indices, A.indptr, is_csr
 
 def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):

@@ -94,12 +94,6 @@ class TestCases(unittest.TestCase):
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
-    # the following tests currently fail for unknown reasons and are disabled
-    del vars()['test_ILUC_laplace_csc']
-    del vars()['test_ILUC_laplace_factorscorrect_csc']
-    del vars()['test_ILUCP_laplace_csc']
-    del vars()['test_ILUCP_laplace_factorscorrect_csc']
-
 
 ########################################
 
