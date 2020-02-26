@@ -91,6 +91,9 @@ template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x
       public:
           sorted_vector();
           sorted_vector(Integer max_size);
+          sorted_vector(const sorted_vector&) = delete;
+          sorted_vector& operator=(const sorted_vector&) = delete;
+
           void resize(Integer max_size);
           Real read(Integer j) const;
           void insert(Integer pos, Real val);
