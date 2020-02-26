@@ -376,8 +376,10 @@ template<class T> class matrix_sparse
            T& set_data(Integer k);
            Integer& set_index(Integer k);
            Integer& set_pointer(Integer k);
+
+           // matrix is reformatted to contain a new number of rows, columns, non-zero elements, and new orientation. The various fields are adjusted appropriately, but are NOT initialized.
            void reformat(Integer new_number_rows, Integer new_number_columns, Integer new_nnz, orientation_type new_orientation);
-             // matrix is reformatted to contain a new number of rows, columns, non-zero elements, and new orientation. The various fields are adjusted appropriately, but are NOT initialized.
+
            bool square_check() const;
            void matrix_vector_multiplication_add(matrix_usage_type use, const vector_dense<T>& x, vector_dense<T>& v) const;             // v=v+(*this)*x
            void matrix_vector_multiplication(matrix_usage_type use, const vector_dense<T>& x, vector_dense<T>& v) const;                 // v=(*this)*x

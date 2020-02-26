@@ -4707,12 +4707,9 @@ template<class T> void matrix_sparse<T>::compress(double threshold){
     Integer k;
     Integer counter=0;
     // make new fields to temporarily store the new data.
-    array<Integer> new_pointer;
-    array<Integer> new_indices;
-    array<T>       new_data;
-    new_pointer.erase_resize_data_field(pointer_size);
-    new_indices.erase_resize_data_field(nnz);
-    new_data.erase_resize_data_field(nnz);
+    std::vector<Integer> new_pointer(pointer_size);
+    std::vector<Integer> new_indices(nnz);
+    std::vector<T>       new_data(nnz);
     // check by one row/column if the absolute value of the data is larger than the treshold and then copy.
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
@@ -4740,12 +4737,9 @@ template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_p
     Integer counter=0;
     Integer size = max(rows(),columns());
     // make new fields to temporarily store the new data.
-    array<Integer> new_pointer;
-    array<Integer> new_indices;
-    array<T>       new_data;
-    new_pointer.erase_resize_data_field(pointer_size);
-    new_indices.erase_resize_data_field(nnz);
-    new_data.erase_resize_data_field(nnz);
+    std::vector<Integer> new_pointer(pointer_size);
+    std::vector<Integer> new_indices(nnz);
+    std::vector<T>       new_data(nnz);
     // check by one row/column if the absolute value of the data is sufficiently large, then copy
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
@@ -5754,13 +5748,10 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
     if(max_fill_in<1) max_fill_in = 1;
     if(max_fill_in>n) max_fill_in = n;
     Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*Acol.non_zeroes());
-    array<Integer> linkU, rowU, startU, linkL, colL, startL;
-    linkU.erase_resize_data_field(reserved_memory);
-    rowU.erase_resize_data_field(reserved_memory);
-    startU.erase_resize_data_field(n);
-    linkL.erase_resize_data_field(reserved_memory);
-    colL.erase_resize_data_field(reserved_memory);
-    startL.erase_resize_data_field(n);
+
+    std::vector<Integer> linkU(reserved_memory), rowU(reserved_memory), startU(n);
+    std::vector<Integer> linkL(reserved_memory), colL(reserved_memory), startL(n);
+
     U.reformat(n,n,reserved_memory,ROW);
     reformat(n,n,reserved_memory,COLUMN);
     perm.resize(n);
@@ -6121,7 +6112,16 @@ bool matrix_sparse<T>::partialILUCDP(
     Real droppedL_colindex_memory = 0.0;
     vector_dense<T> vxL,vyL,vxU,vyU,xL,yL,xU,yU;
     vector_dense<Real> weightsL,weightsU;
-    array<Integer> linkU, rowU, startU, linkL, colL, startL;
+
+    // h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
+    // rowU: row indices of elements of U.data.
+    // startU[i] points to start of points to an index of data belonging to column i
+    // h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
+    // colL: column indices of elements of data.
+    // startL[i] points to start of points to an index of data belonging to row i
+    std::vector<Integer> linkU(reserved_memory_U), rowU(reserved_memory_U), startU(n);
+    std::vector<Integer> linkL(reserved_memory_L), colL(reserved_memory_L), startL(n);
+
     Dinv.resize(n,1.0);
     perm.resize(n);
     permrows.resize(n);
@@ -6132,12 +6132,6 @@ bool matrix_sparse<T>::partialILUCDP(
     unused_rows.resize(n,true);
     numb_el_row_L.resize(n,0);
     pointer_num_el_row_L.resize(n+2,epr+1);
-    linkU.erase_resize_data_field(reserved_memory_U); //h=link[startU[i]]] points to second 2nd element, link[h] to next, etc.
-    rowU.erase_resize_data_field(reserved_memory_U);  // row indices of elements of U.data.
-    startU.erase_resize_data_field(n); // startU[i] points to start of points to an index of data belonging to column i 
-    linkL.erase_resize_data_field(reserved_memory_L); //h=link[startL[i]]] points to second 2nd element, link[h] to next, etc.
-    colL.erase_resize_data_field(reserved_memory_L);  // column indices of elements of data.
-    startL.erase_resize_data_field(n); // startL[i] points to start of points to an index of data belonging to row i 
     U.reformat(n,n,reserved_memory_U,ROW);
     reformat(n,n,reserved_memory_L,COLUMN);
     if(IP.get_FINAL_ROW_CRIT() <= -1){ row_reorder_weight.resize(n); if(n>0) row_reorder_weight.remove(0);}
@@ -6485,8 +6479,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(U.pointer[k]+list_U.dimension()+1>reserved_memory_U){
                 reserved_memory_U = 2*(U.pointer[k]+list_U.dimension()+1);
                 U.enlarge_fields_keep_data(reserved_memory_U);
-                linkU.enlarge_dim_keep_data(reserved_memory_U);
-                rowU.enlarge_dim_keep_data(reserved_memory_U);
+                linkU.resize(reserved_memory_U);
+                rowU.resize(reserved_memory_U);
                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U at position 1"<<std::endl;
                 // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+list_U.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
                 // reformat(0,0,0,COLUMN);
@@ -6547,8 +6541,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(U.pointer[k]+1>reserved_memory_U){
                 reserved_memory_U = 2*(U.pointer[k]+1);
                 U.enlarge_fields_keep_data(reserved_memory_U);
-                linkU.enlarge_dim_keep_data(reserved_memory_U);
-                rowU.enlarge_dim_keep_data(reserved_memory_U);                 
+                linkU.resize(reserved_memory_U);
+                rowU.resize(reserved_memory_U);
                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for U or Anew at position 3"<<std::endl;
                 // std::cerr<<"For U:    Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<U.pointer[k]+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
                 // reformat(0,0,0,COLUMN);
@@ -6675,8 +6669,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(pointer[k]+list_L.dimension()+1>reserved_memory_L){
                 reserved_memory_L = 2*(pointer[k]+list_L.dimension()+1);
                 enlarge_fields_keep_data(reserved_memory_L);
-                linkL.enlarge_dim_keep_data(reserved_memory_L);
-                colL.enlarge_dim_keep_data(reserved_memory_L);
+                linkL.resize(reserved_memory_L);
+                colL.resize(reserved_memory_L);
                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 1"<<std::endl;
                 // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
                 // reformat(0,0,0,COLUMN);
@@ -6746,8 +6740,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(pointer[k]+1>reserved_memory_L){
                 reserved_memory_L = 2*(pointer[k]+1);
                 enlarge_fields_keep_data(reserved_memory_L);
-                linkL.enlarge_dim_keep_data(reserved_memory_L);
-                colL.enlarge_dim_keep_data(reserved_memory_L);
+                linkL.resize(reserved_memory_L);
+                colL.resize(reserved_memory_L);
                 // std::cerr<<"matrix_sparse::partialILUCDP: memory reserved was insufficient. Overflow for L at position 2"<<std::endl;
                 // std::cerr<<"Reserved memory for non-zero elements: "<<reserved_memory<<" Memory needed: "<<pointer[k]+list_L.dimension()+1<<" in step "<<k<<" out of "<<n<<" steps."<<std::endl;
                 // reformat(0,0,0,COLUMN);
@@ -6828,8 +6822,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_L){
                 reserved_memory_L = 2*(pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
                 enlarge_fields_keep_data(reserved_memory_L);
-                linkL.enlarge_dim_keep_data(reserved_memory_L);
-                colL.enlarge_dim_keep_data(reserved_memory_L);
+                linkL.resize(reserved_memory_L);
+                colL.resize(reserved_memory_L);
                 // reformat(0,0,0,COLUMN);
                 // U.reformat(0,0,0,ROW);
                 // Dinv.resize_without_initialization(0);
@@ -6843,8 +6837,8 @@ bool matrix_sparse<T>::partialILUCDP(
             if(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE()>reserved_memory_U){
                 reserved_memory_U = 2*(U.pointer[k+1]+IP.get_REQ_ZERO_SCHUR_SIZE());
                 U.enlarge_fields_keep_data(reserved_memory_U);
-                linkU.enlarge_dim_keep_data(reserved_memory_U);
-                rowU.enlarge_dim_keep_data(reserved_memory_U);                 
+                linkU.resize(reserved_memory_U);
+                rowU.resize(reserved_memory_U);
                 // reformat(0,0,0,COLUMN);
                 // U.reformat(0,0,0,ROW);
                 // Dinv.resize_without_initialization(0);
@@ -6884,7 +6878,8 @@ bool matrix_sparse<T>::partialILUCDP(
         if(Anew.nnz>0){
             Anew.compress();
             // abuse linkU to store data
-            linkU.destroy_resize_data_field(Anew.nnz);
+            linkU.clear();
+            linkU.resize(Anew.nnz);
             // resort and shift indices to standard
             for(j=0;j<Anew.nnz;j++) linkU[j]=Anew.indices[j];
             for (i=0; i<Anew.rows(); i++)
@@ -6939,7 +6934,7 @@ bool matrix_sparse<T>::partialILUCDP(
         pointer_num_el_row_L.memory() + norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory()+
         list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
         vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
-        startU.memory() +  startL.memory() + Dinv.memory()+ perm.memory() + permrows.memory() + inverse_perm.memory()
+        memsize(startU) + memsize(startL) + Dinv.memory()+ perm.memory() + permrows.memory() + inverse_perm.memory()
         + inverse_permrows.memory() + droppedL_data_memory + droppedL_colindex_memory;
     total_memory_used = total_memory_allocated;
     total_memory_allocated += 2.0*allocated_mem_lists_U + 2.0* allocated_mem_lists_L + memory_U_allocated + memory_L_allocated + memory_Anew_allocated;
@@ -7206,7 +7201,10 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     Integer reserved_memory_L = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
     Integer reserved_memory_U = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
     Integer reserved_memory_droppedU = max(n,(Integer) min(((Real)(max_fill_in))*((Real) n), mem_factor*Arow.non_zeroes()));
-    array<Integer> firstU, firstUdropped, firstL, firstA, listA, headA, listU,listUdropped, listL;
+
+    std::vector<Integer> firstU(n), firstL(n), firstA(n), listA(n), headA(n), listU(n),listL(n);
+    std::vector<Integer> firstUdropped, listUdropped; 
+
     array< std::queue<T> > droppedL_data;
     array< std::queue<Integer> > droppedL_colindex;
     matrix_sparse<T> droppedU;
@@ -7217,21 +7215,14 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     Integer min_total, max_total, min_kept, max_kept, help;
     Real sum1, sum2, sum3, prop;
 #endif
-    firstU.erase_resize_data_field(n);
-    firstL.erase_resize_data_field(n);
-    firstA.erase_resize_data_field(n);
-    listA.erase_resize_data_field(n);
-    headA.erase_resize_data_field(n);
-    listU.erase_resize_data_field(n);
-    listL.erase_resize_data_field(n);
     Dinv.resize(n,1.0);
     w.resize(n);
     z.resize(n);
     U.reformat(n,n,reserved_memory_U,ROW);
     reformat(n,n,reserved_memory_L,COLUMN);
     if(use_improved_SCHUR){
-        firstUdropped.erase_resize_data_field(n);
-        listUdropped.erase_resize_data_field(n);
+        firstUdropped.resize(n);
+        listUdropped.resize(n);
     }
     if(IP.get_FINAL_ROW_CRIT() <= -1){
         row_reorder_weight.resize(n); 
@@ -7690,7 +7681,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
         if(eliminate){
             update_sparse_matrix_fields(k, Arow.pointer,Arow.indices,listA,headA,firstA);
             update_triangular_fields(k, U.pointer,U.indices,listU,firstU);
-            if(use_improved_SCHUR) update_triangular_fields(k, droppedU.pointer,droppedU.indices,listUdropped,firstUdropped);
+            if(use_improved_SCHUR)
+                update_triangular_fields(k, droppedU.pointer,droppedU.indices,listUdropped,firstUdropped);
         }
         update_triangular_fields(k, pointer,indices,listL,firstL);
 #ifdef VERBOSE
@@ -7806,8 +7798,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(const matrix_sparse<T>& Aro
     time_end=clock();
     time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
     total_memory_allocated = w.memory() + z.memory() +  norm_row_U.memory() + row_reorder_weight.memory() + list_L.memory() +
-        firstU.memory() + firstL.memory() + firstA.memory() + listA.memory() + headA.memory() + listU.memory() +
-        listL.memory() + list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
+        memsize(firstU) + memsize(firstL) + memsize(firstA) + memsize(listA) + memsize(headA) + memsize(listU) +
+        memsize(listL) + list_U.memory() + rejected_L.memory() + rejected_U.memory() + droppedU.memory() + vxL.memory() +
         vyL.memory() + vxU.memory() + vyU.memory() + xL.memory() + yL.memory() + xU.memory() + yU.memory() +
         Dinv.memory() + droppedL_data_memory + droppedL_colindex_memory;
     total_memory_used = total_memory_allocated;
@@ -9162,9 +9154,7 @@ template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner(index_list&
     vector_dense<Real> w(n);
     vector_sparse_dynamic<T> x(n);
     vector_sparse_dynamic<T> y(n);
-    array<Integer> firstA(n);
-    array<Integer> listA(n);
-    array<Integer> headA(n);
+    std::vector<Integer> firstA(n), listA(n), headA(n);
     initialize_sparse_matrix_fields(n,pointer,indices,listA,headA,firstA);
     for(k=0;k<n;k++){
         //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = fabs(data[j]);

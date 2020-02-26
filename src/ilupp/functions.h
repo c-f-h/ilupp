@@ -80,6 +80,9 @@ bool equal_to_zero(Real);
 template<class T> bool equal(T, T);
 bool equal(Real, Real);
 
+template <class T>
+size_t memsize(const std::vector<T>& v)          { return v.capacity() * sizeof(v[0]); }
+
 #ifndef ILUPLUSPLUS_USES_SPARSPAK
 // if SPARSPAK is used, the file f2c.h is included, which provides macros for max and min
 using std::min;
