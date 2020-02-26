@@ -152,10 +152,7 @@ int PERMRCM(int nr, int nc, int nnz, int* ia, int* ja, int *p)
 template <class int_type> void setup_symmetric_graph(int_type dim, int_type* pointer, int_type* indices, int_type* sym_pointer, int_type* sym_indices, bool shift_index)
 {
     int_type j,k,pos,T_pos,sym_pos;
-    array<int_type> T_num_element, T_pointer, T_indices;
-    T_num_element.resize(dim,0);
-    T_pointer.resize(dim+1);
-    T_indices.resize(pointer[dim]);
+    std::vector<int_type> T_num_element(dim,0), T_pointer(dim+1), T_indices(pointer[dim]);
     // count number of elements in each column/row of transpose
     for(j=0;j<pointer[dim];j++) T_num_element[indices[j]]++;
     // set-up pointer for transpose
@@ -231,10 +228,7 @@ void setup_symmetric_graph_without_diag(Integer dim, Integer* pointer, Integer* 
     // sym_indices must have twice the length of indices
     // requires and returns 0-indexing
     Integer j,k,pos,T_pos,sym_pos;
-    array<Integer> T_num_element, T_pointer, T_indices;
-    T_num_element.resize(dim,0);
-    T_pointer.resize(dim+1);
-    T_indices.resize(pointer[dim]);
+    std::vector<Integer> T_num_element(dim,0), T_pointer(dim+1), T_indices(pointer[dim]);
     // count number of elements in each column/row of transpose
     for(j=0;j<pointer[dim];j++) T_num_element[indices[j]]++;
     // set-up pointer for transpose
