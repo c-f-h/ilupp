@@ -449,32 +449,6 @@ template<class T> void vector_dense<T>::copy_and_destroy(vector_dense<T>& v){
       v.data = 0;
   }
 
-template<class T> void vector_dense<T>::setup(Integer n, T* data_array){
-    #ifdef DEBUG
-         std::cerr<<"vector_dense::setup: WARNING: making a vector using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
-    #endif
-    size = n;
-    data = data_array;
-}
-
-template<class T> void vector_dense<T>::free(Integer& n, T*& data_array){
-    #ifdef DEBUG
-         std::cerr<<"vector_dense::free: WARNING: not freeing memory and destructor will not free memory. This is not recommended. You are responsible for freeing the memory using the pointer that this function is returning."<<std::endl<<std::flush;
-    #endif
-    n = size;
-    size = 0;
-    data_array = data;
-    data = 0;
-}
-
-template<class T> void vector_dense<T>::null_vector_keep_data(){
-    #ifdef DEBUG
-         std::cerr<<"vector_dense::null_vector_keep_data: WARNING: not freeing memory and destructor will not free memory. This is not recommended. You are responsible for freeing memory somehow...."<<std::endl<<std::flush;
-    #endif
-    size = 0;
-    data = 0;
-}
-
 template<class T> void vector_dense<T>::interchange(vector_dense<T>& v){
     std::swap(v.data,data);
     std::swap(v.size,size);

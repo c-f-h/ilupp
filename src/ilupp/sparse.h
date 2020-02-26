@@ -57,14 +57,6 @@ template<class T> class vector_dense
            Integer size;
            T* data;
            bool non_owning = false;
-           // NOTE: The following routines are somewhat dangerous to use as they circumvent the private data of this class. They should be used with great care.
-           // uses the pointers indicated to setup a matrix. No memory is allocated.
-           // These routines have not been tested.
-           void setup(Integer n, T* data_array);
-           // sets vector to dimension 0 and returns the information needed to use or free the data
-           void free(Integer& n, T*& data_array);
-           // sets vector to dimension 0, but frees no memory. You still have be able to access the data somehow to free it....
-           void null_vector_keep_data();
 
            friend class matrix_sparse<T>;
        public:
