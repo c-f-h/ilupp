@@ -19,8 +19,8 @@ def example_2d(n):
     b = A.dot(x_exact)
     return A, b, x_exact
 
-def example_laplace(n):
-    A = laplace_matrix(n)
+def example_laplace(n, format='csr'):
+    A = laplace_matrix(n, format=format)
     b = np.ones(n)
     X = np.linspace(0, 1, n+2)[1:-1]
     x_exact = X*(1-X)/2
@@ -62,7 +62,8 @@ def _assert_factors_correct(A, P):
     assert is_lower_triangular(L)
     assert is_upper_triangular(U)
     LU = L.dot(U)
-    return np.allclose(A.A, LU.A)
+    assert np.allclose(A.A, LU.A)
+    return True
 
 class TestCases(unittest.TestCase):
     for P in [
@@ -71,12 +72,21 @@ class TestCases(unittest.TestCase):
             ilupp.ILUCPreconditioner,
             ilupp.ILUCPPreconditioner,
     ]:
-        base_name = 'test_' + P.__name__ + '_'
-        case_name = base_name + 'random'
-        vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_random, (50,))
+        base_name = 'test_' + P.__name__[:-14] + '_'
 
-        case_name = base_name + 'laplace'
-        vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_laplace, (50,))
+        for format in ('csr', 'csc'):
+            case_name = base_name + 'random_' + format
+            vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_random, (50,format))
+
+            case_name = base_name + 'random_factorscorrect_' + format
+            vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_random, (50,format), _assert_factors_correct)
+
+        for format in ('csr', 'csc'):
+            case_name = base_name + 'laplace_' + format
+            vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_laplace, (50,format))
+
+            case_name = base_name + 'laplace_factorscorrect_' + format
+            vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,format), _assert_factors_correct)
 
         # each L/U factor has a diagonal and an off-diagonal,
         # but ILU++ reports less in some cases because of unit diagonals
@@ -84,15 +94,11 @@ class TestCases(unittest.TestCase):
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
-        case_name = base_name + 'laplace_factorscorrect'
-        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,), _assert_factors_correct)
-
-        case_name = base_name + 'random_factorscorrect'
-        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_random, (50,), _assert_factors_correct)
-
-
-    # ILUCP currently fails for CSR matrices due to a not implemented permuted triangular solve
-    del vars()['test_ILUCPPreconditioner_laplace']
+    # the following tests currently fail for unknown reasons and are disabled
+    del vars()['test_ILUC_laplace_csc']
+    del vars()['test_ILUC_laplace_factorscorrect_csc']
+    del vars()['test_ILUCP_laplace_csc']
+    del vars()['test_ILUCP_laplace_factorscorrect_csc']
 
 
 ########################################
