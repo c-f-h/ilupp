@@ -24,6 +24,12 @@ def _matrix_fields(A):
 
     return A.data, A.indices, A.indptr, is_csr
 
+def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
+    if is_csr:
+        return scipy.sparse.csr_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
+    else:
+        return scipy.sparse.csc_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
+
 
 def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None, params=None, info=False):
     """Solve the linear system Ax=b using a multilevel ILU++ preconditioner and BiCGStab.
@@ -60,7 +66,9 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None,
     else:
         return sol
 
+
 class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
+    """Wrapper base class which supports methods and properties common to all preconditioners."""
     def _matvec(self, x):
         if x.ndim != 1:
             raise ValueError('only implemented for 1D vectors')
@@ -77,6 +85,11 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
     @property
     def total_nnz(self):
         return self.pr.total_nnz
+
+    def factors(self):
+        """Return all matrix factors (usually (L,U)) as a list of sparse matrices."""
+        return [_matrix_from_info(*info) for info in self.pr.factors_info()]
+
 
 class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner. Implements the scipy LinearOperator protocol.

@@ -26,11 +26,9 @@ namespace py = pybind11;
 
 using namespace iluplusplus;
 
-typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
-typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
-typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
-typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
-typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
+////////////////////////////////////////////////////////////////////////////////
+// Wrappers
+////////////////////////////////////////////////////////////////////////////////
 
 template <class T>
 void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
@@ -76,6 +74,68 @@ std::unique_ptr<vector> make_vector(py::buffer b)
 
     return std::unique_ptr<vector>(new vector(b_info.shape[0], static_cast<Real*>(b_info.ptr), true));
 }
+
+// Wrap an existing array (created using new[]) as a numpy array and take ownership, i.e., delete
+// the array when the numpy array is garbage collected.
+template <class T>
+py::array wrap_vector_owning(size_t size, T* data)
+{
+    py::capsule free_when_done(data, [](void *p) { delete [] reinterpret_cast<T*>(p); });
+    return py::array_t<T>(size, data, free_when_done);
+}
+
+// Return a tuple (data, indices, indptr, is_csr) where the first three are numpy arrays.
+// The memory is stolen from the rvalue ref A and A set to 0.
+py::tuple wrap_matrix(matrix&& A)
+{
+    const Integer rows = A.rows(), columns = A.columns();
+    const size_t nnz = A.actual_non_zeroes();
+    py::array data = wrap_vector_owning(nnz, A.data);
+    py::array indices = wrap_vector_owning(nnz, A.indices);
+    py::array indptr = wrap_vector_owning(A.get_pointer_size(), A.pointer);
+    bool is_csr = (A.orientation == ROW);
+
+    A.data = 0;
+    A.indices = 0;
+    A.pointer = 0;
+    A.reformat(0, 0, 0, ROW);
+
+    return py::make_tuple(data, indices, indptr, is_csr, rows, columns);
+}
+
+template <class T, class matrix_type, class vector_type>
+py::list wrap_all_factor_matrices(const indirect_split_triangular_preconditioner<T,matrix_type,vector_type>& pr)
+{
+    py::list result;
+
+    // the matrix constructor copies the matrix so that we don't destroy the original preconditioner
+    result.append(wrap_matrix(matrix(pr.left_matrix())));
+    result.append(wrap_matrix(matrix(pr.right_matrix())));
+
+    return result;
+}
+
+template <class T, class matrix_type, class vector_type>
+py::list wrap_all_factor_matrices(const indirect_split_pseudo_triangular_preconditioner<T,matrix_type,vector_type>& pr)
+{
+    py::list result;
+
+    // the matrix constructor copies the matrix so that we don't destroy the original preconditioner
+    result.append(wrap_matrix(matrix(pr.left_matrix())));
+    result.append(wrap_matrix(matrix(pr.right_matrix())));
+
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Wrappers
+////////////////////////////////////////////////////////////////////////////////
+
+typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
+typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
+typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
+typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
+typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
 
 std::tuple<py::array_t<Real>, Integer, Real, Real>
 solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
@@ -163,6 +223,7 @@ PYBIND11_MODULE(_ilupp, m)
             }
         )
         .def_property_readonly("total_nnz", &_ILUTPreconditioner::total_nnz)
+        .def("factors_info", [](const _ILUTPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
     ;
 
     // ILUTP - ILUT with pivoting
@@ -186,6 +247,7 @@ PYBIND11_MODULE(_ilupp, m)
             }
         )
         .def_property_readonly("total_nnz", &_ILUTPPreconditioner::total_nnz)
+        .def("factors_info", [](const _ILUTPPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
     ;
 
     py::class_<_ILUCPreconditioner>(m, "ILUCPreconditioner")
@@ -207,6 +269,7 @@ PYBIND11_MODULE(_ilupp, m)
             }
         )
         .def_property_readonly("total_nnz", &_ILUCPreconditioner::total_nnz)
+        .def("factors_info", [](const _ILUCPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
     ;
 
     py::class_<_ILUCPPreconditioner>(m, "ILUCPPreconditioner")
@@ -229,6 +292,7 @@ PYBIND11_MODULE(_ilupp, m)
             }
         )
         .def_property_readonly("total_nnz", &_ILUCPPreconditioner::total_nnz)
+        .def("factors_info", [](const _ILUCPPreconditioner& pr) { return wrap_all_factor_matrices(pr); })
     ;
 
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")

@@ -49,8 +49,13 @@ def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
     def test(self):
         A, b, x_exact = example_func(*example_args)
         P = Precond(A, **params)
-        assert pred(P)
+        assert pred(A, P)
     return test
+
+def _assert_factors_correct(A, P):
+    L, U = P.factors()
+    LU = L.dot(U)
+    return np.allclose(A.A, LU.A)
 
 class TestCases(unittest.TestCase):
     for P in [
@@ -59,19 +64,31 @@ class TestCases(unittest.TestCase):
             ilupp.ILUCPreconditioner,
             ilupp.ILUCPPreconditioner,
     ]:
-        n = 50
-        case_name = f'test_{P.__name__}_random'
+        base_name = 'test_' + P.__name__ + '_'
+        case_name = base_name + 'random'
         vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_random, (50,))
-        case_name = f'test_{P.__name__}_laplace'
+
+        case_name = base_name + 'laplace'
         vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_laplace, (50,))
-        case_name = f'test_{P.__name__}_total_nnz'
-        # each L/u factor has a diagonal and an off-diagonal,
+
+        # each L/U factor has a diagonal and an off-diagonal,
         # but ILU++ reports less in some cases because of unit diagonals
+        case_name = base_name + 'total_nnz'
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
-                lambda pr: pr.total_nnz <= 2 * (50 + (50-1)))
+                lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
+
+        case_name = base_name + 'laplace_factorscorrect'
+        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,), _assert_factors_correct)
+
+        case_name = base_name + 'random_factorscorrect'
+        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_random, (50,), _assert_factors_correct)
+
 
     # ILUCP currently fails for CSR matrices due to a not implemented permuted triangular solve
     del vars()['test_ILUCPPreconditioner_laplace']
+
+    # the correct evaluation of the factors needs a right permutation for pivoted ILUC (not implemented)
+    del vars()['test_ILUCPPreconditioner_laplace_factorscorrect']
 
 
 ########################################
