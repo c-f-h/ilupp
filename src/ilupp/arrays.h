@@ -18,59 +18,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-
 #ifndef ARRAYS_H
 #define ARRAYS_H
-
 
 #include <new>
 #include <iostream>
 #include <map>
 
 #include "declarations.h"
-#include "functions.h"
-
 
 namespace iluplusplus {
-
-
-//************************************************************************************************************************
-//                                                                                                                       *
-//         The class array                                                                                               *
-//                                                                                                                       *
-//************************************************************************************************************************
-
-
-
-template<class T> class array
-   {
-       private:
-          std::vector<T> data;
-       public:
-        // constructors & destructors
-          array();
-          array(Integer m);
-          array(Integer m, T t);
-       // Functions, Manipulation, Information
-          Integer dimension() const;
-          void print_info() const;
-      // Accessing elements
-          T& operator[](Integer j);
-          const T& operator[](Integer j) const;
-       // Assignment
-          void erase_resize_data_field(Integer newsize);  // resizes only if newsize is different
-          void resize(Integer newsize);
-          void resize(Integer newsize, T d);
-          void destroy_resize_data_field(Integer newsize); // destroy and then resizes, even if newsize is the same.
-          void enlarge_dim_keep_data(Integer newdim);
-          void destroy();
-          Real memory() const;
-   };
-
-
-template<class T> std::istream& operator >> (std::istream& is, array<T> &x);
-template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x);
-
 
 //************************************************************************************************************************
 //                                                                                                                       *

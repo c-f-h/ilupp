@@ -131,7 +131,6 @@ class iluplusplus_error;
 
 // classes arrays.h
 
-template<class T> class array;
 class sorted_vector;
 
 // classes for orderings.h
