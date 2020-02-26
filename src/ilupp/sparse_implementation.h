@@ -1234,15 +1234,14 @@ template<class T> void vector_dense<T>::max_columns(const matrix_dense<T>& A){
 
 
 template<class T> bool vector_dense<T>::zero_check(Integer k){
-    #ifdef DEBUG
-         if(k<0||k>=size){
-             std::cerr<<"vector_dense::zero_check: index out of range."<<std::endl;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-    #endif
-    if(data[k]==0) return true;
-    else return false;
-  }
+#ifdef DEBUG
+    if(k<0||k>=size){
+        std::cerr<<"vector_dense::zero_check: index out of range."<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    return (data[k]==0);
+}
 
 template<class T> void vector_dense<T>::shortest_vector_point_line(const vector_dense<T>& r, const vector_dense<T>& p, const vector_dense<T>& t){
     *this = p - r;
@@ -1610,24 +1609,18 @@ template<class T> Integer vector_sparse_dynamic<T>::get_pointer(Integer j) const
      return pointer[j];
   }
 template<class T> bool vector_sparse_dynamic<T>::zero_check(Integer j) const {
-     #ifdef DEBUG
-        if(j<0 || j>=size){
-            std::cout<<"vector_sparse_dynamic<T>::zero_check: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-     #endif
-     return (occupancy[j]<0);
-  }
+#ifdef DEBUG
+    if(j<0 || j>=size){
+        std::cout<<"vector_sparse_dynamic<T>::zero_check: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    return occupancy[j] < 0;
+}
 
 template<class T> bool vector_sparse_dynamic<T>::non_zero_check(Integer j) const {
-     #ifdef DEBUG
-        if(j<0 || j>=size){
-            std::cout<<"vector_sparse_dynamic<T>::non_zero_check: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-     #endif
-     return (occupancy[j]>=0);
-  }
+    return !zero_check(j);
+}
 
 template<class T>  T vector_sparse_dynamic<T>::read(Integer j) const {
      #ifdef DEBUG

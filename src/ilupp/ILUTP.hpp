@@ -81,7 +81,7 @@ bool ILUTP2(
             return false;
         }
         for(j=0;j<list_L.dimension();j++){
-            L.data[L.pointer[i]+j] = w.read(list_L[list_L.dimension()-1-j]);
+            L.data[L.pointer[i]+j] = w[list_L[list_L.dimension()-1-j]];
             L.indices[L.pointer[i]+j] = inverse_perm[list_L[list_L.dimension()-1-j]];
         } // end for j
         L.data[L.pointer[i]+list_L.dimension()]=1.0;
@@ -92,7 +92,7 @@ bool ILUTP2(
             throw std::runtime_error("matrix_sparse::ILUTP2: memory reserved was insufficient.");
         }
         for(j=0;j<list_U.dimension();j++){
-            U.data[U.pointer[i]+j] = w.read(list_U[list_U.dimension()-1-j]);
+            U.data[U.pointer[i]+j] = w[list_U[list_U.dimension()-1-j]];
             U.indices[U.pointer[i]+j] = list_U[list_U.dimension()-1-j];
         }  // end j
         U.pointer[i+1]=U.pointer[i]+list_U.dimension();

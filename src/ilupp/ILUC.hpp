@@ -110,8 +110,7 @@ void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, 
 template <class T>
 bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor = 10.0)
 {
-    Integer m = A.rows();
-    Integer n = A.columns();
+    const Integer m = A.dim_along_orientation(), n = A.dim_against_orientation();   // for csr: rows, columns
     Integer k,j,h;
     vector_sparse_dynamic<T> z,w;
     Real norm_w=0.0, norm_z=0.0;
@@ -137,7 +136,7 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     initialize_triangular_fields(m, listU);
 
     // Iterate over the rows of A or U respectively.
-    for(k=0; k<min(m,n); k++){  // (1.) in algorithm of Saad.
+    for(k=0; k < m; k++){  // (1.) in algorithm of Saad.
         // initialize z to upper part of row k - (2.) in algorithm of Saad.
         z.zero_reset();
         for(j=firstA[k]; j<A.pointer[k+1]; ++j)
@@ -171,11 +170,8 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
             }  // end for j
         } // end while (9.) in algorithm of Saad.
 
-        if (z.zero_check(k)) {
-            L.reformat(0,0,0,other_orientation(A.orientation));
-            U.reformat(0,0,0,A.orientation);
-            return false;
-        }
+        if (z.zero_check(k))
+            throw std::runtime_error("ILUC2: zero pivot on diagonal, k=" + std::to_string(k));
 
         // apply dropping to w - (10.) in the algorithm of Saad.
         w.take_largest_elements_by_abs_value_with_threshold(norm_w, listw, max_fill_in-1, threshold, k+1, m);
@@ -184,27 +180,33 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
         z.take_largest_elements_by_abs_value_with_threshold(norm_z, listz, max_fill_in-1, threshold, k+1, n);
 
         // copy z to U - (12.) in the algorithm of Saad.
-        U.indices[U.pointer[k]] = k;
-        U.data[U.pointer[k]] = z[k];
+
+        // ensure we reserved enough space
         if (U.pointer[k]+listz.dimension() > reserved_memory
                 || L.pointer[k]+listw.dimension()+1 > reserved_memory) {
-            std::cerr<<"matrix_sparse::ILUC2: memory reserved was insufficient. Returning 0x0 matrix."<<std::endl;
-            L.reformat(0,0,0,other_orientation(A.orientation));
-            U.reformat(0,0,0,A.orientation);
-            return false;
+            throw std::runtime_error("ILUC2: memory reserved was insufficient. Increase mem_factor!");
         }
+
+        // set U[k,k] = z[k] = A[k,k]
+        U.indices[U.pointer[k]] = k;
+        U.data[U.pointer[k]] = z[k];
+
+        // copy z[:] to U[k,:]
         for(j=0; j<listz.dimension(); ++j) {
-            U.data[U.pointer[k]+j+1] = z[listz[j]];
+            U.data   [U.pointer[k]+j+1] = z[listz[j]];
             U.indices[U.pointer[k]+j+1] = listz[j];
         }
         U.pointer[k+1] = U.pointer[k]+listz.dimension()+1;
 
         // copy w to L - (13.) in the algorithm of Saad.
+        // set L[k,k] = 1
         L.indices[L.pointer[k]] = k;
         L.data[L.pointer[k]] = 1.0;
+
+        // copy w[:] / U_kk to L[:,k]
         const T U_kk = U.data[U.pointer[k]];  // diagonal entry of U
         for(j=0; j<listw.dimension(); ++j) {
-            L.data[L.pointer[k]+j+1] = w[listw[j]] / U_kk;
+            L.data   [L.pointer[k]+j+1] = w[listw[j]] / U_kk;
             L.indices[L.pointer[k]+j+1] = listw[j];
         }
         L.pointer[k+1] = L.pointer[k]+listw.dimension()+1;
@@ -311,11 +313,11 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
         }
         // copy data, update access information.
         // copy pivot
-        U.data[U.pointer[k]] = z.read(list_U[list_U.dimension()-1]);
+        U.data[U.pointer[k]] = z[list_U[list_U.dimension()-1]];
         U.indices[U.pointer[k]] = list_U[list_U.dimension()-1];
         for(j=1;j<list_U.dimension();j++){
             pos = U.pointer[k]+j;
-            U.data[pos] = z.read(list_U[list_U.dimension()-1-j]);
+            U.data[pos] = z[list_U[list_U.dimension()-1-j]];
             U.indices[pos] = list_U[list_U.dimension()-1-j];
             h = startU[U.indices[pos]];
             startU[U.indices[pos]] = pos;
@@ -370,7 +372,7 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
         L.data[L.pointer[k]] = 1.0;
         L.indices[L.pointer[k]] = k;
         for(j = 0;j<list_L.dimension();j++){
-            L.data[L.pointer[k]+j+1] = w.read(list_L[j])/U.data[U.pointer[k]];
+            L.data[L.pointer[k]+j+1] = w[list_L[j]]/U.data[U.pointer[k]];
             L.indices[L.pointer[k]+j+1] = list_L[j];
         } // end for j
         L.pointer[k+1] = L.pointer[k]+list_L.dimension()+1;

@@ -169,18 +169,18 @@ bool ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
         std::cout<<"ListL"<<std::endl<<list_L<<std::endl;
         // (11.) Copy values to L:
         for(j=0;j<list_L.dimension();j++){
-            L.data[L.pointer[i]+j] = w.read(list_L[j]);
+            L.data[L.pointer[i]+j] = w[list_L[j]];
             L.indices[L.pointer[i]+j] = list_L[j];
-            std::cout<<"copied "<<w.read(list_L[j])<<" to position "<<L.indices[L.pointer[i]+j]<<std::endl;
+            std::cout<<"copied "<<w[list_L[j]]<<" to position "<<L.indices[L.pointer[i]+j]<<std::endl;
         } // end for j
         L.data[L.pointer[i]+list_L.dimension()]=1.0;
         L.indices[L.pointer[i]+list_L.dimension()]=i;
         L.pointer[i+1]=L.pointer[i]+list_L.dimension()+1;
         // (12.) Copy values to U:
-        U.data[U.pointer[i]]=w.read(i); // diagonal element
+        U.data[U.pointer[i]]=w[i]; // diagonal element
         U.indices[U.pointer[i]]=i; // diagonal element
         for(j=0;j<list_U.dimension();j++){
-            U.data[U.pointer[i]+j+1]=w.read(list_U[j]);
+            U.data[U.pointer[i]+j+1]=w[list_U[j]];
             U.indices[U.pointer[i]+j+1] = list_U[j];
         }  // end j
         U.pointer[i+1]=U.pointer[i]+list_U.dimension()+1;

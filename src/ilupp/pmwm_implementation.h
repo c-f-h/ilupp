@@ -253,7 +253,7 @@ void sapTree<sparse_matrix_class>::dual_update(const sparse_matrix_class& A, con
     // updating elements of v
     for (index_checked_nodes = 0; index_checked_nodes < checked_nodes.non_zeroes(); index_checked_nodes++) {
         col = checked_nodes.get_pointer(index_checked_nodes);
-        v[col] = v[col] + reduced_dist.read(col) - lsap;
+        v[col] = v[col] + reduced_dist[col] - lsap;
     }
 
     // updating elements of u (in shortest augmenting path)
@@ -326,7 +326,7 @@ void sapTree<sparse_matrix_class>::find_sap(const sparse_matrix_class& A, const 
                     }
 
                     // if node j is matched, push distance into the heap cand_nodes
-                    else if (reduced_dist.get_occupancy(j) == -1 || dnew < reduced_dist.read(j)) {
+                    else if (reduced_dist.get_occupancy(j) == -1 || dnew < reduced_dist[j]) {
                         reduced_dist[j] = dnew;
                         row_pointer[mate_col[j]] = i;
                         temp_dist.index = j; temp_dist.value = dnew; temp_dist.weight = weight;
