@@ -86,7 +86,7 @@ template<class T> std::ostream& operator << (std::ostream& os, const array<T> &x
   {
       private:
           Multimap list;
-          array<Multimap::iterator> pointers;
+          std::vector<Multimap::iterator> pointers;
           std::vector<bool> used;
       public:
           sorted_vector();

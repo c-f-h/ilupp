@@ -43,25 +43,28 @@ namespace iluplusplus {
 sorted_vector::sorted_vector(){}
 
 sorted_vector::sorted_vector(Integer max_size){
-     pointers.erase_resize_data_field(max_size);
+     pointers.resize(max_size);
      used.resize(max_size,true);
      list.clear();
      Integer k;
-     for(k=0;k<max_size;k++) pointers[k]=list.insert(Multimap::value_type(0.0,k));
+     for(k=0;k<max_size;k++)
+         pointers[k]=list.insert(Multimap::value_type(0.0,k));
 }
 
 
 void sorted_vector::resize(Integer max_size){
-     pointers.erase_resize_data_field(max_size);
+     pointers.resize(max_size);
      used.resize(max_size,true);
      list.clear();
      Integer k;
-     for(k=0;k<max_size;k++) pointers[k]=list.insert(Multimap::value_type(0.0,k));
+     for(k=0;k<max_size;k++)
+         pointers[k] = list.insert(Multimap::value_type(0.0,k));
 }
 
 
 Real sorted_vector::read(Integer j) const {
-     if(used[j]) return pointers[j]->first;
+     if(used[j])
+         return pointers[j]->first;
      else {
          std::cerr<<"sorted_vector::read: entry with given index is not being used. Returning 0.0"<<std::endl;
          return 0.0;
@@ -69,13 +72,15 @@ Real sorted_vector::read(Integer j) const {
 }
 
 void sorted_vector::insert(Integer pos, Real val){
-     if(used[pos]) list.erase(pointers[pos]);
+     if(used[pos])
+         list.erase(pointers[pos]);
      pointers[pos] = list.insert(Multimap::value_type(val,pos));
      used[pos]=true;
 }
 
 void sorted_vector::remove(Integer k){
-    if(used[k]) list.erase(pointers[k]);
+    if(used[k])
+        list.erase(pointers[k]);
     used[k]=false;
 }
 
@@ -149,7 +154,7 @@ void sorted_vector::add(Integer pos, Real val){
 
 
 void sorted_vector::print() const{
-    for(Integer i=0;i<pointers.dimension();i++) 
+    for(size_t i=0;i<pointers.size();i++)
         if(used[i]) std::cout<<pointers[i]->first<<std::endl;
         else std::cout<<"undefined"<<std::endl;
 }
@@ -164,7 +169,7 @@ void sorted_vector::print_list() const {
 
 Real sorted_vector::memory() const {
     // no way to get memory used of vector<bool>
-    return (Real)  used.size() * (sizeof(Real)+sizeof(Integer)) /* + used.memory() */ + pointers.memory();
+    return (Real)  used.size() * (sizeof(Real)+sizeof(Integer)) /* + used.memory() */ + memsize(pointers);
 }
 
 //************************************************************************************************************************
