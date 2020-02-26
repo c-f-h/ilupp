@@ -63,7 +63,6 @@ typedef std::multimap<Real,Integer> Multimap;
 //               Constants
 //**************************************************************************************//
 
-const Real ln10 = log(10.0);
 const Real COMPARE_EPS = 1e-8;  // tolerance for checking equality: used only in some exceptional cases, e.g. tolerance for checking if a diagonal element is 1 in an I-matrix, or if avoiding division by 0 is essential.
 
 //**************************************************************************************//
@@ -76,7 +75,7 @@ enum error_type {UNKNOWN_ERROR, INSUFFICIENT_MEMORY, INCOMPATIBLE_DIMENSIONS, AR
 // types for matrices
 enum orientation_type {ROW, COLUMN};                    // the orientation of a (sparse) matrix
 enum matrix_usage_type {ID, TRANSPOSE};                 // determines if a given function uses a matrix argument as it is or transposed.
-enum special_matrix_type{UNSTRUCTURED, LOWER_TRIANGULAR, UPPER_TRIANGULAR, PERMUTED_LOWER_TRIANGULAR, PERMUTED_UPPER_TRIANGULAR, DIAGONAL};
+enum special_matrix_type {UNSTRUCTURED, LOWER_TRIANGULAR, UPPER_TRIANGULAR, PERMUTED_LOWER_TRIANGULAR, PERMUTED_UPPER_TRIANGULAR, DIAGONAL};
 
 // types for preconditioners
 enum preconditioner_application1_type {NONE, LEFT, RIGHT, SPLIT};    // the manner in which a preconditioner is to be applied to a system to yield an approximate inverse Q
