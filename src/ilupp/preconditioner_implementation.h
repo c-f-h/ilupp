@@ -462,16 +462,16 @@ void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_ty
 
 template <class T, class matrix_type, class vector_type>
 void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::init(Integer memory_max_level){
-    Precond_left.destroy_resize_data_field(memory_max_level);     // the left preconditioning matrices
-    Precond_right.destroy_resize_data_field(memory_max_level);    // the right preconditioning matrices
-    Precond_middle.destroy_resize_data_field(memory_max_level);
-    begin_next_level.destroy_resize_data_field(memory_max_level);
-    permutation_rows.destroy_resize_data_field(memory_max_level);
-    permutation_columns.destroy_resize_data_field(memory_max_level);
-    inverse_permutation_rows.destroy_resize_data_field(memory_max_level);
-    inverse_permutation_columns.destroy_resize_data_field(memory_max_level);
-    D_l.destroy_resize_data_field(memory_max_level);  // scaling
-    D_r.destroy_resize_data_field(memory_max_level);  // scaling
+    Precond_left.resize(memory_max_level);     // the left preconditioning matrices
+    Precond_right.resize(memory_max_level);    // the right preconditioning matrices
+    Precond_middle.resize(memory_max_level);
+    begin_next_level.resize(memory_max_level);
+    permutation_rows.resize(memory_max_level);
+    permutation_columns.resize(memory_max_level);
+    inverse_permutation_rows.resize(memory_max_level);
+    inverse_permutation_columns.resize(memory_max_level);
+    D_l.resize(memory_max_level);  // scaling
+    D_r.resize(memory_max_level);  // scaling
 }
 
 template <class T, class matrix_type, class vector_type>

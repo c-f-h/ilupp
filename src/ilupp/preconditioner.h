@@ -205,19 +205,19 @@ template <class T, class matrix_type, class vector_type>
   class indirect_split_triangular_multilevel_preconditioner : public split_preconditioner <T,matrix_type, vector_type>
   {
        protected:
-          array<matrix_type> Precond_left;     // the left preconditioning matrices
-          array<matrix_type> Precond_right;    // the right preconditioning matrices
-          array<vector_type> Precond_middle;
+          std::vector<matrix_type> Precond_left;     // the left preconditioning matrices
+          std::vector<matrix_type> Precond_right;    // the right preconditioning matrices
+          std::vector<vector_type> Precond_middle;
           special_matrix_type left_form;
           special_matrix_type right_form;
           Integer number_levels;
-          array<Integer> begin_next_level;
-          array<index_list> permutation_rows;
-          array<index_list> permutation_columns;
-          array<index_list> inverse_permutation_rows;
-          array<index_list> inverse_permutation_columns;
-          array<vector_type> D_l;  // scaling
-          array<vector_type> D_r;  // scaling
+          std::vector<Integer> begin_next_level;
+          std::vector<index_list> permutation_rows;
+          std::vector<index_list> permutation_columns;
+          std::vector<index_list> inverse_permutation_rows;
+          std::vector<index_list> inverse_permutation_columns;
+          std::vector<vector_type> D_l;  // scaling
+          std::vector<vector_type> D_r;  // scaling
           virtual void apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void apply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
           virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
