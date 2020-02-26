@@ -29,34 +29,6 @@ namespace iluplusplus {
 typedef vector_dense<Coeff_Field> vector;
 typedef matrix_sparse<Coeff_Field> matrix;
 
-class multilevel_preconditioner : public multilevelILUCDPPreconditioner<Coeff_Field,matrix_sparse<Coeff_Field>,vector_dense<Coeff_Field> >
-{
-    public:
-        multilevel_preconditioner();
-        ~multilevel_preconditioner();
-        multilevel_preconditioner(const multilevel_preconditioner& x);
-        multilevel_preconditioner& operator =(const multilevel_preconditioner& x);
-        void setup(const matrix &A, const iluplusplus_precond_parameter& IP);
-        void setup(Coeff_Field* Adata, Integer* Aindices, Integer* Apointer, Integer dim, Integer Annz, orientation_type Aorient, const iluplusplus_precond_parameter& IP);
-        void setup(std::vector<Coeff_Field>& Adata, std::vector<Integer>& Aindices, std::vector<Integer>& Apointer, orientation_type Aorient, const iluplusplus_precond_parameter& IP);
-        void apply_preconditioner(const vector &x, vector &y) const;
-        void apply_preconditioner(vector &y) const;
-        void apply_preconditioner(std::vector<Coeff_Field> &y) const;
-        void apply_preconditioner(Coeff_Field* data, Integer dim) const;
-        Real memory_used_calculations() const;
-        Real memory_allocated_calculations() const;
-        Real memory() const;
-        bool exists() const;
-        std::string special_info() const;
-        Integer total_nnz() const;
-        void print_info() const;
-        Integer dim() const;
-};
-
-
-bool BiCGstab(const multilevel_preconditioner& P, const matrix& A, const vector& b, vector& x, Integer min_iter,
-           Integer& max_iter_iterations_used,Real& eps_rel_residual, Real& abs_residual);
-
 bool solve_with_multilevel_preconditioner(const matrix& A, const vector& b, const vector& x_exact, vector& x, bool exact_solution_known,
           Real& eps_rel_residual, Real& abs_residual, Integer& max_iter_iterations_used, Real& abs_error,
           std::string directory, std::string matrix_name, const iluplusplus_precond_parameter &IP, bool detailed_output = false, std::string directory_data = "");

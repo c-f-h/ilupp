@@ -30,6 +30,7 @@ typedef ILUTPreconditioner<Real, matrix, vector>  _ILUTPreconditioner;
 typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
 typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
 typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
+typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
 
 template <class T>
 void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
@@ -115,33 +116,32 @@ PYBIND11_MODULE(_ilupp, m)
 
     m.def("solve", &solve, "Solve a linear system using ILU");
 
-    py::class_<multilevel_preconditioner>(m, "multilevel_preconditioner")
+    py::class_<_MultilevelILUCDPPreconditioner>(m, "MultilevelILUCDPPreconditioner")
         .def(py::init<>())
         .def("setup",
-            [](multilevel_preconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, iluplusplus_precond_parameter param)
+            [](_MultilevelILUCDPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, iluplusplus_precond_parameter param)
             {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                pr.setup(*A, param);
+                pr.make_preprocessed_multilevelILUCDP(*A, param);
             }
         )
         .def("apply",
-            [](const multilevel_preconditioner& pr, py::buffer x)
+            [](const _MultilevelILUCDPPreconditioner& pr, py::buffer x)
             {
-                py::buffer_info x_info = x.request();
-                check_is_1D_contiguous_array<Real>(x_info, "x");
-                if (x_info.shape[0] != pr.dim())
+                auto y = make_vector(x);
+                if (y->dim() != pr.pre_image_dimension())
                     throw std::runtime_error("vector has wrong size for preconditioner!");
-                pr.apply_preconditioner((Real*)x_info.ptr, x_info.shape[0]);
+                pr.apply_preconditioner_only(ID, *y);
             }
         )
-        .def_property_readonly("memory_used_calculations", &multilevel_preconditioner::memory_used_calculations)
-        .def_property_readonly("memory_allocated_calculations", &multilevel_preconditioner::memory_allocated_calculations)
-        .def_property_readonly("memory", &multilevel_preconditioner::memory)
-        .def_property_readonly("exists", &multilevel_preconditioner::exists)
-        .def_property_readonly("special_info", &multilevel_preconditioner::special_info)
-        .def_property_readonly("total_nnz", &multilevel_preconditioner::total_nnz)
-        .def("print_info", &multilevel_preconditioner::print_info)
-        .def_property_readonly("dim", &multilevel_preconditioner::dim)
+        .def_property_readonly("memory_used_calculations", &_MultilevelILUCDPPreconditioner::memory_used_calculations)
+        .def_property_readonly("memory_allocated_calculations", &_MultilevelILUCDPPreconditioner::memory_allocated_calculations)
+        .def_property_readonly("memory", [](const _MultilevelILUCDPPreconditioner& pr) { return pr.memory(); })
+        .def_property_readonly("exists", &_MultilevelILUCDPPreconditioner::exists)
+        .def_property_readonly("special_info", &_MultilevelILUCDPPreconditioner::special_info)
+        .def_property_readonly("total_nnz", [](const _MultilevelILUCDPPreconditioner& pr) { return pr.total_nnz(); })
+        .def("print_info", [](const _MultilevelILUCDPPreconditioner& pr) { pr.print_info(); })
+        .def_property_readonly("dim", &_MultilevelILUCDPPreconditioner::dim)
     ;
 
     py::class_<_ILUTPreconditioner>(m, "ILUTPreconditioner")
