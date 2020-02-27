@@ -23,6 +23,8 @@
 
 #include <iostream>
 #include <string>
+#include <numeric>
+#include <complex>
 
 #include "declarations.h"
 
