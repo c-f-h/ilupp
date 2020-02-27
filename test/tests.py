@@ -26,8 +26,13 @@ def example_laplace(n, format='csr'):
     x_exact = X*(1-X)/2
     return A, b, x_exact
 
+def random_matrix(n, format='csr'):
+    avg_nnz_per_row = 5
+    density = min(1.0, avg_nnz_per_row / n)
+    return (scipy.sparse.random(n, n, density=density, random_state=39273) + 10*scipy.sparse.eye(n)).asformat(format)
+
 def example_random(n, format='csc'):
-    A = (scipy.sparse.random(n, n, density=0.1, random_state=39273) + 10*scipy.sparse.eye(n)).asformat(format)
+    A = random_matrix(n, format=format)
     x_exact = np.ones(n)
     b = A.dot(x_exact)
     return A, b, x_exact
