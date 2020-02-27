@@ -37,6 +37,22 @@ def example_random(n, format='csc'):
     b = A.dot(x_exact)
     return A, b, x_exact
 
+def ichol_dense(A):
+    # simple reference implementation for ichol based on dense matrices
+    L = np.tril(A)
+    n = A.shape[0]
+
+    for k in range(n):
+        L[k,k] = np.sqrt(L[k,k])
+        for i in range(k+1, n):
+            if L[i,k] != 0:
+                L[i,k] /= L[k,k]
+        for j in range(k+1, n):
+            for i in range(j, n):
+                if L[i,j] != 0:
+                    L[i,j] -= L[i,k] * L[j,k]
+    return L
+
 ########################################
 # auto-generated test cases
 
@@ -181,3 +197,17 @@ def test_ichol_csc():
     assert is_lower_triangular(L)
     assert L.getnnz() == (2 * A.shape[0] - 1)
     assert np.allclose(A.A, (L.dot(L.T)).A)
+
+def test_ichol_rand_csr():
+    A = random_matrix(50, 'csr')
+    A += A.T    # symmetrize
+    L = ilupp.ichol(A)
+    L2 = ichol_dense(A.A)
+    assert np.allclose(L.A, L2)
+
+def test_ichol_rand_csc():
+    A = random_matrix(50, 'csc')
+    A += A.T    # symmetrize
+    L = ilupp.ichol(A)
+    L2 = ichol_dense(A.A)
+    assert np.allclose(L.A, L2)

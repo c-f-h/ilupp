@@ -18,7 +18,7 @@ T sparse_dot_product(Integer l1, Integer u1, Integer l2, Integer u2, const Integ
     while (l1 < u1 && l2 < u2) {
         if (indices[l1] == indices[l2])     // matching column?
             result += data[l1++] * data[l2++];
-        else if (l1 < l2)       // else proceed until we find matching columns
+        else if (indices[l1] < indices[l2])       // else proceed until we find matching columns
             l1++;
         else
             l2++;
