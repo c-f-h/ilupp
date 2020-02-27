@@ -429,6 +429,7 @@ template<class T> class matrix_sparse
            Integer dim_along_orientation() const;      // returns the dimension in the direction of the orientation, i.e. the number of rows for row matrix and number of colums for a column matrix.
            Integer dim_against_orientation() const;    // returns the dimension in the direction opposite to the orientation, i.e. the number of columns for a row matrix and vice versa.
            Integer dim_major() const { return pointer_size - 1; }       // dimension along the major axis, i.e., number of rows for CSR
+           Integer dim_minor() const { return dim_against_orientation(); } // dimension along the minor axis, i.e., number of cols for CSR
            Integer dimension() const;                  // returns number of rows. In DEBUG modus, points out that matrix is not square.
            Integer bandwidth() const;
            Integer max_one_dim_size() const;                  // returns maximal size needed to store a row for ROW matrix, a column for COLUMN matrix.

@@ -53,6 +53,7 @@
 #include "ILUC.hpp"
 #include "ILUCDP.hpp"
 #include "IChol.hpp"
+#include "ILU0.hpp"
 
 #ifdef ILUPLUSPLUS_USES_PARDISO
 #include "pardiso_unsym_interface.h"

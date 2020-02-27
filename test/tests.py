@@ -3,6 +3,9 @@ import scipy.sparse
 import ilupp
 import unittest
 
+################################################################################
+## test problems
+
 def laplace_matrix(n, format='csr'):
     h = 1.0 / (n + 1)
     d = np.ones(n) / (h**2)
@@ -37,7 +40,19 @@ def example_random(n, format='csc'):
     b = A.dot(x_exact)
     return A, b, x_exact
 
+_test_problems = {
+    'laplace': (laplace_matrix, example_laplace),
+    'random':  (random_matrix, example_random),
+}
+
+def example_matrix(name, args):
+    return _test_problems[name][0](*args)
+
+################################################################################
+## reference implementations
+
 def ichol_dense(A):
+    A = A.toarray()
     # simple reference implementation for ichol based on dense matrices
     L = np.tril(A)
     n = A.shape[0]
@@ -52,6 +67,28 @@ def ichol_dense(A):
                 if L[i,j] != 0:
                     L[i,j] -= L[i,k] * L[j,k]
     return L
+
+def ilu0_dense(A):
+    # sparse implementation depends on orientation, so we have to check it
+    is_csc = isinstance(A, scipy.sparse.csc_matrix)
+    if is_csc:
+        A = A.T
+    A = A.toarray()
+    n = A.shape[0]
+    for i in range(n):
+        for k in range(i):
+            if A[i,k] != 0:
+                l_ik = A[i,k] / A[k,k]
+                for j in range(k+1, n):
+                    if A[i,j] != 0:
+                        A[i,j] -= l_ik * A[k,j]
+                A[i,k] = l_ik
+    L, U = np.tril(A, -1), np.triu(A)
+    np.fill_diagonal(L, 1.0)
+    if is_csc:
+        return (U.T, L.T)
+    else:
+        return (L, U)
 
 ########################################
 # auto-generated test cases
@@ -73,6 +110,19 @@ def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
         assert pred(A, P)
     return test
 
+def _gen_test_factorization(func, sym, problem, matrix_args, reference_impl):
+    def test(self):
+        A = example_matrix(problem, matrix_args)
+        if sym:
+            A = (A + A.T) / 2       # symmetrize
+        X = func(A)
+        X_ref = reference_impl(A)
+        if isinstance(X, tuple):
+            assert all(np.allclose(Xi.A, Xi_ref) for (Xi,Xi_ref) in zip(X, X_ref))
+        else:
+            assert np.allclose(X.A, X_ref)
+    return test
+
 def is_lower_triangular(A):
     return all(i >= j for (i,j) in zip(*A.nonzero()))
 def is_upper_triangular(A):
@@ -87,6 +137,7 @@ def _assert_factors_correct(A, P):
     return True
 
 class TestCases(unittest.TestCase):
+    # generate tests for preconditioner classes
     for P in [
             ilupp.ILUTPreconditioner,
             ilupp.ILUTPPreconditioner,
@@ -115,6 +166,18 @@ class TestCases(unittest.TestCase):
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
+    # generate tests for stand-alone factorization functions
+    for (F, ref, sym) in [
+            # function to test, reference implementation, symmetric
+            (ilupp.ichol, ichol_dense, True),
+            (ilupp.ilu0, ilu0_dense, False)
+    ]:
+        base_name = 'test_' + F.__name__ + '_'
+
+        for problem in ('laplace', 'random'):
+            for format in ('csr', 'csc'):
+                case_name = base_name + problem + '_' + format
+                vars()[case_name] = _gen_test_factorization(F, sym, problem, (50,format), ref)
 
 ########################################
 
@@ -179,35 +242,3 @@ def test_ml_precond_random():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
-
-########################################
-
-## stand-alone factorization
-
-def test_ichol_csr():
-    A = laplace_matrix(50, 'csr')
-    L = ilupp.ichol(A)
-    assert is_lower_triangular(L)
-    assert L.getnnz() == (2 * A.shape[0] - 1)
-    assert np.allclose(A.A, (L.dot(L.T)).A)
-
-def test_ichol_csc():
-    A = laplace_matrix(50, 'csc')
-    L = ilupp.ichol(A)
-    assert is_lower_triangular(L)
-    assert L.getnnz() == (2 * A.shape[0] - 1)
-    assert np.allclose(A.A, (L.dot(L.T)).A)
-
-def test_ichol_rand_csr():
-    A = random_matrix(50, 'csr')
-    A += A.T    # symmetrize
-    L = ilupp.ichol(A)
-    L2 = ichol_dense(A.A)
-    assert np.allclose(L.A, L2)
-
-def test_ichol_rand_csc():
-    A = random_matrix(50, 'csc')
-    A += A.T    # symmetrize
-    L = ilupp.ichol(A)
-    L2 = ichol_dense(A.A)
-    assert np.allclose(L.A, L2)
