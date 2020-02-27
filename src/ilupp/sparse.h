@@ -488,8 +488,8 @@ template<class T> class matrix_sparse
            // ILUCP
            // ILUCP: standard implementation, ILUCPinv: implementation with inverse dropping; old implementations have slow access for L
            // cfh: disabled because it doesn't compile
-           //bool ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
            // same as ILUCP4 only with inverse-based dropping
+           //bool ILUCP4inv(const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in, Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor = 10.0);
            bool ILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor = 6.0);
            // cfh: disabled because it doesn't compile
            //bool ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor = 6.0);
