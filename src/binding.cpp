@@ -279,6 +279,11 @@ PYBIND11_MODULE(_ilupp, m)
             [](_ILUCPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
         );
 
+    m.def("ichol",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
+            return wrap_matrix(IChol(*make_matrix(A_data, A_indices, A_indptr, is_csr)));
+        });
+
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
         .def(py::init<>())
         .def("default_configuration", &iluplusplus_precond_parameter::default_configuration)

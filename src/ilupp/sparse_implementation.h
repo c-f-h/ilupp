@@ -52,6 +52,7 @@
 #include "ILUTP.hpp"
 #include "ILUC.hpp"
 #include "ILUCDP.hpp"
+#include "IChol.hpp"
 
 #ifdef ILUPLUSPLUS_USES_PARDISO
 #include "pardiso_unsym_interface.h"
@@ -3253,6 +3254,31 @@ matrix_sparse<T> matrix_sparse<T>::change_orientation() const
             A.indices[k] = i;
             counter[l]++;
         }
+    }
+    return A;
+}
+
+template<class T>
+matrix_sparse<T> matrix_sparse<T>::natural_triangular_part() const
+{
+    if (!square_check())
+        throw std::logic_error("can only compute triangular part of square matrix");
+
+    matrix_sparse<T> A(orientation, number_rows, number_columns, actual_non_zeroes());
+
+    Integer* cur_ind = &A.indices[0];
+    T* cur_dat = &A.data[0];
+
+    for (Integer i = 0; i < pointer_size; ++i) {
+        for (Integer k = pointer[i]; k < pointer[i+1]; ++k) {
+            const Integer j = indices[k];
+            if (j <= i) {
+                *cur_ind++ = j;
+                *cur_dat++ = data[k];
+            }
+        }
+        // finished i-th row - set pointer to start of next row
+        A.pointer[i + 1] = static_cast<Integer>(cur_ind - &A.indices[0]);
     }
     return A;
 }

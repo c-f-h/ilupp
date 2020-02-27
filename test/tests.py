@@ -163,3 +163,21 @@ def test_ml_precond_random():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
+
+########################################
+
+## stand-alone factorization
+
+def test_ichol_csr():
+    A = laplace_matrix(50, 'csr')
+    L = ilupp.ichol(A)
+    assert is_lower_triangular(L)
+    assert L.getnnz() == (2 * A.shape[0] - 1)
+    assert np.allclose(A.A, (L.dot(L.T)).A)
+
+def test_ichol_csc():
+    A = laplace_matrix(50, 'csc')
+    L = ilupp.ichol(A)
+    assert is_lower_triangular(L)
+    assert L.getnnz() == (2 * A.shape[0] - 1)
+    assert np.allclose(A.A, (L.dot(L.T)).A)

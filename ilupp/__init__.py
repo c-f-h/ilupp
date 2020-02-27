@@ -188,3 +188,9 @@ class ILUCPPreconditioner(_BaseWrapper):
     @property
     def permutation(self):
         return self.pr.permutation
+
+########################################
+
+def ichol(A):
+    """Compute the L factor of an incomplete Cholesky decomposition without fill-in for the symmetric matrix A."""
+    return _matrix_from_info(*_ilupp.ichol(*_matrix_fields(A)))

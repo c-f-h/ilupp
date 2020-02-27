@@ -414,6 +414,9 @@ template<class T> class matrix_sparse
            // return the same as this, but with the orientation reversed (csr <-> csc)
            matrix_sparse<T> change_orientation() const;
 
+           // returns a triangular part of the matrix - csr: lower, csc: upper
+           matrix_sparse<T> natural_triangular_part() const;
+
            void interchange(matrix_sparse<T>& A); // interchanges two matrices without copying data
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, orientation_type& Aorientation);
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, Integer& Annz, orientation_type& Aorientation);
