@@ -27,9 +27,11 @@ def _matrix_fields(A):
 
 def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
     if is_csr:
-        return scipy.sparse.csr_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
+        A = scipy.sparse.csr_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
     else:
-        return scipy.sparse.csc_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
+        A = scipy.sparse.csc_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
+    A.has_sorted_indices = True     # all ILU++ algorithms output sorted indices
+    return A
 
 
 def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None, params=None, info=False):
