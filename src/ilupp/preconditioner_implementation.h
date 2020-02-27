@@ -766,7 +766,7 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
         case PERM1: {
                         if(Precond_right.orient()==ROW){ 
                             H = Precond_right.change_orientation();
-                            Precond_right.permute(H,permutation); std::cout<<Precond_right.expand();
+                            Precond_right.permute(H,permutation);
                         } else { 
                             H=Precond_right;
                             Precond_right.permute(H,permutation);
