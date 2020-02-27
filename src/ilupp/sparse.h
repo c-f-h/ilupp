@@ -66,7 +66,7 @@ template<class T> class vector_dense
            vector_dense(Integer m, T t);
            vector_dense(const vector_dense& x);
            vector_dense(Integer m, T* _data, bool _non_owning=false);
-           virtual ~vector_dense();
+           ~vector_dense();
        // Basic functions
            void scale(T d);    // (*this)=d*(*this)
            void scale(T d, const vector_dense<T>& v); // (*this)=d*v
@@ -275,7 +275,7 @@ template<class T> class vector_sparse_dynamic_enhanced  : public vector_sparse_d
            vector_sparse_dynamic_enhanced();
            vector_sparse_dynamic_enhanced(Integer m);
            vector_sparse_dynamic_enhanced(const vector_sparse_dynamic_enhanced& x);
-           virtual ~vector_sparse_dynamic_enhanced();
+           ~vector_sparse_dynamic_enhanced();
            void resize(Integer m);
        // Assignment
            vector_sparse_dynamic_enhanced<T>& operator =(const vector_sparse_dynamic_enhanced<T>& x);        // Assignment
@@ -306,11 +306,12 @@ template<class T> class matrix_sparse
         Integer* indices;
         orientation_type orientation;
     private:
-           Integer number_rows;
-           Integer number_columns;
-           Integer nnz;
-           Integer pointer_size;
-           bool non_owning = false;     // if true, data won't be freed in the destructor
+        Integer number_rows;
+        Integer number_columns;
+        Integer nnz;
+        Integer pointer_size;
+        bool non_owning = false;     // if true, data won't be freed in the destructor
+
            void insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index);
              // copies the indices from list into indices and the data stored in data_vector corresponding to the appropriate indices into data.
            void insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index_matrix, Integer begin_index_list, Integer n, Integer offset=0);
@@ -336,14 +337,22 @@ template<class T> class matrix_sparse
            void free(Integer& m, Integer& n, Integer& nonzeroes, Integer& ps, T*& data_array, Integer*& indices_array, Integer*& pointer_array, orientation_type& O);
            // sets matrix to a (0,0) matrix, but frees no memory. You still have be able to access the data somehow to free it....
            void null_matrix_keep_data();
+
        public:
         // constructors, destructors
            matrix_sparse();
            matrix_sparse(orientation_type o, Integer m, Integer n);      // does not allocate memory, as nnz is unknown
            matrix_sparse(orientation_type o, Integer m, Integer n, Integer nz); // allocates memory
-           matrix_sparse(const matrix_sparse& X);    // copy constructor
-           virtual ~matrix_sparse();
+           matrix_sparse(const matrix_sparse& X);   // copy constructor
+           matrix_sparse(matrix_sparse&& X);        // move constructor
+           ~matrix_sparse();
            matrix_sparse(T* _data, Integer* _indices, Integer* _pointer, Integer _rows, Integer _columns, orientation_type _orientation, bool _non_owning=false);
+
+           // assignment operator
+           matrix_sparse& operator= (matrix_sparse<T> X);
+           // move assignment operator
+           matrix_sparse& operator= (matrix_sparse<T>&& X);
+
         // Basic functions
            T get_data(Integer k) const;
            Integer get_index(Integer k) const;
@@ -407,7 +416,6 @@ template<class T> class matrix_sparse
            void change_orientation(const matrix_sparse<T> &X);
            void transp(const matrix_sparse<T>& X) ;    // *this is the transpose having the same orienation and keeps the original matrix
            void transpose(const matrix_sparse<T>& X) ;    // *this is the transpose having the same orienation and keeps the original matrix
-           matrix_sparse operator = (const matrix_sparse<T>& X); // only use if X is needed later, else use interchange or copy_and_destroy.
            void interchange(matrix_sparse<T>& A); // interchanges two matrices without copying data
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, orientation_type& Aorientation);
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, Integer& Annz, orientation_type& Aorientation);
@@ -596,7 +604,7 @@ template<class T> class matrix_oriented    // will hopefully eventually replace 
            matrix_oriented(orientation_type o=ROW);      // does not allocate memory, as nnz is unknown
            matrix_oriented(orientation_type o, Integer m, Integer n); // allocates memory
            matrix_oriented(const matrix_oriented& X);    // copy constructor
-           virtual ~matrix_oriented();
+           ~matrix_oriented();
            matrix_oriented operator = (const matrix_oriented<T>& X);
         // Information
            Integer rows() const;                       // returns the number of rows.
@@ -640,7 +648,7 @@ template<class T> class matrix_dense
            matrix_dense(Integer m, Integer n, T d);
            matrix_dense(const matrix_dense& X); // copy-constructor
            matrix_dense(const matrix_sparse<T> &A);
-           virtual ~matrix_dense();
+           ~matrix_dense();
           void resize(Integer m, Integer n);
         // Basic functions
            void matrix_vector_multiplication_add(const vector_dense<T>& x, vector_dense<T>& v) const;             // v=v+(*this)*x

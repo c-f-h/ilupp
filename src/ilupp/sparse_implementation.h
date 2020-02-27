@@ -3089,27 +3089,33 @@ template<class T>  Real vector_sparse_dynamic_enhanced<T>::memory() const{
 // Class matrix_sparse: private functions                                                                               *
 //***********************************************************************************************************************
 
-template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index){
-     Integer j,k;
-     for(Integer i=0; i<list.dimension(); i++){
-         k=begin_index+i;
-         j=list[i];
-         indices[k]=j;
-         data[k]=data_vector[j];
-     }
-  }
+template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index)
+{
+    Integer j,k;
+    for(Integer i=0; i<list.dimension(); i++){
+        k=begin_index+i;
+        j=list[i];
+        indices[k]=j;
+        data[k]=data_vector[j];
+    }
+}
 
-template<class T> void matrix_sparse<T>::insert_data(const vector_dense<T>& data_vector, const index_list& list, Integer begin_index_matrix, Integer begin_index_list, Integer n, Integer offset){
-     Integer index_matrix, index_list, index_data;
-     if(non_fatal_error( (n+begin_index_list>list.dimension()), "matrix_sparse<T>::insert_data: trying to insert too many elements.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-     for(Integer i=0; i<n; i++){
-         index_matrix          = begin_index_matrix+i;              // the index in (*this) that is being updated
-         index_list            = begin_index_list+i;                // corresponding to this element in the list;
-         index_data            = list[index_list];                  // the datum in the data_vector has the index/position "index_data"
-         indices[index_matrix] = index_data+offset;                        // this position is stored now in (*this).indices
-         data[index_matrix]    = data_vector[index_data]; // the datum corresponding to this position is stored in (*this).data.
-     }
-  }
+template<class T> void matrix_sparse<T>::insert_data(
+        const vector_dense<T>& data_vector, const index_list& list, Integer begin_index_matrix,
+        Integer begin_index_list, Integer n, Integer offset)
+{
+    Integer index_matrix, index_list, index_data;
+    if (non_fatal_error((n+begin_index_list>list.dimension()),
+                "matrix_sparse<T>::insert_data: trying to insert too many elements."))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    for(Integer i=0; i<n; i++){
+        index_matrix          = begin_index_matrix+i;              // the index in (*this) that is being updated
+        index_list            = begin_index_list+i;                // corresponding to this element in the list;
+        index_data            = list[index_list];                  // the datum in the data_vector has the index/position "index_data"
+        indices[index_matrix] = index_data+offset;                        // this position is stored now in (*this).indices
+        data[index_matrix]    = data_vector[index_data]; // the datum corresponding to this position is stored in (*this).data.
+    }
+}
 
 template<class T> void matrix_sparse<T>::erase_resize_data_fields(Integer new_nnz){
     if (nnz != new_nnz){
@@ -3243,27 +3249,6 @@ template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix
             counter[l]++;
         }
 }
-
-/*
-template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix_sparse<T> &X)  {
-         reformat(X.number_rows,X.number_columns, X.pointer[X.pointer_size-1],other_orientation(X.orientation));
-         Integer i,j,k,l;
-         vector_dense<Integer> counter(pointer_size);
-         for (i=0;i<pointer_size;i++) pointer[i] = 0;
-         for (i=0;i<X.pointer[X.pointer_size-1];i++) pointer[1+X.indices[i]]++;
-         for (i=1;i<pointer_size;i++) pointer[i] += pointer[i-1];
-         for (i=0;i<pointer_size;i++) counter[i]=0;
-         for (i=0;i<X.pointer_size-1;i++)
-            for(j=X.pointer[i];j< X.pointer[i+1];j++){
-                l = X.indices[j];
-                k = pointer[l]+counter[l];
-                data[k] = X.data[j];
-                indices[k] = i;
-                counter[l]++;
-            }
-  }
-
-*/
 
 template<class T> void matrix_sparse<T>::insert(const matrix_sparse<T> &A, const vector_dense<T>& row, const vector_dense<T>& column, T center, Integer pos_row, Integer pos_col, Real threshold){
     if(A.orient()==ROW) insert_orient(A,row,column,center,pos_row,pos_col,threshold);
@@ -3768,7 +3753,8 @@ template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, I
 
 
 
-template<class T> matrix_sparse<T>::matrix_sparse(const matrix_sparse& X){
+template<class T> matrix_sparse<T>::matrix_sparse(const matrix_sparse& X)
+{
     nnz            = 0;
     pointer_size   = 0;
     data           = 0;
@@ -3779,8 +3765,23 @@ template<class T> matrix_sparse<T>::matrix_sparse(const matrix_sparse& X){
     for (i=0;i<nnz;i++) data[i] = X.data[i];
     for (i=0;i<nnz;i++) indices[i] = X.indices[i];
     for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
-  }
+}
 
+// move constructor
+template <class T>
+matrix_sparse<T>::matrix_sparse(matrix_sparse&& X)
+{
+    data            = X.data;
+    pointer         = X.pointer;
+    indices         = X.indices;
+    orientation     = X.orientation;
+    number_rows     = X.number_rows;
+    number_columns  = X.number_columns;
+    nnz             = X.nnz;
+    pointer_size    = X.pointer_size;
+
+    X.null_matrix_keep_data();
+}
 
 template<class T> matrix_sparse<T>::~matrix_sparse() { // std::cout<<"matrixdestruktor"<<std::endl;
     if (!non_owning) {
@@ -3789,6 +3790,20 @@ template<class T> matrix_sparse<T>::~matrix_sparse() { // std::cout<<"matrixdest
         if (pointer != 0) delete [] pointer; pointer=0;
     }
 }
+
+template<class T> matrix_sparse<T>& matrix_sparse<T>::operator= (matrix_sparse<T> X){
+    // copy-and-swap idiom (copy is made by passing X by value)
+    interchange(X);
+    return *this;
+}
+
+template<class T> matrix_sparse<T>& matrix_sparse<T>::operator= (matrix_sparse<T>&& X){
+    // free the data even if X stays around
+    reformat(0, 0, 0, orientation);
+    interchange(X);
+    return *this;
+}
+
 
 //***********************************************************************************************************************
 // Class matrix_sparse: Basic functions                                                                                 *
@@ -4008,16 +4023,6 @@ template<class T> void matrix_sparse<T>::transpose(const matrix_sparse<T>& X) {
     transpose_in_place();
   }
 
-template<class T> matrix_sparse<T> matrix_sparse<T>::operator = (const matrix_sparse<T>& X){
-    if(this==&X) return *this;
-    reformat(X.number_rows,X.number_columns,X.nnz,X.orientation);
-    Integer i;
-    for (i=0;i<nnz;i++) data[i] = X.data[i];
-    for (i=0;i<nnz;i++) indices[i] = X.indices[i];
-    for (i=0;i<pointer_size;i++) pointer[i] = X.pointer[i];
-    return *this;
-}
-
 template<class T> void matrix_sparse<T>::setup(Integer m, Integer n, Integer nonzeroes, T* data_array, Integer* indices_array, Integer* pointer_array, orientation_type O){
     #ifdef DEBUG
          std::cerr<<"matrix_sparse::setup: WARNING: making a matrix using pointers. This is not recommended. You are responsible for making sure that this does not result in a segmentation fault!"<<std::endl<<std::flush;
@@ -4055,9 +4060,6 @@ template<class T> void matrix_sparse<T>::free(Integer& m, Integer& n, Integer& n
 }
 
 template<class T> void matrix_sparse<T>::null_matrix_keep_data(){
-    #ifdef DEBUG
-         std::cerr<<"matrix_sparse::null_matrix_keep_data: WARNING: not freeing memory and destructor will not free memory. This is not recommended. You are responsible for freeing memory somehow...."<<std::endl<<std::flush;
-    #endif
     number_rows = 0;
     number_columns = 0;
     nnz = 0;
