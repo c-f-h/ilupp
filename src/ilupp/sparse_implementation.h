@@ -3269,7 +3269,7 @@ matrix_sparse<T> matrix_sparse<T>::natural_triangular_part() const
     Integer* cur_ind = &A.indices[0];
     T* cur_dat = &A.data[0];
 
-    for (Integer i = 0; i < pointer_size; ++i) {
+    for (Integer i = 0; i < dim_major(); ++i) {
         for (Integer k = pointer[i]; k < pointer[i+1]; ++k) {
             const Integer j = indices[k];
             if (j <= i) {
