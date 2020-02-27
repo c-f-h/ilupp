@@ -490,42 +490,6 @@ template<class T> void vector_dense<T>::switch_entry(Integer i, Integer j, T& h)
   }
 
 
-
-
-
-template<class T> void vector_dense<T>::write(std::string filename) const {
-    std::ofstream file(filename.c_str());
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    for (Integer i=0;i<size;i++) file<<data[i]<<std::endl;
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    file.close();
-  }
-
-template<class T> void vector_dense<T>::append(std::string filename) const {
-    std::ofstream file(filename.c_str(), std::ios_base::app);
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    for (Integer i=0;i<size;i++) file<<data[i]<<std::endl;
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    file.close();
-  }
-
-template<class T> void  vector_dense<T>::write_with_indices(std::string filename) const {
-    std::ofstream file(filename.c_str());
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    for (Integer i=0;i<size;i++) file<<i<<"\t"<<data[i]<<std::endl;
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    file.close();
-  }
-
-template<class T> void  vector_dense<T>::append_with_indices(std::string filename, Integer shift) const {
-    std::ofstream file(filename.c_str(), std::ios_base::app);
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    for (Integer i=0;i<size;i++) file<<i+shift<<"\t"<<data[i]<<std::endl;
-    if(non_fatal_error(!file.good(),"vector_dense::write: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    file.close();
-  }
-
-
 template <class T> void vector_dense<T>::quicksort(index_list& list){
     quicksort(list,0,dimension()-1);
 }
@@ -1026,14 +990,10 @@ template<class T> void vector_dense<T>::absvalue(const vector_dense<T>& v){   //
 
 
 template<class T> void  vector_dense<T>::absvalue(const vector_dense<T>& v, Integer begin, Integer n){
-    if(non_fatal_error((begin+n>v.size),"vector_dense::absvalue: dimensions are  are incompatible")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    if(non_fatal_error((begin+n>v.size),"vector_dense::absvalue: dimensions are incompatible"))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     erase_resize_data_field(n);
     for(Integer i=0;i<n;i++) data[i]=fabs(v.data[i+begin]);
-  }
-
-template<class T> void vector_dense<T>::value(const T* values, Integer begin, Integer n){   // (*this) contains n elements of the field data from begin.
-    erase_resize_data_field(n);
-    for(Integer i=begin;i<begin+n;i++) data[i]=values[i];
   }
 
 template<class T> void vector_dense<T>::absvalue(const T* values, Integer begin, Integer n){   // (*this) contains n absolute values of the field data from begin.
@@ -4810,23 +4770,6 @@ template<class T> void matrix_sparse<T>::read_binary(std::string filename){
     the_file.close();
 }
 
-template<class T> void matrix_sparse<T>::write_mtx(std::string filename) const {
-    Integer i,j;
-    std::ofstream the_file(filename.c_str());
-    if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-    //the_file<<rows()<<" "<<columns()<<" "<<non_zeroes()<<std::endl;
-    if(orient() == ROW){
-        for(i=0; i<pointer_size-1; i++) 
-            for(j=pointer[i]; j<pointer[i+1]; j++)
-                the_file<<i+1<<" "<<indices[j]+1<<" "<<data[j]<<std::endl;
-    } else {
-        for(i=0; i<pointer_size-1; i++) 
-            for(j=pointer[i]; j<pointer[i+1]; j++)
-                the_file<<indices[j]+1<<" "<<i+1<<" "<<data[j]<<std::endl;
-    }
-    if(non_fatal_error(!the_file.good(),"matrix_sparse::write_mtx: error writing file.")) throw iluplusplus_error(FILE_ERROR);
-}
-
 template<class T> void matrix_sparse<T>::write_binary(std::string filename) const {
     std::ofstream the_file(filename.c_str(), std::ios::binary);
     if(non_fatal_error(!the_file.good(),"matrix_sparse::write_binary: error writing file.")) throw iluplusplus_error(FILE_ERROR);
@@ -4847,55 +4790,6 @@ template<class T> void matrix_sparse<T>::write_binary(std::string filename) cons
     the_file.write((char*) data,            sizeof(T)*nnz);
     if(non_fatal_error(!the_file.good(),"matrix_sparse::write_binary: error writing file.")) throw iluplusplus_error(FILE_ERROR);
     the_file.close();
-}
-
-
-template<class T> void matrix_sparse<T>::random(Integer m, Integer n, orientation_type O, Integer min_nnz, Integer max_nnz){
-    Integer j,k,r,index,number_elements;
-    bool index_is_not_new;
-    Integer iter_dim = ((O==ROW) ? m : n);
-    Integer length = ((O==ROW) ? n : m);
-    if(max_nnz<min_nnz) max_nnz = min_nnz;
-    //srand(time(0)); // if you initialize the seed in every call, calls in succession (less than 1 second apart) use the same seed an produce the same matrix.
-    reformat(m,n,length*max_nnz,O);
-    for(k=0; k<iter_dim; k++){
-        number_elements = rand()%(max_nnz - min_nnz + 1) + min_nnz;
-        for(j=0; j<number_elements; j++){
-            index_is_not_new = true;
-            while(index_is_not_new){
-                index = rand()%length;
-                index_is_not_new = false;
-                for(r=pointer[k];r<pointer[k]+j;r++) index_is_not_new = index_is_not_new || (index == indices[r]);
-            } // end while
-            indices[pointer[k]+j] = index;
-            data[pointer[k]+j] =  2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0;
-        } // end for j
-        pointer[k+1] = pointer[k] + number_elements;
-    }  // end for k
-    //compress(COMPARE_EPS); 
-    normal_order();
-}
-
-
-template<class T> void matrix_sparse<T>::random_perturbed_projection_matrix(Integer n, Integer EV1, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps){
-    matrix_sparse<T> A,B;
-    Integer i;
-    if(EV1<0) EV1 = 0;
-    if(EV1>n) EV1 = n;
-    A.random(n,n,O,min_nnz,max_nnz);
-    B.reformat(n,n,EV1,O);
-    for(i=0;i<EV1;i++) B.pointer[i] = i;
-    for(i=EV1;i<=n;i++) B.pointer[i] = EV1;
-    for(i=0;i<EV1;i++) B.indices[i] = i;
-    for(i=0;i<EV1;i++) B.data[i] = 1.0;
-    matrix_addition(eps/A.normF(),A,B);
-}
-
-
-template<class T> void matrix_sparse<T>::random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity) {
-    matrix_dense<T> A;
-    A.random_multiplicatively_perturbed_projection_matrix(n,rank,min_nnz,max_nnz,O,eps_EV,eps_similarity);
-    compress(A,O,-1.0);
 }
 
 
@@ -10437,22 +10331,6 @@ template<class T> void matrix_dense<T>::diag(const vector_dense<T>& d){
 }
 
 
-template<class T> void matrix_dense<T>::random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity) {
-    Integer k;
-    if(eps_EV <= 0.0) eps_EV = 0.0;
-    if(eps_similarity <= 0.0) eps_similarity = 0.0;
-    matrix_sparse<T> perturbed_ID_sparse;
-    matrix_dense<T> perturbed_ID_dense, inv_perturbed_ID_dense,H;
-    perturbed_ID_sparse.random_perturbed_projection_matrix(n,n,min_nnz,max_nnz,O,eps_similarity);
-    perturbed_ID_dense.expand(perturbed_ID_sparse);
-    inv_perturbed_ID_dense.invert(perturbed_ID_dense);
-    resize(n,n);
-    set_all(0.0);
-    for(k=0;k<rank;k++) data[k][k] = 1.0 +  eps_EV *(2.0* ((T) rand()) / ((T)RAND_MAX) - 1.0);
-    H.matrix_matrix_multiplication(*this,inv_perturbed_ID_dense);
-    matrix_matrix_multiplication(perturbed_ID_dense,H);
-}
-
 template<class T> matrix_dense<T>& matrix_dense<T>::scale_rows(const vector_dense<T>& d){
      if (number_rows==d.dimension()){
          for(Integer i=0;i<number_rows;i++)
@@ -10591,32 +10469,6 @@ template<class T> void matrix_dense<T>::elementwise_division(const matrix_dense&
             data[i][j] /= A.data[i][j];
 }
 
-
-template<class T> void matrix_dense<T>::bandmatrixfull(T a,T b){
-    for(Integer i=0;i<number_rows;i++)
-        for(Integer j=0;j<number_columns;j++)
-            data[i][j]=a-b*fabs((long double)(i-j));
-  }
-
-template<class T> void matrix_dense<T>::tridiag(T a, T b,T c){
-    Integer i,j;
-    for(i=0;i<number_rows;i++)
-         for(j=0;j<number_columns;j++)
-              data[i][j]=0;
-    for(i=1;i<min(number_rows,number_columns);i++)
-          data[i][i-1]=a;
-    for(i=0;i<min(number_rows,number_columns);i++)
-          data[i][i]=b;
-    for(i=1;i<min(number_rows,number_columns);i++)
-          data[i-1][i]=c;
-  }
-
-template<class T> void matrix_dense<T>::interpolation_matrix(){
-    for(Integer i=0;i<number_rows;i++)
-        for(Integer j=0;j<number_columns;j++){
-             data[i][j]=pow((long double)i,(long double)j);
-        }
-  }
 
 template<class T> void matrix_dense<T>::overwrite(const matrix_dense& A, Integer m, Integer n){
     Integer i,j;

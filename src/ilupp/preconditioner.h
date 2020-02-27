@@ -249,8 +249,7 @@ template <class T, class matrix_type, class vector_type>
           virtual Real memory(Integer k) const;
           virtual Integer dim(Integer k) const;
           virtual void print_dimensions() const;
-          virtual void write_abs_diagonal(std::string filename) const;
-          virtual void write_abs_diagonal_with_indices(std::string filename) const;
+
           virtual Integer number_small_pivots(Real tau) const;
           virtual Integer left_nnz() const;
           virtual Integer right_nnz() const;

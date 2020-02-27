@@ -107,7 +107,6 @@ template<class T> class vector_dense
            void absvalue();                                    // overwrites the vector with its absolute value, elementwise
            void absvalue(const vector_dense<T>& v);            // (*this) contains the absolute values of v elementwise.
            void absvalue(const vector_dense<T>& v, Integer begin, Integer n);            // (*this) contains the absolute values of v elementwise, starting at beginning, with size n.
-           void value(const T* values, Integer begin, Integer n);     // *this will have the size n and will contain the elements of values beginning at begin.
            void absvalue(const T* values, Integer begin, Integer n);  // *this will have the size n and will contain the absolute value of the elements of values.
            void insert_value(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector);   // inserts n values of the matrix in the given range as above into the vector beginning at begin_vector.
            void insert_absvalue(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector); // same as above, but with absolute values.
@@ -142,11 +141,6 @@ template<class T> class vector_dense
         // vector_dense-valued operators
            void switch_entry (Integer i, Integer j); // switches elements having indices i and j respectively.
            void switch_entry (Integer i, Integer j, T& h);   // same as above, only quicker because auxiliary variable h is already provided.
-       // writing to file:
-           void write(std::string filename) const;
-           void append(std::string filename) const;
-           void write_with_indices(std::string filename) const;
-           void append_with_indices(std::string filename, Integer shift) const;
        // Sorting
            void sort(index_list& list, Integer left, Integer right, Integer m);
            // chooses m largest elements from left to right,including left and right.
@@ -156,19 +150,21 @@ template<class T> class vector_dense
            void quicksort(Integer left, Integer right);
            void quicksort();
            void quicksort(index_list& list);
-           void take_largest_elements_by_abs_value(index_list& list, Integer n) const;
+
              // takes the indices of the n largest elements by absolute value of input and stores them in ascending order in list.
-           void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau) const;
+           void take_largest_elements_by_abs_value(index_list& list, Integer n) const;
              // takes upto n elements whose absolute value is larger than tau. If more than n elements exist, it takes the largest of these.
+           void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau) const;
+             // same as above, only sorting is restricted to the interval [from, to)
            void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const;
            void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const;
-             // same as above, only sorting is restricted between from and to, including from, excluding to.
-             // elements will be stored by increasing index.
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input, index_list& list, const index_list& perm, Integer n, Real tau, Integer from, Integer to) const;
              // same as above, only sorting is restricted between from and to, including from, excluding to. List will refer to elements using the permutation perm, i.e. the largest elements will be list[perm[0]],...
              // these elements will be stored by increasing absolute value in list, not by increasing index
+           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input, index_list& list, const index_list& perm, Integer n, Real tau, Integer from, Integer to) const;
+
            void take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm_input, index_list& list, const index_list& perm, const vector_dense<Real>& weights, Integer n, Real tau, Integer from, Integer to) const;
            void take_weighted_largest_elements_by_abs_value_with_threshold(Real& norm,index_list& list, const vector_dense<T>& weight, Integer n, Real tau, Integer from, Integer to) const;
+
            // vector_dense<T> permute(const index_list& perm);
            void insert(const vector_dense<T>& b, Integer position, T value);
            // this is constructed as follows: inserts value at position into b.
@@ -462,14 +458,7 @@ template<class T> class matrix_sparse
            void square_diag(Integer n, T d, orientation_type o);    // same as above only square
            void tridiag (T a, T b, T c); // makes a tridiagonal SQUARE matrix
            void read_binary(std::string filename);
-           void write_mtx(std::string filename) const;  // matlab format
            void write_binary(std::string filename) const;
-           // A random matrix having  at least min_nnz, at most max_nnz elements per row/column (depending on orientation)
-           void random(Integer m, Integer n, orientation_type O, Integer min_nnz, Integer max_nnz);
-           // A matrix of the form diag(1,...,1,0,...,0), Eigenvalue 1 has multiplicity EV1 is perturbed by a random matrix having Frobenius-Norm < eps, at least min_nnz, at most max_nnz elements per row/column (depending on orientation)
-           void random_perturbed_projection_matrix(Integer n, Integer EV1, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps);
-           // same as matrix_dense:
-           void random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity);
            void extract(const matrix_sparse<T> &A, Integer m, Integer n); // *this will contain the rows/columns m to m+n-1 of A - determined by orientation.
         // Testing
            bool check_consistency() const;
@@ -687,14 +676,10 @@ template<class T> class matrix_dense
         // matrix-valued functions
            matrix_dense<T> transp() const;
         // Generating special matrices
-           void bandmatrixfull(T a,T b);          //  a_ij=a-b*|i-j|
-           void interpolation_matrix();                 // coeff.matrix for polynomial interpolation
-           void tridiag(T a, T b, T c);                 // tridiagonalmatrix with a,b,c
            void set_all(T d);
            void diag(T d);
            void diag(const vector_dense<T>& d);
            // the diagonal matrix diag(1+eps1, 1+eps2,...,1+eps(rank),0,...0), |epsk|<eps_EV undergoes a similarity transform by I+U, normF(U)<eps_similarity
-           void random_multiplicatively_perturbed_projection_matrix(Integer n, Integer rank, Integer min_nnz, Integer max_nnz, orientation_type O, Real eps_EV, Real eps_similarity);
            matrix_dense<T>& scale_rows(const vector_dense<T>& d);
            matrix_dense<T>& scale_columns(const vector_dense<T>& d);
            matrix_dense<T>& inverse_scale_rows(const vector_dense<T>& d);

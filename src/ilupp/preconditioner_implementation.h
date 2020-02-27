@@ -486,28 +486,6 @@ template <class T, class matrix_type, class vector_type>
   void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::print_dimensions() const{for(Integer k=0;k<number_levels; k++) std::cout<<dim(k)<<"  "; std::cout<<std::endl;}
 
 template <class T, class matrix_type, class vector_type>
-void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::write_abs_diagonal(std::string filename) const {
-    Integer i;
-    vector_type v;
-    for(i=0;i<number_levels;i++){
-        v.absvalue(Precond_middle[i],0,Precond_middle[i].dimension()-Precond_middle[i+1].dimension());
-        v.append(filename);
-    }
-}
-
-template <class T, class matrix_type, class vector_type>
-void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::write_abs_diagonal_with_indices(std::string filename) const {
-    Integer counter = 0;
-    Integer i;
-    vector_type v;
-    for(i=0;i<number_levels;i++){
-        v.absvalue(Precond_middle[i],0,Precond_middle[i].dimension()-Precond_middle[i+1].dimension());
-        v.append_with_indices(filename,counter);
-        counter = Precond_middle[i].dimension()-Precond_middle[i+1].dimension(); // new starting position
-    }
-}
-
-template <class T, class matrix_type, class vector_type>
 Integer indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::number_small_pivots(Real tau) const { // returns the number of pivots whose abs. value is less than or equal to tau.
     Integer counter = 0;
     Integer i,j;
