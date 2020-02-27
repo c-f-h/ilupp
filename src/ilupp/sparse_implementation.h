@@ -5997,7 +5997,6 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner(index_lis
 template<class T> Integer matrix_sparse<T>::preprocess(
         const iluplusplus_precond_parameter& IP, index_list& P, index_list& Q,
         index_list& invP, index_list& invQ, vector_dense<T>& Drow, vector_dense<T>& Dcol){
-    Integer k;
     vector_dense<T> D1,D2;
     index_list p1,p2,ip1,ip2;
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::preprocess: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -6009,7 +6008,7 @@ template<class T> Integer matrix_sparse<T>::preprocess(
     invQ.resize(n);
     Drow.resize(n,1.0);
     Dcol.resize(n,1.0);
-    for(k=0;k<IP.get_PREPROCESSING().size();k++){
+    for (size_t k = 0; k < IP.get_PREPROCESSING().size(); ++k) {
         switch (IP.get_PREPROCESSING()[k]){
             case TEST_ORDERING:
                 test_ordering(p1,p2);
