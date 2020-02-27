@@ -3231,23 +3231,30 @@ template<class T> void matrix_sparse<T>::reformat(Integer new_number_rows, Integ
     for(Integer i=0; i<pointer_size; i++) pointer[i]=0;
 }
 
-template<class T> void matrix_sparse<T>::change_orientation_of_data(const matrix_sparse<T> &X)  {
-    vector_dense<Integer> counter;
-    reformat(X.number_rows,X.number_columns, X.pointer[X.pointer_size-1],other_orientation(X.orientation));
-    counter.resize(pointer_size,0);
+template<class T>
+matrix_sparse<T> matrix_sparse<T>::change_orientation() const
+{
+    matrix_sparse<T> A(other_orientation(orientation), number_rows, number_columns, actual_non_zeroes());
+
     Integer i,j,k,l;
-    for (i=0;i<pointer_size;i++) pointer[i] = 0;
-    for (i=0;i<X.pointer[X.pointer_size-1];i++) pointer[1+X.indices[i]]++;
-    for (i=1;i<pointer_size;i++) pointer[i] += pointer[i-1];
-    //for (i=0;i<pointer_size;i++) counter[i]=0;  // already initialized
-    for (i=0;i<X.pointer_size-1;i++)
-        for(j=X.pointer[i];j< X.pointer[i+1];j++){
-            l = X.indices[j];
-            k = pointer[l]+counter[l];
-            data[k] = X.data[j];
-            indices[k] = i;
+
+    for (i=0; i<pointer[pointer_size-1]; i++)
+        A.pointer[1+indices[i]]++;
+
+    for (i=1; i<A.pointer_size; i++) A.pointer[i] += A.pointer[i-1];
+
+    std::vector<Integer> counter(A.pointer_size, 0);
+
+    for (i=0; i<pointer_size-1; i++) {
+        for(j=pointer[i]; j< pointer[i+1]; j++) {
+            l = indices[j];
+            k = A.pointer[l] + counter[l];
+            A.data[k] = data[j];
+            A.indices[k] = i;
             counter[l]++;
         }
+    }
+    return A;
 }
 
 template<class T> void matrix_sparse<T>::insert(const matrix_sparse<T> &A, const vector_dense<T>& row, const vector_dense<T>& column, T center, Integer pos_row, Integer pos_col, Real threshold){
@@ -3357,10 +3364,6 @@ template<class T> void matrix_sparse<T>::insert_orient(const matrix_sparse<T> &A
         pointer[A.dim_along_orientation()+1] = counter;
     }
 }
-
-template<class T> void matrix_sparse<T>::change_orientation(const matrix_sparse<T> &X){
-    change_orientation_of_data(X);
-  }
 
 template<class T> Integer matrix_sparse<T>::largest_absolute_value_along_orientation(Integer k) const {
     Integer index = 0;
@@ -3797,13 +3800,6 @@ template<class T> matrix_sparse<T>& matrix_sparse<T>::operator= (matrix_sparse<T
     return *this;
 }
 
-template<class T> matrix_sparse<T>& matrix_sparse<T>::operator= (matrix_sparse<T>&& X){
-    // free the data even if X stays around
-    reformat(0, 0, 0, orientation);
-    interchange(X);
-    return *this;
-}
-
 
 //***********************************************************************************************************************
 // Class matrix_sparse: Basic functions                                                                                 *
@@ -4011,17 +4007,6 @@ template<class T> matrix_sparse<T> matrix_sparse<T>::normal_order(){
   }
 
 
-
-template<class T> void matrix_sparse<T>::transp(const matrix_sparse<T>& X) {
-    change_orientation_of_data(X);
-    transpose_in_place();
-  }
-
-
-template<class T> void matrix_sparse<T>::transpose(const matrix_sparse<T>& X) {
-    change_orientation_of_data(X);
-    transpose_in_place();
-  }
 
 template<class T> void matrix_sparse<T>::setup(Integer m, Integer n, Integer nonzeroes, T* data_array, Integer* indices_array, Integer* pointer_array, orientation_type O){
     #ifdef DEBUG
@@ -4699,7 +4684,7 @@ template<class T> Real matrix_sparse<T>::degree_of_symmetry() const {
          matrix_sparse<T> symmetric_part;
          matrix_sparse<T> transposed_matrix;
          if(square_check()){
-             transposed_matrix.transp(*this);
+              transposed_matrix.transp(*this);
              symmetric_part.matrix_addition_complete(1.0, (*this), transposed_matrix);
              return (symmetric_part.normF()/(2.0*normF()));
          } else {
@@ -5724,8 +5709,8 @@ template<class T> void matrix_sparse<T>::symmetric_move_to_corner_improved(index
     vector_dense<bool> unused(n,true); // indicates which indices have been used
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
         w.remove_min();
@@ -5751,8 +5736,8 @@ template<class T> void matrix_sparse<T>::diagonally_dominant_symmetric_move_to_c
     vector_dense<Real> col_gap(n,2.0);
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i = 0; i < n; i++){
         current_index = w.index_min();
         acceptable_index = (row_gap[current_index]>=0) && (col_gap[current_index]>=0);
@@ -5817,8 +5802,8 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner_impro
     vector_dense<bool> unused(n,true); // indicates which indices have been used
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i=0;i<n;i++) counter[i]=pointer[i+1]-pointer[i]+A.pointer[i+1]-A.pointer[i];
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
@@ -5844,8 +5829,8 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner_impr
     vector_dense<bool> unused(n,true); // indicates which indices have been used
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i=0;i<n;i++) counterrows[i]=pointer[i+1]-pointer[i];
     for(i=0;i<n;i++) countercols[i]=A.pointer[i+1]-A.pointer[i];
     for(i = 0; i < pointer_size-1; i++){
@@ -5869,8 +5854,8 @@ template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner_improved(in
     vector_dense<bool> unused(n,true); // indicates which indices have been used
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
         w.remove_min();
@@ -5893,8 +5878,8 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner_improved(
     vector_dense<bool> unused(n,true); // indicates which indices have been used
     w.resize(n); // sets all weights to 0
     P.resize(n);
-    matrix_sparse<T> A;
-    A.change_orientation_of_data(*this);
+    matrix_sparse<T> A = this->change_orientation();
+
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
         w.remove_min();
@@ -6379,7 +6364,6 @@ template<class T> void matrix_sparse<T>::metis_node_nd(Integer* P, Integer* invP
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Real tau) {
     Integer pos;
-    matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
     if(PQorient == A.orientation){
         pos = A.ddPQ(invpermP,invpermQ,tau);
@@ -6388,7 +6372,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
         if (A.orientation == COLUMN) permute(A,permQ,permP);
         else permute(A,permP,permQ);
     } else {
-        B.change_orientation_of_data(A);
+        matrix_sparse<T> B = A.change_orientation();
         pos = B.ddPQ(invpermP,invpermQ,tau);
         permP.invert(invpermP);
         permQ.invert(invpermQ);
@@ -6401,7 +6385,6 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientation_type PQorient, Integer from, Integer to, Real tau) {
     Integer pos;
-    matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
     if(PQorient == A.orientation){
         pos = A.ddPQ(invpermP,invpermQ,from,to,tau);
@@ -6410,7 +6393,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
         if (A.orientation == COLUMN) permute(A,permQ,permP);
         else permute(A,permP,permQ);
     } else {
-        B.change_orientation_of_data(A);
+        matrix_sparse<T> B = A.change_orientation();
         pos = B.ddPQ(invpermP,invpermQ,from,to,tau);
         permP.invert(invpermP);
         permQ.invert(invpermQ);
@@ -6423,7 +6406,6 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, orientatio
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Real tau){
     Integer pos;
-    matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
     if(PQorient == A.orientation){
         pos = A.ddPQ(invpermP,invpermQ,tau);
@@ -6437,7 +6419,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
             bnew.permute(bold,permP);
         }
     } else {
-        B.change_orientation_of_data(A);
+        matrix_sparse<T> B = A.change_orientation();
         pos = B.ddPQ(invpermP,invpermQ,tau);
         permP.invert(invpermP);
         permQ.invert(invpermQ);
@@ -6449,7 +6431,6 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
 
 template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vector_dense<T>& bold, vector_dense<T>& bnew, orientation_type PQorient, Integer from, Integer to, Real tau){
     Integer pos;
-    matrix_sparse<T> B;
     index_list permP, permQ, invpermP, invpermQ;
     if(PQorient == A.orientation){
         pos = A.ddPQ(invpermP,invpermQ,from,to,tau);
@@ -6463,7 +6444,7 @@ template<class T> Integer matrix_sparse<T>::ddPQ(matrix_sparse<T>& A, const vect
             bnew.permute(bold,permP);
         }
     } else {
-        B.change_orientation_of_data(A);
+        matrix_sparse<T> B = A.change_orientation();
         pos = B.ddPQ(invpermP,invpermQ,from,to,tau);
         permP.invert(invpermP);
         permQ.invert(invpermQ);
@@ -7191,7 +7172,7 @@ template<class T> vector_dense<T> matrix_dense<T>::operator * (vector_dense<T> c
 //  Class matrix_dense: Matrix-valued functions                                                                                         *
 //***************************************************************************************************************************************
 
-template<class T> matrix_dense<T> matrix_dense<T>::transp() const {
+template<class T> matrix_dense<T> matrix_dense<T>::transpose() const {
     matrix_dense<T> y(number_columns, number_rows);
     Integer i,j;
     for(i=0;i<number_rows;i++)
@@ -7500,7 +7481,7 @@ template<class T>  void matrix_dense<T>::compress(Real threshold){
 //***************************************************************************************************************************************
 
 template<class T> std::istream& operator >> (std::istream& is, matrix_dense<T>& X){
-     std::cout<<"Matrix elements for the ("<<X.number_rows<<"x"<<X.number_colums<<")-Matrix:"<<std::endl;
+     std::cout<<"Matrix elements for the ("<<X.number_rows<<"x"<<X.number_columns<<")-Matrix:"<<std::endl;
      for(Integer i=0;i<X.number_rows;i++)
        for(Integer j=0;j<X.number_columns;j++)
         is >> X.data[i][j];

@@ -2112,8 +2112,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(
     total_memory_used +=  U.memory() + memory() + Anew.memory();
 #ifdef STATISTICS
     // Statistics for A
-    matrix_sparse<T> Acol;
-    Acol.change_orientation_of_data(Arow);
+    matrix_sparse<T> Acol = Arow.change_orientation();
+
     sum1 = 0.0;   max_total=0; min_total=n;
     average_total = Arow.row_density();
     for(k=0;k<n;k++){
@@ -2263,7 +2263,7 @@ bool matrix_sparse<T>::preprocessed_partialILUCDP(
         Arow2 = A;
         end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
     } else {
-        Arow2.change_orientation_of_data(A);
+        Arow2 = A.change_orientation();
         end_PQ = Arow2.preprocess(IP,pr1,pc1,ipr1,ipc1,D_l,D_r);
     }
     if (force_finish) {
@@ -2306,7 +2306,7 @@ bool matrix_sparse<T>::preprocessed_partialILUCDP(
     if (use_ILUC){
         factorization_exists = partialILUC(Arow2,Acoarse,IP,force_finish,U,Dinv,last_row_to_eliminate,threshold,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
     } else {
-        Acol.change_orientation_of_data(Arow2);
+        Acol = Arow2.change_orientation();
         factorization_exists = partialILUCDP(Arow2,Acol,Acoarse,IP,force_finish,U,Dinv,pc2,pr2,ipc2,ipr2,last_row_to_eliminate,threshold,bp,bpr,epr,zero_pivots,partial_setup_time,mem_factor,total_memory_allocated,total_memory_used);
     }
     if(!factorization_exists) return false;

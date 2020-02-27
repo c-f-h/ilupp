@@ -744,7 +744,7 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
     switch(left_matrix_usage){
         case PERM1: {
                         if(Precond_left.orient()==COLUMN){
-                            H.change_orientation_of_data(Precond_left);
+                            H = Precond_left.change_orientation();
                             Precond_left.permute(H,permutation);
                         } else {
                             H=Precond_left;
@@ -753,7 +753,7 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
                     } break;
         case PERM2: {
                         if(Precond_left.orient()==COLUMN){
-                            H.change_orientation_of_data(Precond_left);
+                            H = Precond_left.change_orientation();
                             Precond_left.permute(H,permutation2);
                         } else {
                             H=Precond_left;
@@ -765,7 +765,7 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
     switch(right_matrix_usage){
         case PERM1: {
                         if(Precond_right.orient()==ROW){ 
-                            H.change_orientation_of_data(Precond_right);
+                            H = Precond_right.change_orientation();
                             Precond_right.permute(H,permutation); std::cout<<Precond_right.expand();
                         } else { 
                             H=Precond_right;
@@ -774,7 +774,7 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
                     } break;
         case PERM2: {
                         if(Precond_right.orient()==ROW){
-                            H.change_orientation_of_data(Precond_right);
+                            H = Precond_right.change_orientation();
                             Precond_right.permute(H,permutation2);
                         } else { 
                             H=Precond_right;
@@ -790,8 +790,8 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             default:    H=A;
         }
         switch (right_matrix_usage){
-            case PERM1: {L.change_orientation_of_data(H); A.permute(L,permutation);} break;
-            case PERM2: {L.change_orientation_of_data(H); A.permute(L,permutation2);} break;
+            case PERM1: {L = H.change_orientation(); A.permute(L,permutation);} break;
+            case PERM2: {L = H.change_orientation(); A.permute(L,permutation2);} break;
             default:    A=H;
         }
     } else {
@@ -801,8 +801,8 @@ void indirect_split_pseudo_triangular_preconditioner<T, matrix_type, vector_type
             default:    H=A;
         }
         switch (left_matrix_usage){
-            case PERM1: {L.change_orientation_of_data(H); A.permute(L,permutation);} break;
-            case PERM2: {L.change_orientation_of_data(H); A.permute(L,permutation2);} break;
+            case PERM1: {L = H.change_orientation(); A.permute(L,permutation);} break;
+            case PERM2: {L = H.change_orientation(); A.permute(L,permutation2);} break;
             default:    A=H;
         }
         switch (left_matrix_usage){
@@ -1339,8 +1339,12 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     Real mem_factor=IP.get_MEM_FACTOR();
     this->setup_time = 0.0;
     Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
-    if(A.orient() == ROW) Akrow = A;
-    else Akrow.change_orientation_of_data(A);
+
+    if (A.orient() == ROW)
+        Akrow = A;
+    else
+        Akrow = A.change_orientation();
+
     Integer matrix_size = Akrow.rows();
     Integer nonzeroes = Akrow.actual_non_zeroes();
     this->preconditioner_exists = true;
@@ -1393,7 +1397,8 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
                 case 2:  bp = 0;  break;
                 default: std::cerr<<"choose permissible value for TOTAL_PIV!"<<std::endl; throw iluplusplus_error(OTHER_ERROR);
             }
-            if(!use_ILUC) Akcol.change_orientation_of_data(Akrow);
+            if(!use_ILUC)
+                Akcol = Akrow.change_orientation();
 #ifdef INFO
             std::cout<<std::endl;
             std::cout<<"**** level: "<<this->number_levels<<" ****"<<std::endl;
@@ -1509,7 +1514,8 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
                 case 2:  bp = 0;  break;
                 default: std::cerr<<"choose permissible value for TOTAL_PIV!"<<std::endl; throw iluplusplus_error(OTHER_ERROR);
             }
-            if(!use_ILUC) Akcol.change_orientation_of_data(Akrow);
+            if(!use_ILUC)
+                Akcol = Akrow.change_orientation();
             if (IP.get_USE_FINAL_THRESHOLD()) tau += IP.get_FINAL_THRESHOLD();
 #ifdef INFO
             std::cout<<std::endl;
@@ -1643,7 +1649,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
             case 2:  bp = 0;  break;
             default: std::cerr<<"choose permissible value for TOTAL_PIV!"<<std::endl; throw iluplusplus_error(OTHER_ERROR);
         }
-        Akcol.change_orientation_of_data(Akrow);
+        Akcol = Akrow.change_orientation();
 #ifdef INFO
         std::cout<<std::endl;
         std::cout<<"**** level: "<<this->number_levels<<" ****"<<std::endl;

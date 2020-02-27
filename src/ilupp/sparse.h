@@ -350,8 +350,6 @@ template<class T> class matrix_sparse
 
            // assignment operator
            matrix_sparse& operator= (matrix_sparse<T> X);
-           // move assignment operator
-           matrix_sparse& operator= (matrix_sparse<T>&& X);
 
         // Basic functions
            T get_data(Integer k) const;
@@ -412,10 +410,10 @@ template<class T> class matrix_sparse
            // inserts elements whose absolute value is larger than threshold of both a row and a column at positions indicated
         // matrix-valued operations
            matrix_sparse operator *(T d) const;        // returns matrix*d (scalar multiplication)
-           void change_orientation_of_data(const matrix_sparse<T> &X);  // the(*this) is the same as X but the orienation of the data is reversed.                                                 // X is the same matrix but with orientations switched; use public function change_orientation.
-           void change_orientation(const matrix_sparse<T> &X);
-           void transp(const matrix_sparse<T>& X) ;    // *this is the transpose having the same orienation and keeps the original matrix
-           void transpose(const matrix_sparse<T>& X) ;    // *this is the transpose having the same orienation and keeps the original matrix
+
+           // return the same as this, but with the orientation reversed (csr <-> csc)
+           matrix_sparse<T> change_orientation() const;
+
            void interchange(matrix_sparse<T>& A); // interchanges two matrices without copying data
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, orientation_type& Aorientation);
            void interchange(T*& Adata, Integer*& Aindices, Integer*& Apointer, Integer& Anumber_rows, Integer& Anumber_columns, Integer& Annz, orientation_type& Aorientation);
@@ -666,7 +664,7 @@ template<class T> class matrix_dense
         // vector_dense - and scalar-valued operators
            vector_dense<T> operator*(vector_dense<T> const & x) const; //matrix-vector-multiplication
         // matrix-valued functions
-           matrix_dense<T> transp() const;
+           matrix_dense<T> transpose() const;
         // Generating special matrices
            void set_all(T d);
            void diag(T d);
