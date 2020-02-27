@@ -465,30 +465,14 @@ template<class T> void vector_dense<T>::interchange(T*& newdata, Integer& newsiz
 
 
 template<class T> void vector_dense<T>::switch_entry(Integer i, Integer j){
-     #ifdef DEBUG
-         if((i>=size)||(j>=size)){
-             std::cerr << "vector_dense::switch_entry: out of domain error: size of vector "<<size<<" entries to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     T h;
-     h = data[i];
-     data[i] = data[j];
-     data[j] = h;
-  }
-
-template<class T> void vector_dense<T>::switch_entry(Integer i, Integer j, T& h){
-     #ifdef DEBUG
-         if((i>=size)||(j>=size)){
-             std::cerr << "vector_dense::switch_entry: out of domain error: size of vector "<<size<<" entries to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     h = data[i];
-     data[i] = data[j];
-     data[j] = h;
-  }
-
+#ifdef DEBUG
+    if((i>=size)||(j>=size)){
+        std::cerr << "vector_dense::switch_entry: out of domain error: size of vector "<<size<<" entries to be switched: "<<i<<" "<<j<<std::endl<<std::flush;
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    }
+#endif
+    std::swap(data[i], data[j]);
+}
 
 template <class T> void vector_dense<T>::quicksort(index_list& list){
     quicksort(list,0,dimension()-1);
@@ -567,7 +551,6 @@ template <class T> void vector_dense<T>::quicksort(index_list& list, Integer lef
 
 template <class T> void vector_dense<T>::sort(index_list& list, Integer left, Integer right, Integer m){
      Integer i,j,mid,a_list;
-     T a,help;
      #ifdef DEBUG
          Integer n = right-left+1; // number of elements to be sorted
          if(m<0||m>n){
@@ -579,35 +562,35 @@ template <class T> void vector_dense<T>::sort(index_list& list, Integer left, In
      while(true){
          if(right<=left+1){
              if(right==left+1 && data[right]<data[left]){
-                 switch_entry(left,right,help);
+                 switch_entry(left,right);
                  list.switch_index(left,right);
              }  // end if
              break;
          } else {
              mid = (left+right)/2;
-             switch_entry(mid,left+1,help);
+             switch_entry(mid,left+1);
              list.switch_index(mid,left+1);
              if(data[left]>data[right]){
-                 switch_entry(left,right,help);
+                 switch_entry(left,right);
                  list.switch_index(left,right);
              }
              if(data[left+1]>data[right]){
-                 switch_entry(left+1,right,help);
+                 switch_entry(left+1,right);
                  list.switch_index(left+1,right);
              }
              if(data[left]>data[left+1]){
-                 switch_entry(left,left+1,help);
+                 switch_entry(left,left+1);
                  list.switch_index(left,left+1);
              }
              i=left+1;
              j=right;
-             a=data[left+1];
+             const T a=data[left+1];
              a_list=list[left+1];
              while(true){
                  do i++; while(data[i]<a);
                  do j--; while(data[j]>a);
                  if(j<i) break;
-                 switch_entry(i,j,help);
+                 switch_entry(i,j);
                  list.switch_index(i,j);
              } // end while
              data[left+1]=data[j];
@@ -1001,17 +984,6 @@ template<class T> void vector_dense<T>::absvalue(const T* values, Integer begin,
     for(Integer i=begin;i<begin+n;i++) data[i]=fabs(values[i]);
   }
 
-template<class T> void vector_dense<T>::insert_value(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector){   // (*this) contains n absolute values of the matrix from begin.
-    if(non_fatal_error(((begin_vector+n>size)||(begin_matrix+n>A.size)),"vector_dense::insert_value: vector/matrix are incompatible")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    for(Integer i=0;i<n;i++) data[begin_vector+i]=A.data[begin_matrix+i];
-  }
-
-template<class T> void vector_dense<T>::insert_absvalue(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector){   // (*this) contains n absolute values of the matrix from begin.
-    if(non_fatal_error(((begin_vector+n>size)||(begin_matrix+n>A.size)),"vector_dense::insert_value: vector/matrix are incompatible")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    for(Integer i=0;i<n;i++) data[begin_vector+i]=fabs(A.data[begin_matrix+i]);
-  }
-
-
 template<class T> Real vector_dense<T>::norm1() const {          // returns the 1-norm of a vector
     Real norm = 0.0;
     for(Integer i=0;i<size;i++) norm += fabs(data[i]);
@@ -1047,151 +1019,6 @@ template<class T> Real vector_dense<T>::norm_max() const {       // returns the 
     for(Integer i=0;i<size;i++) norm = max(norm,fabs(data[i]));
     return norm;
   }
-
-template<class T> T vector_dense<T>::sum_over_elements() const {          // returns the sum over the elements
-    if (size != 0){
-       T sum = data[0];
-       for(Integer i=1;i<size;i++) sum += data[i];
-       return sum;
-    } else {
-        std::cerr<<"vector_dense::max_over_elements: vector has size 0. Sum does not exist."<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-  }
-
-template<class T> T vector_dense<T>::max_over_elements() const {          // returns the sum over the elements
-    if (size != 0){
-       T maximum = data[0];
-          for(Integer i=1;i<size;i++) maximum = max(maximum,data[i]);
-       return maximum;
-    } else {
-       std::cerr<<"vector_dense::max_over_elements: vector has size 0. Maximum does not exist."<<std::endl;
-       throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-  }
-
-
-template<class T> T vector_dense<T>::min_over_elements() const {          // returns the minimum over the elements of a vector
-    if (size != 0){
-       T minimum = data[0];
-       for(Integer i=1;i<size;i++) minimum = min(minimum,data[i]);
-       return minimum;
-    } else {
-        std::cerr<<"vector_dense::max_over_elements: vector has size 0. Minimum does not exist."<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-  }
-
-template<class T> T vector_dense<T>::min_over_elements_ignore_negative() const {          // returns the minimum over the elements of a vector
-    if (size != 0){
-       bool found_non_negative = false;
-       T minimum = -1.0;
-       for(Integer i=0;i<size;i++){
-           if (found_non_negative){ 
-               if (data[i]>=0.0) minimum = min(minimum,data[i]);
-           } else {
-               if(data[i]>= 0.0){
-                   minimum = data[i];
-                   found_non_negative = true;
-               }
-           }
-       }
-       if(found_non_negative) return minimum;
-       else {
-           std::cerr<<"vector_dense::max_over_elements_ignore_negative: No non-negative element exists. Return Inf."<<std::endl;
-           return std::exp(10000.0);
-       }
-    } else {
-          std::cerr<<"vector_dense::max_over_elements_ignore_negative: vector has size 0. Minimum does not exist."<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-  }
-
-template<class T> T vector_dense<T>::min_over_elements_ignore_negative(Integer& ind) const {          // returns the minimum over the elements of a vector
-    if (size != 0){
-       bool found_non_negative = false;
-       ind = -1;
-       T minimum = -1.0;
-       for(Integer i=0;i<size;i++){
-           if (found_non_negative){ 
-               if (data[i]>=0.0){
-                   if(data[i]<minimum){
-                       minimum = data[i];
-                       ind = i;
-                    }
-               }
-           } else {
-               if(data[i]>= 0.0){
-                   minimum = data[i];
-                   ind = i;
-                   found_non_negative = true;
-               }
-           }
-       }
-       if(found_non_negative) return minimum;
-       else {
-           std::cerr<<"vector_dense::max_over_elements_ignore_negative: No non-negative element exists. Return Inf and negative index"<<std::endl;
-           return std::exp(10000.0);
-       }
-    } else {
-          std::cerr<<"vector_dense::max_over_elements_ignore_negative: vector has size 0. Minimum does not exist."<<std::endl;
-          throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-  }
-
-
-template<class T> void vector_dense<T>::min_rows(const matrix_dense<T>& A){
-    if(A.columns() == 0 || A.rows() == 0){
-        std::cerr<<"matrix_dense<T>::min_rows: matrix must have positive dimension"<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-    resize(A.rows());
-    Integer i,j;
-    for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
-    for(i=0;i<A.rows();i++)
-        for(j=0;j<A.columns();j++)
-            if(A.read(i,j) < get(i)) set(i) = A.read(i,j);
-}
-
-template<class T> void vector_dense<T>::max_rows(const matrix_dense<T>& A){
-    if(A.columns() == 0 || A.rows() == 0){
-        std::cerr<<"matrix_dense<T>::max_rows: matrix must have positive dimension"<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-    resize(A.rows());
-    Integer i,j;
-    for(i=0;i<A.rows();i++) set(i) = A.read(i,0); 
-    for(i=0;i<A.rows();i++)
-        for(j=0;j<A.columns();j++)
-            if(A.read(i,j) > get(i)) set(i) = A.read(i,j);
-}
-
-template<class T> void vector_dense<T>::min_columns(const matrix_dense<T>& A){
-    if(A.columns() == 0 || A.rows() == 0){
-        std::cerr<<"matrix_dense<T>::min_columns: matrix must have positive dimension"<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-    resize(A.columns());
-    Integer i,j;
-    for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
-    for(j=0;j<A.columns();j++)
-        for(i=0;i<A.rows();i++)
-            if(A.read(i,j) < get(j)) set(j) = A.read(i,j);
-}
-
-template<class T> void vector_dense<T>::max_columns(const matrix_dense<T>& A){
-    if(A.columns() == 0 || A.rows() == 0){
-        std::cerr<<"matrix_dense<T>::max_columns: matrix must have positive dimension"<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-    resize(A.columns());
-    Integer i,j;
-    for(j=0;j<A.columns();j++) set(j) = A.read(0,j); 
-    for(j=0;j<A.columns();j++)
-        for(i=0;i<A.rows();i++)
-            if(A.read(i,j) > get(j)) set(j) = A.read(i,j);
-}
-
 
 template<class T> bool vector_dense<T>::zero_check(Integer k){
 #ifdef DEBUG
@@ -4426,87 +4253,6 @@ template<class T> Real matrix_sparse<T>::norm1() const {
     else sum_absolute_values_along_orientation(v);
     return v.norm_max();
   }
-
-template<class T> Real matrix_sparse<T>::norm_prod() const {
-    vector_dense<T> col_res;
-    vector_dense<T> col_res_abs;
-    vector_dense<T> abs_values;
-    Real norm;
-    col_res.resize_without_initialization(number_rows);
-    col_res_abs.resize_without_initialization(number_rows);
-    abs_values.resize_without_initialization(number_rows);
-    Integer i, j, ind1, ind2, ind1max, ind2max;
-    // calculate the columns of the product. col_res contains the i-th column of the result.
-    for (i=0; i<number_columns; i++){
-        col_res.set_all(0.0);
-        // calculate the (j,i)-th element of the product
-        for (j=0; j<number_rows;j++){
-            ind1 = pointer[i];
-            ind2 = pointer[j];
-            ind1max = pointer[i+1];
-            ind2max = pointer[j+1];
-            while ((ind1<ind1max) && (ind2<ind2max)){
-                if (indices[ind1] < indices[ind2]) ind1++;
-                else if (indices[ind1] > indices[ind2]) ind2++;
-                else {
-                    col_res[j] += data[ind1]*data[ind2];
-                    ind1++;
-                    ind2++;
-                }
-            } // end while
-        } // end for j
-        // now col_res contains the i-th column
-        col_res_abs.absvalue(col_res);  // make vector containing abs. value of the i-th column
-        abs_values[i]=col_res_abs.sum_over_elements();  // take the sum of the absolute values and store in abs_values
-    } // end for i
-    norm = abs_values.max_over_elements();  // return the largest of the column sums
-    return norm;
-}
-
-template<class T> Real norm1_prod (const matrix_sparse<T>& B, const matrix_sparse<T>& C) {
-    if ((B.orientation == ROW) && (C.orientation == COLUMN)){
-        if (B.number_columns == C.number_rows){
-            vector_dense<T> col_res(B.number_rows);
-            vector_dense<T> col_res_abs(B.number_rows);
-            vector_dense<T> abs_values(C.number_columns);
-            Integer i, j, ind1, ind2, ind1max, ind2max;
-            T norm;
-            // calculate the columns of the product. col_res contains the i-th column of the result.
-            for (i=0; i<C.number_columns; i++){
-                col_res.set_all(0.0);
-                // calculate the (j,i)-th element of the product
-                for (j=0; j<B.number_rows;j++){
-                    ind1 = C.pointer[i];
-                    ind2 = B.pointer[j];
-                    ind1max = C.pointer[i+1];
-                    ind2max = B.pointer[j+1];
-                    while ((ind1<ind1max) && (ind2<ind2max)){
-                        if (C.indices[ind1] < B.indices[ind2]) ind1++;
-                        else if (C.indices[ind1] > B.indices[ind2]) ind2++;
-                        else {
-                            col_res[j] += C.data[ind1]*B.data[ind2];
-                            ind1++;
-                            ind2++;
-                        }
-                    } // end while
-                } // end for j
-                // now col_res contains the i-th column
-                col_res_abs.absvalue(col_res);  // make vector containing abs. value of the i-th column
-                abs_values[i]=col_res_abs.sum_over_elements();  // take the sum of the absolute values and store in abs_values
-            } // end for i
-            norm = abs_values.max_over_elements();  // return the largest of the column sums
-            return norm;
-        } else {
-            std::cerr << "norm1(const matrix_sparse&, const matrix_sparse&):"<<std::endl;
-            std::cerr << "     the matrix dimensions are incompatible to carry out matrix multiplication "<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-    } else {
-        std::cerr << "norm1(const matrix_sparse&, const matrix_sparse&):"<<std::endl;
-        std::cerr << "     the first argument must be in ROW, the second in COLUMN format! "<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-}
 
 template<class T> Real matrix_sparse<T>::normF() const {
      Real normsq = 0.0;

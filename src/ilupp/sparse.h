@@ -108,21 +108,10 @@ template<class T> class vector_dense
            void absvalue(const vector_dense<T>& v);            // (*this) contains the absolute values of v elementwise.
            void absvalue(const vector_dense<T>& v, Integer begin, Integer n);            // (*this) contains the absolute values of v elementwise, starting at beginning, with size n.
            void absvalue(const T* values, Integer begin, Integer n);  // *this will have the size n and will contain the absolute value of the elements of values.
-           void insert_value(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector);   // inserts n values of the matrix in the given range as above into the vector beginning at begin_vector.
-           void insert_absvalue(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector); // same as above, but with absolute values.
            Real norm1() const;
            Real norm2() const;
            Real norm2_squared() const;
            Real norm_max() const;
-           T sum_over_elements() const;
-           T max_over_elements() const;
-           T min_over_elements() const;
-           T min_over_elements_ignore_negative() const;
-           T min_over_elements_ignore_negative(Integer& ind) const;
-           void min_rows(const matrix_dense<T>& A);
-           void max_rows(const matrix_dense<T>& A);
-           void min_columns(const matrix_dense<T>& A);
-           void max_columns(const matrix_dense<T>& A);
            bool zero_check(Integer k);
            void shortest_vector_point_line(const vector_dense<T>& r, const vector_dense<T>& p, const vector_dense<T>& t); // returns shortest vector in 2-norm
            // connecting r with the line x = p + (lambda)t, lambda\in T (i.e. the line through p in the direction of t)
@@ -140,7 +129,6 @@ template<class T> class vector_dense
            void interchange(T*& newdata, Integer& newsize);
         // vector_dense-valued operators
            void switch_entry (Integer i, Integer j); // switches elements having indices i and j respectively.
-           void switch_entry (Integer i, Integer j, T& h);   // same as above, only quicker because auxiliary variable h is already provided.
        // Sorting
            void sort(index_list& list, Integer left, Integer right, Integer m);
            // chooses m largest elements from left to right,including left and right.
@@ -443,7 +431,6 @@ template<class T> class matrix_sparse
            Integer actual_non_zeroes() const; // returns the actual number of non-zeroes, i.e. the used memory.
         // Functions
            Real norm1() const;    // 1-norm of matrix
-           Real norm_prod() const; // returns 1-norm of AA^T for a ROW matrix and the 1-norm of A^T*A for a COLUMN matrix.
            Real normF() const;
            Real norm_max() const;
            T scalar_product_along_orientation(Integer m, Integer n) const; // calculates the scalar product (*this)[m] * (*this)[n], (*this)[i] being the i-th row or column.
@@ -630,9 +617,6 @@ template<class T> class matrix_oriented    // will hopefully eventually replace 
            Real norm(Integer k) const;
            Real memory() const;
           // friend void index_list::quicksort_by_absolute_value(const T* values);
-           friend void matrix_sparse<T>::GramSchmidt(const matrix_sparse<T> &A, Integer restart, Real matrix_density);
-           friend void vector_dense<T>::insert_value(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector);   // inserts n values of the matrix in the given range as above into the vector beginning at begin_vector.
-           friend void vector_dense<T>::insert_absvalue(const matrix_oriented<T> A, Integer begin_matrix, Integer n, Integer begin_vector); // same as above, but with absolute values.
   };
 
 
@@ -778,7 +762,6 @@ class index_list
 // Other Declarations
 /*********************************************************************/
 
-template<class T> Real norm1_prod (const matrix_sparse<T>& B, const matrix_sparse<T>& C);
 template<class T> T scalar_prod(const matrix_sparse<T> &A, Integer m, const matrix_oriented<T> &B, Integer n);
 template<class T> T scalar_prod(const matrix_sparse<T> &A, Integer m, const matrix_sparse<T> &B, Integer n);
 
