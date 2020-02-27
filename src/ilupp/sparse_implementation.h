@@ -3736,7 +3736,7 @@ template<class T> matrix_sparse<T>::matrix_sparse(orientation_type o, Integer m,
     data           = 0;
     indices        = 0;
     pointer        = 0;
-    reformat(m,n,nz,ROW);
+    reformat(m, n, nz, o);
  }
 
 template<class T> matrix_sparse<T>::matrix_sparse(T* _data, Integer* _indices, Integer* _pointer,
