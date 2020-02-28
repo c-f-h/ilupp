@@ -31,7 +31,7 @@ bool ILUTP2(
     Integer k,i,j,p;
     zero_pivots=0;
     Real norm_L, norm_U, norm_w; // output parameters - unused here
-    vector_sparse_dynamic_enhanced<T> w;
+    vector_sparse_dynamic_enhanced<T> w(m);
     index_list list_L, list_U;
 
     perm.resize(n);
@@ -40,9 +40,8 @@ bool ILUTP2(
     const Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
     U.reformat(m,m,reserved_memory,ROW);
     L.reformat(m,m,reserved_memory,ROW);
-    w.resize(m);
-    // (1.) begin for i
 
+    // (1.) begin for i
     for(i=0;i<n;i++){
         if (i == bp) perm_tol = 1.0;
 

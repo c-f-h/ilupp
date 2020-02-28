@@ -2201,10 +2201,6 @@ template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhan
     current_position_iter=key.begin();
   }
 
-template<class T> vector_sparse_dynamic_enhanced<T>::~vector_sparse_dynamic_enhanced(){}
-
-
-
 template<class T> void vector_sparse_dynamic_enhanced<T>::resize(Integer m) {
     vector_sparse_dynamic<T>::resize(m);
     zero_set();
@@ -2212,11 +2208,6 @@ template<class T> void vector_sparse_dynamic_enhanced<T>::resize(Integer m) {
  }
 
 template<class T> vector_sparse_dynamic_enhanced<T>::vector_sparse_dynamic_enhanced(Integer m) {
-    this->size = 0;
-    this->nnz = 0;
-    this->data   = 0;
-    this->occupancy = 0;
-    this->pointer = 0;
     resize(m);
  }
 

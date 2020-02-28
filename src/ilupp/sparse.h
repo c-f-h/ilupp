@@ -260,7 +260,6 @@ template<class T> class vector_sparse_dynamic_enhanced  : public vector_sparse_d
            vector_sparse_dynamic_enhanced();
            vector_sparse_dynamic_enhanced(Integer m);
            vector_sparse_dynamic_enhanced(const vector_sparse_dynamic_enhanced& x);
-           ~vector_sparse_dynamic_enhanced();
            void resize(Integer m);
        // Assignment
            vector_sparse_dynamic_enhanced<T>& operator =(const vector_sparse_dynamic_enhanced<T>& x);        // Assignment
