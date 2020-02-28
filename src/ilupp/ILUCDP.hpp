@@ -32,7 +32,6 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
     Integer h,pos, selected_row;
     T current_data_row_L,current_data_col_U;
     zero_pivots=0;
-    Real norm_L,norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     vector_sparse_dynamic<T> w, z;
     vector_dense<bool> non_pivot, unused_rows;
     vector_dense<Integer> numb_el_row_L, pointer_num_el_row_L;
@@ -103,14 +102,14 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
         time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
 #endif
         // (6.) sort and copy data to U; update information for accessing columns of U
-        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm[k],perm_tol);
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,threshold,perm[k],perm_tol);
         // dropping too stringent?
         if(list_U.dimension()==0){
             if(threshold>0.0)
 #ifdef VERBOSE
                 std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
 #endif
-            z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm[k],perm_tol);
+            z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],perm_tol);
         }
         // still no non-zero elements?
         if(list_U.dimension()==0){
@@ -197,7 +196,7 @@ template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, co
 #endif
         // (12.) sort and copy data to L
         // sort
-        w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,0,n);
+        w.take_largest_elements_by_abs_value_with_threshold(list_L,max_fill_in-1,threshold,0,n);
         if(pointer[k]+list_L.dimension()+1>reserved_memory){
             std::cerr<<"matrix_sparse::ILUCDP: memory reserved was insufficient. Returning 0x0 matrices and permutations of dimension 0."<<std::endl;
             perm.resize(0);
@@ -317,7 +316,7 @@ bool matrix_sparse<T>::partialILUCDP(
     T current_data_row_L,current_data_col_U;
     T val_larg_el = 0.0;
     zero_pivots=0;
-    Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    Real norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     Real max_inv_piv=0.0;
     Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
     Real post_fact_threshold;
@@ -726,7 +725,7 @@ bool matrix_sparse<T>::partialILUCDP(
         U_total[k]= z.non_zeroes();
 #endif
         if(!eliminate){  // drop in Schur complement
-            z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,0,n);
+            z.take_largest_elements_by_abs_value_with_threshold(list_U,max_fill_in,threshold,0,n);
         } else { // drop in U
             weightU=IP.get_NEUTRAL_ELEMENT();
             if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
@@ -1446,7 +1445,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(
     if(max_fill_in>n) max_fill_in = n;
     T pivot = 0.0;  // dummy initialization
     zero_pivots=0;
-    Real norm_U,norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
+    Real norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     Real max_inv_piv=0.0;
     if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
     switch (IP.get_DROP_TYPE_L()){
@@ -1717,7 +1716,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(
         U_total[k]= z.non_zeroes();
 #endif
         if(!eliminate){
-            z.take_largest_elements_by_abs_value_with_threshold(norm_U,list_U,max_fill_in,threshold,last_row_to_eliminate+1,n);
+            z.take_largest_elements_by_abs_value_with_threshold(list_U,max_fill_in,threshold,last_row_to_eliminate+1,n);
         } else {
             weightU=IP.get_NEUTRAL_ELEMENT();
             if(IP.get_USE_STANDARD_DROPPING()){norm = z.norm2(); if(norm==0.0) norm=1e-16; weightU = IP.combine(weightU,IP.get_WEIGHT_STANDARD_DROP()/norm);} 
@@ -2437,7 +2436,7 @@ bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_spar
                   #ifdef VERBOSE
                       std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
                   #endif
-                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm[k],perm_tol);
+                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],perm_tol);
           }
           // still no non-zero elements?
           if(list_U.dimension()==0){

@@ -18,7 +18,6 @@ bool ILUT(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, I
         // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
         if (non_fatal_error(!A.square_check(), "matrix_sparse::ILUT: argument matrix must be square."))
             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        Real norm=0.0;
         const Integer m = A.rows(), n = A.columns();
 
         vector_sparse_dynamic<T> w;
@@ -69,9 +68,9 @@ bool ILUT(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, I
 
             // (10.) Do dropping in w. (Needs to be implemented)
             // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
-            w.take_largest_elements_by_abs_value_with_threshold(norm,list_L,max_fill_in-1,threshold,0,i);
+            w.take_largest_elements_by_abs_value_with_threshold(list_L,max_fill_in-1,threshold,0,i);
             // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
-            w.take_largest_elements_by_abs_value_with_threshold(norm,list_U,max_fill_in-1,threshold,i+1,n);
+            w.take_largest_elements_by_abs_value_with_threshold(list_U,max_fill_in-1,threshold,i+1,n);
 
             // (11.) Copy values to L:
             for (Integer j = 0; j < list_L.dimension(); ++j) {
@@ -125,8 +124,6 @@ bool ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     else threshold=std::exp(-threshold*std::log(10.0));
     // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
     if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUT: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    Real norm=0.0;
-    Real norm_w;
     Integer m = A.rows();
     Integer n = A.columns();
     Integer k,i,j;
@@ -145,7 +142,7 @@ bool ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
             w(A.indices[k],A.indices[k]) = A.data[k];
         }     // end for k
         // (3.) begin for k
-        norm_w=w.norm2();
+        const Real norm_w=w.norm2();
         while(w.current_sorting_index()<i && !w.at_end()){
             w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
             if(std::abs(w.current_element())<threshold*norm_w){
@@ -160,8 +157,8 @@ bool ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
         } // end while
         // (10.) Do dropping in w. 
         std::cout<<"w"<<std::endl<<w.expand();
-        w.take_largest_elements_by_abs_value_with_threshold(norm,list_L,max_fill_in-1,threshold,0,i);      // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
-        w.take_largest_elements_by_abs_value_with_threshold(norm,list_U,max_fill_in-1,threshold,i+1,n);    // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
+        w.take_largest_elements_by_abs_value_with_threshold(list_L,max_fill_in-1,threshold,0,i);      // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
+        w.take_largest_elements_by_abs_value_with_threshold(list_U,max_fill_in-1,threshold,i+1,n);    // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
         std::cout<<"ListL"<<std::endl<<list_L<<std::endl;
         // (11.) Copy values to L:
         for(j=0;j<list_L.dimension();j++){

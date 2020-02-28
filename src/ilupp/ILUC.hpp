@@ -113,7 +113,6 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     const Integer m = A.dim_along_orientation(), n = A.dim_against_orientation();   // for csr: rows, columns
     Integer k,j,h;
     vector_sparse_dynamic<T> z,w;
-    Real norm_w=0.0, norm_z=0.0;
     index_list listw, listz;
     // calculate maximal size needed for L and U:
     Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
@@ -175,10 +174,10 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
             throw std::runtime_error("ILUC2: zero pivot on diagonal, k=" + std::to_string(k));
 
         // (10.) apply dropping to w
-        w.take_largest_elements_by_abs_value_with_threshold(norm_w, listw, max_fill_in-1, threshold, k+1, m);
+        w.take_largest_elements_by_abs_value_with_threshold(listw, max_fill_in-1, threshold, k+1, m);
 
         // (11.) apply dropping to z
-        z.take_largest_elements_by_abs_value_with_threshold(norm_z, listz, max_fill_in-1, threshold, k+1, n);
+        z.take_largest_elements_by_abs_value_with_threshold(listz, max_fill_in-1, threshold, k+1, n);
 
         // copy z to U - (12.) in the algorithm of Saad.
 
@@ -245,7 +244,6 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
     const Integer n = Acol.columns();
     Integer k, i, j, p, current_row_col_U, h, pos;
     zero_pivots=0;
-    Real norm_L, norm_U; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     vector_sparse_dynamic<T> w, z;
     vector_dense<bool> non_pivot;
     index_list list_L, list_U, inverse_perm;
@@ -295,12 +293,12 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
         } // end while (5.)
 
         // (6.) sort and copy data to U; update information for accessing columns of U
-        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,threshold,perm[k],perm_tol);
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,threshold,perm[k],perm_tol);
         // dropping too stringent?
         if(list_U.dimension()==0){
             if(threshold>0.0)
                 //std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
-                z.take_largest_elements_by_abs_value_with_threshold_pivot_last(norm_U,list_U,max_fill_in,0.0,perm[k],perm_tol);
+                z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],perm_tol);
         }
         // still no non-zero elements?
         if(list_U.dimension()==0){
@@ -365,7 +363,7 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
 
         // (12.) sort and copy data to L
         // sort
-        w.take_largest_elements_by_abs_value_with_threshold(norm_L,list_L,max_fill_in-1,threshold,k+1,n);
+        w.take_largest_elements_by_abs_value_with_threshold(list_L,max_fill_in-1,threshold,k+1,n);
         if(L.pointer[k]+list_L.dimension()+1>reserved_memory){
             throw std::runtime_error("ILUCP4: Insufficient memory reserved. Increase mem_factor");
         }

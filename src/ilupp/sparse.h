@@ -210,30 +210,35 @@ template<class T> class vector_dense
            Real norm2(Integer begin, Integer end) const;    // norm only of subvector with indices in [begin, end)
            Real norm_max() const;
        // Sorting
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const;
-            // selects upto n elements of the *this with relative absolute value larger than the threshold.
-           void take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position) const;
-           void take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const;
-            // selects upto n elements of the *this with relative absolute value larger than the threshold. Chooses new pivot, permutes only if perm_tol acceptable
-           void take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const;
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const;
              // selects upto n elements of the *this with relative absolute value larger than the threshold. Selecting is retricted to from..to. including from, excluding to.
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const;
+           void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const;
+
+            // selects upto n elements of the *this with relative absolute value larger than the threshold. Chooses new pivot, permutes only if perm_tol acceptable
+           void take_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const;
+
              // selects upto n_L elements and upto n_U elements using threshold. Results are stored in list_L and list_U
              // respectively. An element with index i is put in list_L if invperm[i]<mid, else in list_U.
              // The last index in list_L and list_U corresponds to the largest element.
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid, Real piv_tol) const;
+           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const;
              // same as above, but with pivoting tolerance for U.
+           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid, Real piv_tol) const;
+
              // same as above, with selection done by weight.
            void take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to) const;
            void take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to) const;
+           void take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const;
+
            void take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index, Integer max_pos_drop) const;
            void take_single_weight_pos_drop_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index, Integer max_pos_drop) const;
+
            void take_single_weight_bw_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index,Integer bandwidth, Integer max_pos_drop) const;
            void take_single_weight_bw_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, Real weight, Integer n, Real tau, Integer from, Integer to, Integer vector_index,Integer bandwidth, Integer max_pos_drop) const;
+
            void take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const;
            void take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const;
              // same as above, with selection done by weight.
+
+
            Real memory() const;
    };
 

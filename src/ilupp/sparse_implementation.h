@@ -1193,54 +1193,19 @@ template<class T> T vector_sparse_dynamic<T>::scalar_product_pos_factors(const v
 
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const
-{
-    Integer i, number_elements_larger_tau=0;
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
+    Integer offset=0;
+    Integer i;
+    Integer number_elements_larger_tau=0;
+    Integer pos_larg_el;
+    Real val_larg_el=0.0;
 
     index_list complete_list;
     complete_list.resize_without_initialization(size);
 
     vector_dense<Real> input_abs(size);
 
-    norm = norm2();
-
-    // collect and count all entries above the threshold
-    for (i=0;i<nnz;i++) {
-        if (std::abs(data[i]) > norm*tau) {
-            input_abs[number_elements_larger_tau] = std::abs(data[i]);
-            complete_list[number_elements_larger_tau] = pointer[i];
-            number_elements_larger_tau++;
-        }
-    }
-    if (number_elements_larger_tau > n) {
-        const Integer offset = number_elements_larger_tau-n;
-        // sort abs. vector created above from small to large. Largest elements needed are at end.
-        input_abs.sort(complete_list, 0, number_elements_larger_tau-1, n);
-
-        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-        complete_list.quicksort(offset, number_elements_larger_tau-1);
-        list.resize_without_initialization(n);
-        for (i=0; i<n; ++i)
-            list[i] = complete_list[offset+i];
-    } else {
-        complete_list.quicksort(0, number_elements_larger_tau-1);
-        list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0; i<number_elements_larger_tau; i++)
-            list[i]=complete_list[i];
-    }
-}
-
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
-    norm = 0.0;
-    Integer offset=0;
-    Integer i;
-    Integer number_elements_larger_tau=0;
-    Integer pos_larg_el;
-    Real val_larg_el=0.0;
-    index_list complete_list;
-    vector_dense<Real> input_abs;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    Real norm = 0.0;
     for(i=0;i<nnz;i++){
         if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
         norm += absvalue_squared(data[i]);
@@ -1300,54 +1265,6 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             list[number_elements_larger_tau]=pivot_position;
         }
     }  // end if "to pivot or not to pivot"
-}
-
-
-
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position) const {
-    norm = 0.0;
-    Integer offset=0;
-    Integer i;
-    Integer number_elements_larger_tau=0;
-    Integer pos_larg_el;
-    Real val_larg_el=0.0;
-    index_list complete_list;
-    vector_dense<Real> input_abs;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    for(i=0;i<nnz;i++){
-        if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
-        norm += absvalue_squared(data[i]);
-    }
-    norm=sqrt(norm);
-    for(i=0;i<nnz;i++){
-        if(std::abs(data[i])> norm*tau){
-            input_abs[number_elements_larger_tau]=std::abs(data[i]);
-            complete_list[number_elements_larger_tau]=pointer[i];
-            number_elements_larger_tau++;
-        }
-    }
-    if(number_elements_larger_tau > n){
-        offset=number_elements_larger_tau-n;
-        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-        // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-        //complete_list.quicksort(offset,number_elements_larger_tau-1);
-        list.resize_without_initialization(n);
-        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-    } else {
-        //complete_list.quicksort(0,number_elements_larger_tau-1);
-        pos_larg_el=0;
-        val_larg_el=0.0;
-        for(i=0;i<number_elements_larger_tau;i++){
-            if(input_abs[i]>val_larg_el){
-                pos_larg_el=i;
-                val_larg_el=input_abs[i];
-            }
-        }
-        if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
-        list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-    }
 }
 
 
@@ -1448,7 +1365,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         }  // end if "to pivot or not to pivot"
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const
 {
     Integer i, number_elements_larger_tau=0;
 
@@ -1457,7 +1374,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
 
     vector_dense<Real> input_abs(size);
 
-    norm = norm2(from, to);
+    const Real norm = norm2(from, to);
 
     // collect all entries above the threshold
     for (i=0; i<nnz; ++i) {
