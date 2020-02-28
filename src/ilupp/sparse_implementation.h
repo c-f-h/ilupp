@@ -3983,7 +3983,7 @@ template<class T> matrix_sparse<T> matrix_sparse<T>::operator *(T d) const {
     return A;
   }
 
-template<class T> matrix_sparse<T> matrix_sparse<T>::reorder(const index_list& invperm){
+template<class T> void matrix_sparse<T>::reorder(const index_list& invperm){
     Integer k,j;
     Integer needed_storage = max_one_dim_size();
     index_list used_indices;
@@ -4005,7 +4005,6 @@ template<class T> matrix_sparse<T> matrix_sparse<T>::reorder(const index_list& i
         for(j=pointer[k];j<pointer[k+1];j++)
             data[j]=stored_data[list[j-pointer[k]]];
     }  // end for k
-    return *this;
   }
 
 template<class T> matrix_sparse<T> matrix_sparse<T>::normal_order(){

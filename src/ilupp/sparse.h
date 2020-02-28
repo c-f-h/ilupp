@@ -541,7 +541,7 @@ template<class T> class matrix_sparse
            bool test_normalized_I_matrix() const; // also requires 1 on diagonal
            Real test_diag_dominance(Integer i) const; // test diagonal dominance along orientation of a single row i or column i.
            Real test_diag_dominance() const; //  max of test above
-           matrix_sparse<T> reorder(const index_list& invperm);     // the indices of *this will be in the order of perm , invperm = perm^{-1}
+           void reorder(const index_list& invperm);     // the indices of *this will be in the order of perm , invperm = perm^{-1}
            matrix_sparse<T> normal_order();   // the indices are sorted in ascending order for each row/column.
            void permute(const matrix_sparse<T>& A, const index_list& perm); // permutes A along orientation and returns permuted matrix
            void permute_against_orientation(const matrix_sparse<T>& A, const index_list& perm);// permutes A against own orientation and returns permuted matrix
