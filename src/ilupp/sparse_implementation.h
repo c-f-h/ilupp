@@ -481,41 +481,6 @@ template <class T> void vector_dense<T>::quicksort(index_list& list){
     quicksort(list,0,dimension()-1);
 }
 
-template <class T> void vector_dense<T>::quicksort(){
-    quicksort(0,dimension()-1);
-}
-
-template <class T> void vector_dense<T>::quicksort(Integer left, Integer right){
-     #ifdef DEBUG
-         if(left < 0){
-             std::cout<<"vector_dense::quicksort: smallest sorting index must be positive."<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-         if(right > dimension()-1){
-             std::cout<<"vector_dense::quicksort: largest index must be positive."<<std::endl<<std::flush;
-             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-         }
-     #endif
-     Integer i,j;
-     T m;
-     if(left<right){
-         m=data[left];
-         i=left;
-         j=right;
-         while(i<=j){
-             while(data[i]<m) i++;
-             while(data[j]>m) j--;
-             if(i<=j){
-                 switch_entry(i,j);
-                 i++;
-                 j--;
-             }
-         }
-         vector_dense<T>::quicksort(left,j);
-         vector_dense<T>::quicksort(i,right);
-     }
-  }
-
 template <class T> void vector_dense<T>::quicksort(index_list& list, Integer left, Integer right){
      #ifdef DEBUG
          if(dimension() != list.dimension()){
@@ -1351,10 +1316,19 @@ template<class T> Real vector_sparse_dynamic<T>::norm1() const {
   }
 
 template<class T> Real vector_sparse_dynamic<T>::norm2() const {
-     Real z=0.0;
-     for(Integer i=0;i<nnz;i++) z += sqr(std::abs(data[i]));
-     return sqrt(z);
-  }
+    Real z=0.0;
+    for (Integer i=0; i<nnz; i++)
+        z += absvalue_squared(data[i]);
+    return sqrt(z);
+}
+
+template<class T> Real vector_sparse_dynamic<T>::norm2(Integer begin, Integer end) const {
+    Real z=0.0;
+    for (Integer i=0; i<nnz; i++)
+        if (begin <= pointer[i] && pointer[i] < end)
+            z += absvalue_squared(data[i]);
+    return sqrt(z);
+}
 
 
 template<class T> Real vector_sparse_dynamic<T>::norm_max() const {
@@ -1412,37 +1386,40 @@ template<class T> T vector_sparse_dynamic<T>::scalar_product_pos_factors(const v
 
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const {
-    norm = 0.0;
-    Integer offset=0;
-    Integer i;
-    Integer number_elements_larger_tau=0;
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const
+{
+    Integer i, number_elements_larger_tau=0;
+
     index_list complete_list;
-    vector_dense<Real> input_abs;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    for(i=0;i<nnz;i++){
-        norm += absvalue_squared(data[i]);
-    }
-    norm=sqrt(norm);
-    for(i=0;i<nnz;i++){
-        if(std::abs(data[i]) > norm*tau){
+    complete_list.resize_without_initialization(size);
+
+    vector_dense<Real> input_abs(size);
+
+    norm = norm2();
+
+    // collect and count all entries above the threshold
+    for (i=0;i<nnz;i++) {
+        if (std::abs(data[i]) > norm*tau) {
             input_abs[number_elements_larger_tau] = std::abs(data[i]);
-            complete_list[number_elements_larger_tau]=pointer[i];
+            complete_list[number_elements_larger_tau] = pointer[i];
             number_elements_larger_tau++;
         }
     }
-    if(number_elements_larger_tau > n){
-        offset=number_elements_larger_tau-n;
-        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+    if (number_elements_larger_tau > n) {
+        const Integer offset = number_elements_larger_tau-n;
+        // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list, 0, number_elements_larger_tau-1, n);
+
         // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-        complete_list.quicksort(offset,number_elements_larger_tau-1);
+        complete_list.quicksort(offset, number_elements_larger_tau-1);
         list.resize_without_initialization(n);
-        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        for (i=0; i<n; ++i)
+            list[i] = complete_list[offset+i];
     } else {
-        complete_list.quicksort(0,number_elements_larger_tau-1);
+        complete_list.quicksort(0, number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+        for(i=0; i<number_elements_larger_tau; i++)
+            list[i]=complete_list[i];
     }
 }
 
@@ -1666,40 +1643,39 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const
 {
-    norm = 0.0;
-    Integer offset=0;
-    Integer i;
-    Integer number_elements_larger_tau=0;
+    Integer i, number_elements_larger_tau=0;
+
     index_list complete_list;
-    vector_dense<Real> input_abs;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-    #ifdef DEBUG
-        if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    #endif
-    for(i=0;i<nnz;i++){
-        if(from<=pointer[i] && pointer[i]<to)
-            norm += absvalue_squared(data[i]);
-    }
-    norm=sqrt(norm);
-    for(i=0;i<nnz;i++){
-        if(from<=pointer[i] && pointer[i]<to && std::abs(data[i])> norm*tau){
-            input_abs[number_elements_larger_tau]=std::abs(data[i]);
-            complete_list[number_elements_larger_tau]=pointer[i];
+    complete_list.resize_without_initialization(size);
+
+    vector_dense<Real> input_abs(size);
+
+    norm = norm2(from, to);
+
+    // collect all entries above the threshold
+    for (i=0; i<nnz; ++i) {
+        if (from <= pointer[i] && pointer[i] < to
+                && std::abs(data[i]) > norm*tau) {
+            input_abs[number_elements_larger_tau] = std::abs(data[i]);
+            complete_list[number_elements_larger_tau] = pointer[i];
             number_elements_larger_tau++;
         }
     }
-    if(number_elements_larger_tau > n){
-        offset=number_elements_larger_tau-n;
-        input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-           // we need the indices of the largest elements in ascending order. To get this order, we sort here.
-        complete_list.quicksort(offset,number_elements_larger_tau-1);
+    if (number_elements_larger_tau > n) {
+        const Integer offset = number_elements_larger_tau-n;
+        // sort abs. vector created above from small to large. Largest elements needed are at end.
+        input_abs.sort(complete_list, 0, number_elements_larger_tau-1, n);
+
+        // we need the indices of the largest elements in ascending order. To get this order, we sort here.
+        complete_list.quicksort(offset, number_elements_larger_tau-1);
         list.resize_without_initialization(n);
-        for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        for (i=0; i<n; ++i)
+            list[i] = complete_list[offset+i];
     } else {
-        complete_list.quicksort(0,number_elements_larger_tau-1);
+        complete_list.quicksort(0, number_elements_larger_tau-1);
         list.resize_without_initialization(number_elements_larger_tau);
-        for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+        for(i=0; i<number_elements_larger_tau; ++i)
+            list[i] = complete_list[i];
     }
 }
 

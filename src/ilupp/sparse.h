@@ -135,8 +135,6 @@ template<class T> class vector_dense
            // and places indices in list. In doing so, *this is rearanged. The m largest elements (or the indices respectively)
            // will be contained in the indices right-m+1..right.
            void quicksort(index_list& list, Integer left, Integer right);
-           void quicksort(Integer left, Integer right);
-           void quicksort();
            void quicksort(index_list& list);
 
              // takes the indices of the n largest elements by absolute value of input and stores them in ascending order in list.
@@ -221,6 +219,7 @@ template<class T> class vector_dense
        // Norm
            Real norm1() const;
            Real norm2() const;
+           Real norm2(Integer begin, Integer end) const;    // norm only of subvector with indices in [begin, end)
            Real norm_max() const;
        // Sorting
            void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const;
@@ -612,7 +611,11 @@ class index_list
            void init(Integer n);   // initializes first n elements only.
            void init(Integer n, Integer begin); // initializes first n elements from begin,...begin+n-1.
            void quicksort(Integer left, Integer right); // sorts list from index left to right.
-           void quicksort_with_inverse(index_list& invperm, Integer left, Integer right); // sorts list from index left to right. If invperm is inverse prior to sorting, then it is inverse after sorting as well.
+
+           // sorts list from index left to right. If invperm is inverse prior
+           // to sorting, then it is inverse after sorting as well.
+           void quicksort_with_inverse(index_list& invperm, Integer left, Integer right);
+
            void quicksort(index_list& list, Integer left, Integer right);
            index_list permute(const index_list& perm);
            void permute(const index_list& x, const index_list& perm);
