@@ -296,6 +296,11 @@ PYBIND11_MODULE(_ilupp, m)
             matrix L, U;
             Real time;
             ILUT(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold, time);
+            if (!is_csr) {
+                L.interchange(U);
+                L.transpose_in_place();
+                U.transpose_in_place();
+            }
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
