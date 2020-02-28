@@ -195,7 +195,6 @@ template<class T> class vector_dense
            Integer dimension() const;
            Integer dim() const;
            Integer non_zeroes() const;
-           Integer get_occupancy(Integer j) const;
            T get_data(Integer j) const;
            Integer get_pointer(Integer j) const;
            bool zero_check(Integer j) const;

@@ -1228,16 +1228,6 @@ template<class T> void vector_sparse_dynamic<T>::zero_set(Integer j){
      }
   }
 
-template<class T> Integer vector_sparse_dynamic<T>::get_occupancy(Integer j) const {
-     #ifdef DEBUG
-        if(j<0 || j>=size){
-            std::cout<<"vector_sparse_dynamic<T>::get_occupancy: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-     #endif
-     return occupancy[j];
-  }
-
 template<class T> T vector_sparse_dynamic<T>::get_data(Integer j) const {
      #ifdef DEBUG
         if(j<0 || j>=size){

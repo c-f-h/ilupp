@@ -301,7 +301,7 @@ void sapTree<sparse_matrix_class>::find_sap(const sparse_matrix_class& A, const 
 
             j = A.read_index(index_data);
             // if col node j is not in checked_nodes...
-            if (checked_nodes.get_occupancy(j) == -1) {
+            if (checked_nodes.zero_check(j)) {
 
                 weight = comp[index_data];
                 dnew = lsp + weight - u[i] - v[j];
@@ -326,7 +326,7 @@ void sapTree<sparse_matrix_class>::find_sap(const sparse_matrix_class& A, const 
                     }
 
                     // if node j is matched, push distance into the heap cand_nodes
-                    else if (reduced_dist.get_occupancy(j) == -1 || dnew < reduced_dist[j]) {
+                    else if (reduced_dist.zero_check(j) || dnew < reduced_dist[j]) {
                         reduced_dist[j] = dnew;
                         row_pointer[mate_col[j]] = i;
                         temp_dist.index = j; temp_dist.value = dnew; temp_dist.weight = weight;
@@ -343,9 +343,10 @@ void sapTree<sparse_matrix_class>::find_sap(const sparse_matrix_class& A, const 
             min_dist = cand_nodes.top();
             j_min = min_dist.index;
             cand_nodes.pop();
-        } while(checked_nodes.get_occupancy(j_min) != -1 && !cand_nodes.empty());
+        } while(checked_nodes.non_zero_check(j_min) && !cand_nodes.empty());
 
-        if (cand_nodes.empty() && checked_nodes.get_occupancy(j_min) != -1) break;
+        if (cand_nodes.empty() && checked_nodes.non_zero_check(j_min))
+            break;
 
         lsp = min_dist.value;
 
