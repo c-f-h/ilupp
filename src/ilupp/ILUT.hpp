@@ -37,36 +37,32 @@ bool ILUT(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, I
         // (1.) begin for i -- loop over rows
         for (Integer i = 0; i < n; ++i) {
             // (2.) initialize w
+            Real norm_wL = 0.0;     // norm of the L part of w
             for (Integer k = A.pointer[i]; k < A.pointer[i+1]; ++k) {
                 w[A.indices[k]] = A.data[k];
-                //if(A.indices[k]==i) diag_A[i]=A.data[k];
+
+                // take the norm only of the L part to be consistent with the dropping rule applied in (10.)
+                if (A.indices[k] < i)
+                    norm_wL += absvalue_squared(A.data[k]);
             }     // end for k
             // (3.) begin for k
-            const Real norm_w = w.norm2();
-            /*
-             * cfh:
-             *
-             * It would be nice to iterate only over the non-zeros in w here, but
-             * the modification to w below creates non-sorted nonzeros which
-             * breaks the algorithm.
-             *
-             * It would be possible to re-sort w in each iteration; worth it?
-             */
+            norm_wL = std::sqrt(norm_wL);
+
             for (Integer k = 0; k < i; ++k) {
                 if (w.non_zero_check(k)) {
-                    // (4.) w[k]= w[k] / U[k,k]
-                    // NB: the first entry of the k-th row of U is the diagonal entry
-                    const T U_kk = U.data[U.pointer[k]];
-                    w[k] /= U_kk;
+                    // NB: we do dropping BEFORE dividing by the diagonal, otherwise the scaling is wrong
                     // (5.) Apply dropping to w.
-                    // (6./7./8.) w = w -w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
-                    // no need to check if w[k] != 0; this has already been done.
-                    // BUG: the scaling seems off here since we already divided by the diagonal?
-                    if (std::abs(w[k]) < threshold*norm_w) {
+                    if (std::abs(w[k]) < threshold*norm_wL) {
                         w.zero_set(k);
                     } else {
+                        // (4.) w[k]= w[k] / U[k,k]
+                        // NB: the first entry of the k-th row of U is the diagonal entry
+                        const T U_kk = U.data[U.pointer[k]];
+                        w[k] /= U_kk;
+
+                        // (6./7./8.) w = w - w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
                         for (Integer j = U.pointer[k] + 1; j < U.pointer[k+1]; j++)
-                            w[U.indices[j]] -= w[k]*U.data[j];
+                            w[U.indices[j]] -= w[k] * U.data[j];
                     }
                 } // end if
             }  // (9.) end for k

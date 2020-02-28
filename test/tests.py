@@ -79,10 +79,49 @@ def ilu0_dense(A):
         for k in range(i):
             if A[i,k] != 0:
                 l_ik = A[i,k] / A[k,k]
+                A[i,k] = l_ik
                 for j in range(k+1, n):
                     if A[i,j] != 0:
                         A[i,j] -= l_ik * A[k,j]
-                A[i,k] = l_ik
+    L, U = np.tril(A, -1), np.triu(A)
+    np.fill_diagonal(L, 1.0)
+    if is_csc:
+        return (U.T, L.T)
+    else:
+        return (L, U)
+
+def ilut_dense(A, fill_in=None, threshold=0.1):
+    # fill_in parameter currently not supported and is ignored
+
+    # sparse implementation depends on orientation, so we have to check it
+    is_csc = isinstance(A, scipy.sparse.csc_matrix)
+    if is_csc:
+        A = A.T
+
+    A = A.toarray()
+    n = A.shape[0]
+    for i in range(n):
+        norm_Li = np.linalg.norm(A[i, :i])
+        for k in range(i):
+            if A[i,k] != 0:
+                # do dropping on single element L[i,k]
+                if abs(A[i,k]) < threshold * norm_Li:
+                    A[i,k] = 0
+                else:
+                    l_ik = A[i,k] / A[k,k]
+                    A[i,k] = l_ik
+                    for j in range(k+1, n):
+                        A[i,j] -= l_ik * A[k,j]
+
+        # do dropping on i-th row
+        L = A[i, :i]
+        norm_L = np.linalg.norm(L)
+        L[abs(L) < threshold*norm_L] = 0
+
+        U = A[i, i+1:]
+        norm_U = np.linalg.norm(U)
+        U[abs(U) < threshold*norm_U] = 0
+
     L, U = np.tril(A, -1), np.triu(A)
     np.fill_diagonal(L, 1.0)
     if is_csc:
@@ -110,13 +149,13 @@ def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
         assert pred(A, P)
     return test
 
-def _gen_test_factorization(func, sym, problem, matrix_args, reference_impl):
+def _gen_test_factorization(func, args, sym, problem, matrix_args, reference_impl):
     def test(self):
         A = example_matrix(problem, matrix_args)
         if sym:
             A = (A + A.T) / 2       # symmetrize
-        X = func(A)
-        X_ref = reference_impl(A)
+        X = func(A, **args)
+        X_ref = reference_impl(A, **args)
         if isinstance(X, tuple):
             assert all(np.allclose(Xi.A, Xi_ref) for (Xi,Xi_ref) in zip(X, X_ref))
         else:
@@ -167,17 +206,18 @@ class TestCases(unittest.TestCase):
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
     # generate tests for stand-alone factorization functions
-    for (F, ref, sym) in [
+    for (F, ref, args, sym) in [
             # function to test, reference implementation, symmetric
-            (ilupp.ichol, ichol_dense, True),
-            (ilupp.ilu0, ilu0_dense, False)
+            (ilupp.ichol, ichol_dense, {}, True),
+            (ilupp.ilu0, ilu0_dense, {}, False),
+            (ilupp.ilut, ilut_dense, {'fill_in': 10000, 'threshold': 0.1}, False),
     ]:
         base_name = 'test_' + F.__name__ + '_'
 
         for problem in ('laplace', 'random'):
             for format in ('csr', 'csc'):
                 case_name = base_name + problem + '_' + format
-                vars()[case_name] = _gen_test_factorization(F, sym, problem, (50,format), ref)
+                vars()[case_name] = _gen_test_factorization(F, args, sym, problem, (50,format), ref)
 
 ########################################
 
@@ -242,3 +282,12 @@ def test_ml_precond_random():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
+
+def test_ilut():
+    A = laplace2d_matrix(10, 'csr')
+    tau = 0.1
+    L, U = ilupp.ilut(A, fill_in=10000, threshold=tau)
+    print('nnz:', A.getnnz(), L.getnnz(), U.getnnz())
+    L2, U2 = ilut_dense(A, threshold=tau)
+    assert np.allclose(L.A, L2)
+    assert np.allclose(U.A, U2)
