@@ -11,12 +11,12 @@ def laplace_matrix(n, format='csr'):
     d = np.ones(n) / (h**2)
     return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).asformat(format)
 
-def laplace_Matrix_2d(n, format='csr'):
+def laplace2d_matrix(n, format='csr'):
     A, I = laplace_matrix(n), scipy.sparse.eye(n)
     return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).asformat(format)
 
 def example_2d(n):
-    A = laplace_Matrix_2d(n)
+    A = laplace2d_matrix(n)
     m = A.shape[0]
     x_exact = np.ones(m)
     b = A.dot(x_exact)
