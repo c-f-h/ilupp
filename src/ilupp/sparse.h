@@ -227,7 +227,6 @@ template<class T> class vector_dense
            Real norm_max() const;
        // Sorting
            void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau) const;
-           void take_largest_elements_by_abs_value_with_threshold_largest_last(Real& norm, index_list& list, Integer n, Real tau) const;
             // selects upto n elements of the *this with relative absolute value larger than the threshold.
            void take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position) const;
            void take_largest_elements_by_abs_value_with_threshold_pivot_last(Real& norm, index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const;
