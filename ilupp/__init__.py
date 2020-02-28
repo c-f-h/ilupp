@@ -198,3 +198,7 @@ def ichol(A):
 def ilu0(A):
     """Compute the (L,U) factors of an incomplete LU decomposition without fill-in."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilu0(*_matrix_fields(A)))
+
+def ilut(A, fill_in=1000, threshold=0.1):
+    """Compute the (L,U) factors of an incomplete LU decomposition with thresholding."""
+    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilut(*_matrix_fields(A), fill_in, threshold))

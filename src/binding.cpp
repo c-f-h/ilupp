@@ -291,6 +291,14 @@ PYBIND11_MODULE(_ilupp, m)
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
+    m.def("ilut",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer fill_in, Real threshold) {
+            matrix L, U;
+            Real time;
+            ILUT(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold, time);
+            return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
+        });
+
     py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
         .def(py::init<>())
         .def("default_configuration", &iluplusplus_precond_parameter::default_configuration)
