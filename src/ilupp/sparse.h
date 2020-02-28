@@ -137,17 +137,6 @@ template<class T> class vector_dense
            void quicksort(index_list& list, Integer left, Integer right);
            void quicksort(index_list& list);
 
-             // takes the indices of the n largest elements by absolute value of input and stores them in ascending order in list.
-           void take_largest_elements_by_abs_value(index_list& list, Integer n) const;
-             // takes upto n elements whose absolute value is larger than tau. If more than n elements exist, it takes the largest of these.
-           void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau) const;
-             // same as above, only sorting is restricted to the interval [from, to)
-           void take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const;
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm, index_list& list, Integer n, Real tau, Integer from, Integer to) const;
-             // same as above, only sorting is restricted between from and to, including from, excluding to. List will refer to elements using the permutation perm, i.e. the largest elements will be list[perm[0]],...
-             // these elements will be stored by increasing absolute value in list, not by increasing index
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input, index_list& list, const index_list& perm, Integer n, Real tau, Integer from, Integer to) const;
-
            // vector_dense<T> permute(const index_list& perm);
            void insert(const vector_dense<T>& b, Integer position, T value);
            // this is constructed as follows: inserts value at position into b.
