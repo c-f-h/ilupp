@@ -1190,15 +1190,13 @@ template<class T> T& vector_sparse_dynamic<T>::operator[](Integer j){
             throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
         }
      #endif
-     if (occupancy[j]<0) {
+     if (occupancy[j] < 0) {
          occupancy[j]=nnz;
          pointer[nnz]=j;
          nnz++;
          data[occupancy[j]] = static_cast<T>(0);
-         return data[occupancy[j]];
-     } else {
-         return data[occupancy[j]];
      }
+     return data[occupancy[j]];
   }
 
 template<class T> const T& vector_sparse_dynamic<T>::operator[](Integer j) const {

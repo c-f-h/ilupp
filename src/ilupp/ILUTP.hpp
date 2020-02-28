@@ -15,30 +15,32 @@ bool ILUTP2(
         Integer max_fill_in, Real threshold, Real perm_tol, Integer bp,
         Integer& zero_pivots, Real& time_self, Real mem_factor)
 {
+    if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUTP2: argument matrix must be square."))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    const Integer m = A.rows(), n = A.columns();
+
     clock_t time_begin, time_end;
     time_begin=clock();
-    // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
+    // the notation will be for A being a ROW matrix, i.e. U and L also ROW matrices
     if (perm_tol > 500) perm_tol=0.0;
     else perm_tol=std::exp(-perm_tol*std::log(10.0));
 
-    if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUTP2: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    Integer m = A.rows();
-    Integer n = A.columns();
-    Integer k,i,j,p;
-    zero_pivots=0;
-    Real norm_L,norm_U, norm_w; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
-    vector_sparse_dynamic_enhanced<T> w;
-    index_list list_L;
-    index_list list_U;
-    index_list inverse_perm;
     if(max_fill_in<1) max_fill_in = 1;
     if(max_fill_in>n) max_fill_in = n;
-    Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
+
+    Integer k,i,j,p;
+    zero_pivots=0;
+    Real norm_L, norm_U, norm_w; // output parameters - unused here
+    vector_sparse_dynamic_enhanced<T> w;
+    index_list list_L, list_U;
+
+    perm.resize(n);
+    index_list inverse_perm(n);
+
+    const Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
     U.reformat(m,m,reserved_memory,ROW);
     L.reformat(m,m,reserved_memory,ROW);
-    perm.resize(n);
     w.resize(m);
-    inverse_perm.resize(n);
     // (1.) begin for i
 
     for(i=0;i<n;i++){
@@ -47,9 +49,9 @@ bool ILUTP2(
         // (2.) initialize w
         for(k=A.pointer[i];k<A.pointer[i+1];k++){
             w(A.indices[k],inverse_perm[A.indices[k]]) = A.data[k];
-        }     // end for k
+        }
 
-        norm_w=w.norm2();
+        norm_w = w.norm2();
         w.move_to_beginning();
         while(w.current_sorting_index()<i && !w.at_end()){
             w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
@@ -117,8 +119,5 @@ bool ILUTP2(
     time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
     return true;
 }
-
-
-
 
 } // end namespace iluplusplus
