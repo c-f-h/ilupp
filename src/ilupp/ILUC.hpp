@@ -135,37 +135,38 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     initialize_triangular_fields(m, listL);
     initialize_triangular_fields(m, listU);
 
+    // below, numbered steps (N.) refer to Algorithm 2.2 in (Li, Saad, Chow 2002)
+
     // Iterate over the rows of A or U respectively.
-    for(k=0; k < m; k++){  // (1.) in algorithm of Saad.
-        // initialize z to upper part of row k - (2.) in algorithm of Saad.
+    for(k=0; k < m; k++){  // (1.)
+        // (2.) initialize z to upper part of row k
         z.zero_reset();
         for(j=firstA[k]; j<A.pointer[k+1]; ++j)
             z[A.indices[j]] = A.data[j];
 
-        // subtract multiples of the various rows of U from z, the new row of U
-        // (3.) in the algorithm of Saad.
+        // (3.) subtract multiples of the various rows of U from z, the new row of U
         for (h = listL[k]; h != -1; h = listL[h]) {
             // h is current column index of k-th row of L
             const T L_kh = L.data[firstL[h]];
             for (j=firstU[h]; j<U.pointer[h+1]; ++j) {
-                // (4.) in the algorithm of Saad.
+                // (4.)
                 z[U.indices[j]] -= L_kh * U.data[j];
             }  // end for j
-        } // end while (5.) in algorithm of Saad.
+        } // (5.) end while
 
-        // initialize w to lower part of column k - (6.) in algorithm of Saad.
+        // (6.) initialize w to lower part of column k
         w.zero_reset();
         for (h = headA[k]; h != -1; h = listA[h]) {
             if(h > k)
                 w[h] = A.data[firstA[h]];
         }
 
-        // (7.) in the algorithm of Saad.
+        // (7.) for all nonzero u[*,k]
         for (h = listU[k]; h != -1; h = listU[h]) {
             // h is current row index of k-th column of U
             const T U_hk = U.data[firstU[h]];
             for (j=firstL[h]; j<L.pointer[h+1]; ++j) {
-                // (8.) in the algorithm of Saad.
+                // (8.)
                 w[L.indices[j]] -= U_hk * L.data[j];
             }  // end for j
         } // end while (9.) in algorithm of Saad.
@@ -173,10 +174,10 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
         if (z.zero_check(k))
             throw std::runtime_error("ILUC2: zero pivot on diagonal, k=" + std::to_string(k));
 
-        // apply dropping to w - (10.) in the algorithm of Saad.
+        // (10.) apply dropping to w
         w.take_largest_elements_by_abs_value_with_threshold(norm_w, listw, max_fill_in-1, threshold, k+1, m);
 
-        // apply dropping to z - (11.) in the algorithm of Saad.
+        // (11.) apply dropping to z
         z.take_largest_elements_by_abs_value_with_threshold(norm_z, listz, max_fill_in-1, threshold, k+1, n);
 
         // copy z to U - (12.) in the algorithm of Saad.
