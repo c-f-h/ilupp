@@ -790,6 +790,7 @@ template<class matrix_type, class vector_type>
            x.add_scaled(y[j],v[j]);   }
     }
 
+#if 0           // cfh: currently disabled because of the matrix_dense reference
 template<class T, class matrix_type, class vector_type>
      bool gmres(const preconditioner<T,matrix_type,vector_type>& P,
              preconditioner_application1_type pa1,
@@ -930,6 +931,7 @@ template<class T, class matrix_type, class vector_type>
         return false;
     }
 }
+#endif
 
 } // end namespace iluplusplus
 
