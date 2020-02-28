@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse
 import ilupp
 import unittest
+import math
 
 ################################################################################
 ## test problems
@@ -11,12 +12,13 @@ def laplace_matrix(n, format='csr'):
     d = np.ones(n) / (h**2)
     return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).asformat(format)
 
-def laplace2d_matrix(n, format='csr'):
+def laplace2d_matrix(n_total, format='csr'):
+    n = int(math.sqrt(n_total))
     A, I = laplace_matrix(n), scipy.sparse.eye(n)
     return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).asformat(format)
 
-def example_2d(n):
-    A = laplace2d_matrix(n)
+def example_laplace2d(n_total):
+    A = laplace2d_matrix(n_total)
     m = A.shape[0]
     x_exact = np.ones(m)
     b = A.dot(x_exact)
@@ -42,11 +44,14 @@ def example_random(n, format='csc'):
 
 _test_problems = {
     'laplace': (laplace_matrix, example_laplace),
+    'laplace2d': (laplace2d_matrix, example_laplace2d),
     'random':  (random_matrix, example_random),
 }
 
 def example_matrix(name, args):
     return _test_problems[name][0](*args)
+def example_problem(name, args):
+    return _test_problems[name][1](*args)
 
 ################################################################################
 ## reference implementations
@@ -132,9 +137,9 @@ def ilut_dense(A, fill_in=None, threshold=0.1):
 ########################################
 # auto-generated test cases
 
-def _gen_solve_in_one_step(Precond, params, example_func, example_args):
+def _gen_solve_in_one_step(Precond, params, problem, example_args):
     def test(self):
-        A, b, x_exact = example_func(*example_args)
+        A, b, x_exact = example_problem(problem, example_args)
         P = Precond(A, **params)
         x = b.copy()
         P.apply(x)
@@ -142,9 +147,9 @@ def _gen_solve_in_one_step(Precond, params, example_func, example_args):
         assert np.allclose(x, x_exact)
     return test
 
-def _gen_test_with_predicate(Precond, params, example_func, example_args, pred):
+def _gen_test_with_predicate(Precond, params, problem, example_args, pred):
     def test(self):
-        A, b, x_exact = example_func(*example_args)
+        A, b, x_exact = example_problem(problem, example_args)
         P = Precond(A, **params)
         assert pred(A, P)
     return test
@@ -185,24 +190,18 @@ class TestCases(unittest.TestCase):
     ]:
         base_name = 'test_' + P.__name__[:-14] + '_'
 
-        for format in ('csr', 'csc'):
-            case_name = base_name + 'random_' + format
-            vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_random, (50,format))
+        for problem in ('laplace', 'random'):
+            for format in ('csr', 'csc'):
+                case_name = base_name + problem + '_' + format
+                vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, problem, (50,format))
 
-            case_name = base_name + 'random_factorscorrect_' + format
-            vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_random, (50,format), _assert_factors_correct)
-
-        for format in ('csr', 'csc'):
-            case_name = base_name + 'laplace_' + format
-            vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, example_laplace, (50,format))
-
-            case_name = base_name + 'laplace_factorscorrect_' + format
-            vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,format), _assert_factors_correct)
+                case_name = base_name + problem + '_factorscorrect_' + format
+                vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, problem, (50,format), _assert_factors_correct)
 
         # each L/U factor has a diagonal and an off-diagonal,
         # but ILU++ reports less in some cases because of unit diagonals
         case_name = base_name + 'total_nnz'
-        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, example_laplace, (50,),
+        vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, 'laplace', (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
     # generate tests for stand-alone factorization functions
@@ -214,7 +213,7 @@ class TestCases(unittest.TestCase):
     ]:
         base_name = 'test_' + F.__name__ + '_'
 
-        for problem in ('laplace', 'random'):
+        for problem in ('laplace', 'laplace2d', 'random'):
             for format in ('csr', 'csc'):
                 case_name = base_name + problem + '_' + format
                 vars()[case_name] = _gen_test_factorization(F, args, sym, problem, (50,format), ref)
@@ -224,7 +223,7 @@ class TestCases(unittest.TestCase):
 ## multilevel preconditioner
 
 def test_ml_solve_laplace2d_PQ():
-    A, b, x_exact = example_2d(30)
+    A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_PQ()
     param.threshold = 2.0
@@ -233,7 +232,7 @@ def test_ml_solve_laplace2d_PQ():
     assert np.allclose(x_exact, x)
 
 def test_ml_solve_laplace2d_MWM():
-    A, b, x_exact = example_2d(30)
+    A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING()
     param.threshold = 2.0
@@ -242,7 +241,7 @@ def test_ml_solve_laplace2d_MWM():
     assert np.allclose(x_exact, x)
 
 def test_ml_solve_laplace2d_MWM_sPQ():
-    A, b, x_exact = example_2d(30)
+    A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING_SYM_PQ()
     param.threshold = 2.0
@@ -251,7 +250,7 @@ def test_ml_solve_laplace2d_MWM_sPQ():
     assert np.allclose(x_exact, x)
 
 def test_ml_solve_laplace2d_SF():
-    A, b, x_exact = example_2d(30)
+    A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_SPARSE_FIRST()
     param.threshold = 2.0
@@ -282,12 +281,3 @@ def test_ml_precond_random():
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))
     assert np.allclose(x, x_exact)
-
-def test_ilut():
-    A = laplace2d_matrix(10, 'csr')
-    tau = 0.1
-    L, U = ilupp.ilut(A, fill_in=10000, threshold=tau)
-    print('nnz:', A.getnnz(), L.getnnz(), U.getnnz())
-    L2, U2 = ilut_dense(A, threshold=tau)
-    assert np.allclose(L.A, L2)
-    assert np.allclose(U.A, U2)
