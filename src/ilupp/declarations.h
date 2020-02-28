@@ -142,8 +142,6 @@ class preprocessing_sequence;
 template<class T> class vector_dense;
 template<class T> class vector_sparse_dynamic;
 template<class T> class matrix_sparse;
-template<class T> class matrix_dense;
-template<class T> class matrix_oriented;
 class index_list;
 
 // classes for parameters.h

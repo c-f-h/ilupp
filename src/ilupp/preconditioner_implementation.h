@@ -542,9 +542,9 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
   void indirect_split_triangular_multilevel_preconditioner<T,matrix_type,vector_type>::print(Integer k) const {
       std::cout<<"The left matrix of chosen level:"<<std::endl;
-      std::cout<< extract_left_matrix(k).expand();
+      std::cout<< extract_left_matrix(k);
       std::cout<<"The right matrix of chosen level:"<<std::endl;
-      std::cout<<extract_right_matrix(k).expand();
+      std::cout<<extract_right_matrix(k);
       std::cout<<"The middle matrix of chosen level:"<<std::endl;
       std::cout<<extract_middle_matrix(k);
       std::cout<<"Left Scaling"<<std::endl<<extract_left_scaling(k);

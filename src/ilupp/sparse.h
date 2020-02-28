@@ -446,10 +446,10 @@ template<class T> class matrix_sparse
            Real norm_max() const;
            T scalar_product_along_orientation(Integer m, Integer n) const; // calculates the scalar product (*this)[m] * (*this)[n], (*this)[i] being the i-th row or column.
         // Conversion
-           matrix_dense<T> expand() const;   // converts the matrix to a dense_matrix
+           //matrix_dense<T> expand() const;   // converts the matrix to a dense_matrix
            void compress(double threshold=0.0);    // removes those elements, whose absolute value is less than threshold.
            void positional_compress(const iluplusplus_precond_parameter& IP, double threshold=0.0);    // removes those elements, whose absolute value is less than threshold and weighs with position.
-           void compress(const matrix_dense<T>& A, orientation_type o, double threshold);
+           //void compress(const matrix_dense<T>& A, orientation_type o, double threshold);
         // Generating special matrices
            void diag(T d);    //makes diagonal matrix, keeping the size.
            void diag(Integer m, Integer n, T d, orientation_type o); // makes a matrix having m rows, n columns of orientation o having d on the diagonal.
@@ -591,132 +591,6 @@ template<class T> class matrix_sparse
 
 
 
-template<class T> class matrix_oriented    // will hopefully eventually replace the class matrix_dense
-  {
-       private:
-           Integer number_rows;
-           Integer number_columns;
-           Integer size;
-           orientation_type orientation;
-           T* data;
-           void insert_data_along_orientation(const vector_dense<T>& data_vector,Integer k);
-             // copies the indices from list into indices and the data stored in data_vector corresponding to the appropriate indices into data.
-           int compare_by_absolute_value (const void * a, const void * b); // for z
-       public:
-        // constructors, destructors
-           matrix_oriented(orientation_type o=ROW);      // does not allocate memory, as nnz is unknown
-           matrix_oriented(orientation_type o, Integer m, Integer n); // allocates memory
-           matrix_oriented(const matrix_oriented& X);    // copy constructor
-           ~matrix_oriented();
-           matrix_oriented operator = (const matrix_oriented<T>& X);
-        // Information
-           Integer rows() const;                       // returns the number of rows.
-           Integer columns() const;                    // returns the number of columns.
-           Integer dim_along_orientation() const;      // returns the dimension in the direction of the orientation, i.e. the number of rows for row matrix and number of colums for a column matrix.
-           Integer dim_against_orientation() const;    // returns the dimension in the direction opposite to the orientation, i.e. the number of colums for a row matrix and vice versa.
-           T get_data(Integer i) const;
-           void print_all() const;
-        // functionality
-           bool square_check() const;
-           void resize(orientation_type o, Integer m, Integer n);
-           void set_all(T d);
-        // conversion
-           void extract(const matrix_sparse<T> &A, Integer m, Integer n); // makes a matrix_oriented containing the rows/columns m to m+n-1 of A - determined by orientation.
-        // output
-           // should no longer be FRIEND std::ostream& operator << <> (std::ostream& os, const matrix_oriented<T>& x);
-        // Other functions
-           Real norm(Integer k) const;
-           Real memory() const;
-          // friend void index_list::quicksort_by_absolute_value(const T* values);
-  };
-
-
-template<class T> class matrix_dense
-  {
-       private:
-           Integer number_rows;
-           Integer number_columns;
-           T** data;
-           void generic_matrix_vector_multiplication_addition(const vector_dense<T>& x, vector_dense<T>& v) const;      // v=v+(*this)*x, no error handling, hence private
-           void generic_matrix_transpose_vector_multiplication_addition(const vector_dense<T>& x, vector_dense<T>& v) const;      // v=v+(*this)*x, no error handling, hence private
-           void generic_matrix_matrix_multiplication_addition(const matrix_dense<T>& A, const matrix_dense<T>& B);  // *this = *this + A*B
-           void pivotGJ(T **r, Integer k) const;
-           Integer minusGJ(T **r, Integer k) const;
-           Integer minus_invert(matrix_dense<T> &r, Integer k) const;
-           void pivot_invert(matrix_dense<T> &r, Integer k) const;
-        public:
-        // constructors, destructors
-           matrix_dense();
-           matrix_dense(Integer m, Integer n);
-           matrix_dense(Integer m, Integer n, T d);
-           matrix_dense(const matrix_dense& X); // copy-constructor
-           matrix_dense(const matrix_sparse<T> &A);
-           ~matrix_dense();
-          void resize(Integer m, Integer n);
-        // Basic functions
-           void matrix_vector_multiplication_add(const vector_dense<T>& x, vector_dense<T>& v) const;             // v=v+(*this)*x
-           void matrix_vector_multiplication(const vector_dense<T>& x, vector_dense<T>& v) const;                 // v=(*this)*x
-           void matrix_transpose_vector_multiplication_add(const vector_dense<T>& x, vector_dense<T>& v) const;   // v=v+(*this^T)*x
-           void matrix_transpose_vector_multiplication(const vector_dense<T>& x, vector_dense<T>& v) const;       // v=(*this^T)*x
-           void matrix_matrix_multiplication_add(const matrix_dense<T>& A, const matrix_dense<T>& B);             // *this = *this + A*B
-           void matrix_matrix_multiplication(const matrix_dense<T>& A, const matrix_dense<T>& B);                 // *this = A*B
-        // matrix_dense valued operators
-           matrix_dense  operator+ (const matrix_dense& X) const;
-           matrix_dense  operator- (const matrix_dense& X) const;
-           matrix_dense  operator* (const matrix_dense& X) const;
-           matrix_dense  operator* (T k) const; // matrix-scalar multiplication
-           matrix_dense& operator= (const matrix_dense& X);
-        // vector_dense - and scalar-valued operators
-           vector_dense<T> operator*(vector_dense<T> const & x) const; //matrix-vector-multiplication
-        // matrix-valued functions
-           matrix_dense<T> transpose() const;
-        // Generating special matrices
-           void set_all(T d);
-           void diag(T d);
-           void diag(const vector_dense<T>& d);
-           // the diagonal matrix diag(1+eps1, 1+eps2,...,1+eps(rank),0,...0), |epsk|<eps_EV undergoes a similarity transform by I+U, normF(U)<eps_similarity
-           matrix_dense<T>& scale_rows(const vector_dense<T>& d);
-           matrix_dense<T>& scale_columns(const vector_dense<T>& d);
-           matrix_dense<T>& inverse_scale_rows(const vector_dense<T>& d);
-           matrix_dense<T>& inverse_scale_columns(const vector_dense<T>& d);
-           matrix_dense<T> permute_rows(const index_list& perm) const; // applies perm to *this and returns permuted matrix
-           matrix_dense<T> permute_columns(const index_list& perm) const;
-           void permute_rows(const matrix_dense<T>& A, const index_list& perm); // applies perm to A and *this is permuted matrix.
-           void permute_columns(const matrix_dense<T>& A, const index_list& perm);
-           void overwrite(const matrix_dense& A, Integer m, Integer n);  // overwrites *this with A beginning at index (m,n)
-           void elementwise_addition(const matrix_dense& A);
-           void elementwise_subtraction(const matrix_dense& A);
-           void elementwise_multiplication(const matrix_dense& A);
-           void elementwise_division(const matrix_dense& A);
-        // Functions, Information
-           Integer rows() const;
-           Integer columns() const;
-           Real normF() const;
-           Real norm1() const;
-        // Accessing elements:
-           T& operator()(Integer i, Integer j);
-           const T& operator()(Integer i, Integer j) const;
-        // Conversion
-           matrix_sparse<T> compress(orientation_type o, double threshold = -1.0);
-           friend matrix_dense<T> matrix_sparse<T>::expand() const;
-           void expand(const matrix_sparse<T>& B); // *this = expanded B
-        // solving systems of linear equations with row pivoting using Gauss-Jordan
-        // this has been programmed fairly inefficiently and should not be used for "real" problems!
-           void compress(Real threshold); // drops small elements whose absolute value is less than threshold
-           void GaussJordan(const vector_dense<T> &b, vector_dense<T> &x) const;
-        // this is the choice
-           Integer Gauss(const vector_dense<T> &b, vector_dense<T> &x) const;
-           bool solve(const vector_dense<T> &b, vector_dense<T> &x) const;
-           void invert(const matrix_dense<T> &B);
-        // for testing:
-           bool ILUCP(const matrix_dense<T>& A, matrix_dense<T>& U, index_list& perm, Integer fill_in, Real tau, Integer& zero_pivots);
-           bool square_check() const;
-           Real memory() const;
-  };
-
-
-
-
 class index_list
   {
        private:
@@ -773,16 +647,12 @@ class index_list
 // Other Declarations
 /*********************************************************************/
 
-template<class T> T scalar_prod(const matrix_sparse<T> &A, Integer m, const matrix_oriented<T> &B, Integer n);
 template<class T> T scalar_prod(const matrix_sparse<T> &A, Integer m, const matrix_sparse<T> &B, Integer n);
 
 template<class T> std::istream& operator >> (std::istream& is, vector_dense<T> &x);
 template<class T> std::ostream& operator << (std::ostream& os, const vector_dense<T> &x);
 template<class T> std::ostream& operator << (std::ostream& os, const matrix_sparse<T> & x);
-template<class T> std::ostream& operator << (std::ostream& os, const matrix_oriented<T> & x);
-template<class T> std::ostream& operator << (std::ostream& os, const matrix_dense<T>& x);
 std::ostream& operator << (std::ostream& os, const index_list& x);
-template<class T> std::istream& operator >> (std::istream& is, matrix_dense<T>& X);
 
 void quicksort(index_list& v, index_list& list, const index_list& permutation, Integer left, Integer right);
 void quicksort(index_list& v, const index_list& permutation, Integer left, Integer right);
