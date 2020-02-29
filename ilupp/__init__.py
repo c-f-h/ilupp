@@ -195,6 +195,10 @@ def ichol(A):
     """Compute the L factor of an incomplete Cholesky decomposition without fill-in for the symmetric matrix A."""
     return _matrix_from_info(*_ilupp.ichol(*_matrix_fields(A)))
 
+def icholt(A, add_fill_in=0, threshold=0.0):
+    """Compute the L factor of an incomplete Cholesky decomposition with thresholding for the symmetric matrix A."""
+    return _matrix_from_info(*_ilupp.icholt(*_matrix_fields(A), add_fill_in, threshold))
+
 def ilu0(A):
     """Compute the (L,U) factors of an incomplete LU decomposition without fill-in."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilu0(*_matrix_fields(A)))

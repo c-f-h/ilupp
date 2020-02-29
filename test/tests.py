@@ -2,7 +2,6 @@ import numpy as np
 import scipy.sparse
 import ilupp
 import unittest
-import math
 
 ################################################################################
 ## test problems
@@ -13,7 +12,7 @@ def laplace_matrix(n, format='csr'):
     return scipy.sparse.diags((-d[:-1], 2*d, -d[:-1]), (-1, 0, 1)).asformat(format)
 
 def laplace2d_matrix(n_total, format='csr'):
-    n = int(math.sqrt(n_total))
+    n = int(np.sqrt(n_total))
     A, I = laplace_matrix(n), scipy.sparse.eye(n)
     return (scipy.sparse.kron(A, I) + scipy.sparse.kron(I, A)).asformat(format)
 
@@ -56,6 +55,15 @@ def example_problem(name, args):
 ################################################################################
 ## reference implementations
 
+def do_dropping(X, max_entries=None, threshold=None):
+    if threshold is not None:
+        nrm = np.linalg.norm(X)
+        X[abs(X) < threshold*nrm] = 0
+    if max_entries is not None:
+        indices = np.argsort(abs(X))    # largest last
+        max_entries = min(max_entries, X.shape[0])
+        X[indices[:-max_entries]] = 0
+
 def ichol_dense(A):
     A = A.toarray()
     # simple reference implementation for ichol based on dense matrices
@@ -71,6 +79,30 @@ def ichol_dense(A):
             for i in range(j, n):
                 if L[i,j] != 0:
                     L[i,j] -= L[i,k] * L[j,k]
+    return L
+
+def icholt_dense(A, add_fill_in=0, threshold=0.0):
+    n = A.shape[0]
+    A = A.toarray()
+    L = np.zeros_like(A)
+    D = np.zeros(n)
+    for j in range(n):
+        w = A[:,j].copy()
+        w[:j] = 0
+        D[j] += w[j]
+        w[j] = np.sqrt(D[j])
+        col_len = np.count_nonzero(w[j:])
+        for k in range(j):
+            if L[j,k] != 0:
+                for i in range(j+1, n):
+                    if L[i,k] != 0:
+                        w[i] -= L[i,k] * L[j,k]
+        for i in range(j+1, n):
+            if w[i] != 0:
+                w[i] /= w[j]
+                D[i] -= w[i]**2
+        do_dropping(w, max_entries=col_len+add_fill_in, threshold=threshold)
+        L[:,j] = w
     return L
 
 def ilu0_dense(A):
@@ -96,8 +128,8 @@ def ilu0_dense(A):
         return (L, U)
 
 def ilut_dense(A, fill_in=None, threshold=0.1):
-    # fill_in parameter currently not supported and is ignored
-
+    if fill_in is not None:
+        fill_in -= 1        # match the ILU++ convention
     # sparse implementation depends on orientation, so we have to check it
     is_csc = isinstance(A, scipy.sparse.csc_matrix)
     if is_csc:
@@ -119,13 +151,8 @@ def ilut_dense(A, fill_in=None, threshold=0.1):
                         A[i,j] -= l_ik * A[k,j]
 
         # do dropping on i-th row
-        L = A[i, :i]
-        norm_L = np.linalg.norm(L)
-        L[abs(L) < threshold*norm_L] = 0
-
-        U = A[i, i+1:]
-        norm_U = np.linalg.norm(U)
-        U[abs(U) < threshold*norm_U] = 0
+        do_dropping(A[i, :i], max_entries=fill_in, threshold=threshold)
+        do_dropping(A[i, i+1:], max_entries=fill_in, threshold=threshold)
 
     L, U = np.tril(A, -1), np.triu(A)
     np.fill_diagonal(L, 1.0)
@@ -208,8 +235,9 @@ class TestCases(unittest.TestCase):
     for (F, ref, args, sym) in [
             # function to test, reference implementation, symmetric
             (ilupp.ichol, ichol_dense, {}, True),
+            (ilupp.icholt, icholt_dense, {}, True),
             (ilupp.ilu0, ilu0_dense, {}, False),
-            (ilupp.ilut, ilut_dense, {'fill_in': 10000, 'threshold': 0.1}, False),
+            (ilupp.ilut, ilut_dense, {'fill_in': 5, 'threshold': 0.1}, False),
     ]:
         base_name = 'test_' + F.__name__ + '_'
 

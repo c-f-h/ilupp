@@ -2544,7 +2544,7 @@ matrix_sparse<T> matrix_sparse<T>::change_orientation() const
 }
 
 template<class T>
-matrix_sparse<T> matrix_sparse<T>::natural_triangular_part() const
+matrix_sparse<T> matrix_sparse<T>::natural_triangular_part(bool increasing) const
 {
     if (!square_check())
         throw std::logic_error("can only compute triangular part of square matrix");
@@ -2557,7 +2557,8 @@ matrix_sparse<T> matrix_sparse<T>::natural_triangular_part() const
     for (Integer i = 0; i < dim_major(); ++i) {
         for (Integer k = pointer[i]; k < pointer[i+1]; ++k) {
             const Integer j = indices[k];
-            if (j <= i) {
+            const bool use = ((increasing && (j <= i)) || (!increasing && (j >= i)));
+            if (use) {
                 *cur_ind++ = j;
                 *cur_dat++ = data[k];
             }

@@ -117,10 +117,10 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     // calculate maximal size needed for L and U:
     Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
 
-    // the following field will store the index of the first element in the i-th row having a column index >= k (i=0...m-1).
-    // listU field will contain the information needed to retrieve a column of U.
-    // listL: same as above for L, but orientation reversed:
-    std::vector<Integer> firstU(m), firstL(m), listA(m), headA(m), firstA(m), listU(m), listL(m);
+    // firstU: index of the first element in the i-th row having a column index >= k (i=0...m-1).
+    // listU: the information needed to retrieve a column of U.
+    // firstL, listL: same as above for L, but orientation reversed:
+    std::vector<Integer> firstU(m), listU(m), firstL(m), listL(m), listA(m), headA(m), firstA(m);
 
     // reformat L and U and initialize the pointers:
     L.reformat(m, m, reserved_memory, other_orientation(A.orientation));
@@ -144,6 +144,7 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
             z[A.indices[j]] = A.data[j];
 
         // (3.) subtract multiples of the various rows of U from z, the new row of U
+        // for all nonzero L[k,*]:
         for (h = listL[k]; h != -1; h = listL[h]) {
             // h is current column index of k-th row of L
             const T L_kh = L.data[firstL[h]];

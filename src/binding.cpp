@@ -284,6 +284,11 @@ PYBIND11_MODULE(_ilupp, m)
             return wrap_matrix(IChol(*make_matrix(A_data, A_indices, A_indptr, is_csr)));
         });
 
+    m.def("icholt",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, int add_fill_in, Real threshold) {
+            return wrap_matrix(ICholT(*make_matrix(A_data, A_indices, A_indptr, is_csr), add_fill_in, threshold));
+        });
+
     m.def("ilu0",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
             matrix L, U;
