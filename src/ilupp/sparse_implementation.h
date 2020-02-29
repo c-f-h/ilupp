@@ -990,18 +990,6 @@ template<class T> vector_sparse_dynamic<T>::vector_sparse_dynamic(Integer m) {
 // Class vector_sparse_dynamic: Basic functions                                                                                       *
 //*************************************************************************************************************************************
 
-template<class T> Integer vector_sparse_dynamic<T>::dimension() const {
-    return size;
-  }
-
-template<class T> Integer vector_sparse_dynamic<T>::dim() const {
-    return size;
-  }
-
-template<class T> Integer vector_sparse_dynamic<T>::non_zeroes() const {
-    return nnz;
-  }
-
 template<class T> T& vector_sparse_dynamic<T>::operator[](Integer j){
      #ifdef DEBUG
         if(j<0 || j>=size){
@@ -1044,39 +1032,6 @@ template<class T> void vector_sparse_dynamic<T>::zero_set(Integer j){
          occupancy[j]=-1;
      }
   }
-
-template<class T> T vector_sparse_dynamic<T>::get_data(Integer j) const {
-     #ifdef DEBUG
-        if(j<0 || j>=size){
-            std::cout<<"vector_sparse_dynamic<T>::get_data: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-     #endif
-     return data[j];
-  }
-
-template<class T> Integer vector_sparse_dynamic<T>::get_pointer(Integer j) const {
-     #ifdef DEBUG
-        if(j<0 || j>=size){
-            std::cout<<"vector_sparse_dynamic<T>::get_pointer: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-            throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-        }
-     #endif
-     return pointer[j];
-  }
-template<class T> bool vector_sparse_dynamic<T>::zero_check(Integer j) const {
-#ifdef DEBUG
-    if(j<0 || j>=size){
-        std::cout<<"vector_sparse_dynamic<T>::zero_check: out of range. Trying to access "<<j<<" in a vector having size "<<size<<std::endl;
-        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
-    }
-#endif
-    return occupancy[j] < 0;
-}
-
-template<class T> bool vector_sparse_dynamic<T>::non_zero_check(Integer j) const {
-    return !zero_check(j);
-}
 
 template<class T>  T vector_sparse_dynamic<T>::read(Integer j) const {
      #ifdef DEBUG

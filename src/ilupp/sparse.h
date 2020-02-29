@@ -181,13 +181,15 @@ template<class T> class vector_dense
            vector_sparse_dynamic(Integer m);
            void resize(Integer m);
         // functions
-           Integer dimension() const;
-           Integer dim() const;
-           Integer non_zeroes() const;
-           T get_data(Integer j) const;
-           Integer get_pointer(Integer j) const;
-           bool zero_check(Integer j) const;
-           bool non_zero_check(Integer j) const;
+           Integer dimension() const                { return size; }
+           Integer non_zeroes() const               { return nnz; }
+           // below, x refers to internal indices in [0,nnz), and j to actual row/column indices in [0,size)
+           const T& get_data(Integer x) const       { return data[x]; }
+           T& get_data(Integer x)                   { return data[x]; }
+           const Integer& get_pointer(Integer x) const { return pointer[x]; }
+           Integer& get_pointer(Integer x)          { return pointer[x]; }
+           bool zero_check(Integer j) const         { return occupancy[j] < 0; }
+           bool non_zero_check(Integer j) const     { return !zero_check(j); }
            void zero_set();
            void zero_reset();
            T abs_max() const;  // returns value of largest element by absolute value
@@ -237,7 +239,6 @@ template<class T> class vector_dense
            void take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const;
            void take_single_weight_weighted_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter &IP, index_list& list, index_list& rejected_list, const vector_dense<Real>& weights, Real weight, Integer n, Real tau, Integer from, Integer to) const;
              // same as above, with selection done by weight.
-
 
            Real memory() const;
    };
