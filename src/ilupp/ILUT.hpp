@@ -193,6 +193,100 @@ void ILUT_wsearch(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<
     time_self = ((Real)clock() - (Real)time_begin) / (Real)CLOCKS_PER_SEC;
 }
 
+// Like ILUT(), but uses a heap to find k rather than a linear search through [0,i).
+template<class T>
+void ILUT_heap(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real& time_self)
+{
+    const clock_t time_begin=clock();
+    // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
+    if (non_fatal_error(!A.square_check(), "ILUT: argument matrix must be square"))
+        throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
+    const Integer m = A.rows(), n = A.columns();
+
+    // sparse vector which allows sequential access to indices via a heap
+    vector_sparse_ordered<T> w(m);
+    index_list list_L, list_U;
+
+    if(max_fill_in<1) max_fill_in = 1;
+    if(max_fill_in>n) max_fill_in = n;
+
+    Integer reserved_memory = max_fill_in*(max_fill_in+1)/2 + (n-max_fill_in)*max_fill_in;
+
+    U.reformat(m, m, reserved_memory, ROW);
+    L.reformat(m, m, reserved_memory, ROW);
+
+    // (1.) begin for i -- loop over rows
+    for (Integer i = 0; i < n; ++i) {
+        // (2.) initialize w
+        Real norm_wL = 0.0;     // norm of the L part of w
+        for (Integer k = A.pointer[i]; k < A.pointer[i+1]; ++k) {
+            w[A.indices[k]] = A.data[k];
+
+            // take the norm only of the L part to be consistent with the dropping rule applied in (10.)
+            if (A.indices[k] < i)
+                norm_wL += absvalue_squared(A.data[k]);
+        }     // end for k
+        // (3.) begin for k
+        norm_wL = std::sqrt(norm_wL);
+
+        // for all k < i with w(k) != 0:
+        for (Integer x = w.pop_next_index(); x >= 0; x = w.pop_next_index()) {
+            const Integer k = w.get_pointer(x);
+            if (k >= i)
+                break;
+            T& wk = w.get_data(x);
+            if (wk == static_cast<T>(0))        // numeric zeros may crop up as stale entries in the pqueue
+                continue;
+
+            // (5.) Apply dropping to w.
+            // NB: we do this BEFORE dividing by the diagonal, otherwise the scaling is wrong
+            if (std::abs(wk) < threshold*norm_wL) {
+                w.zero_set(k);
+            } else {
+                // (4.) w[k] = w[k] / U[k,k]
+                // NB: the first entry of the k-th row of U is the diagonal entry
+                wk /= U.data[U.pointer[k]];
+
+                // (6./7./8.) w = w - w[k] * u[k,*] (w[k] scalar, u[k,*] a row of U)
+                for (Integer j = U.pointer[k] + 1; j < U.pointer[k+1]; j++)
+                    w[U.indices[j]] -= wk * U.data[j];
+            }
+        }  // (9.) end for k
+
+        // (10.) Do dropping in w.
+        // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
+        w.take_largest_elements_by_abs_value_with_threshold(list_L, max_fill_in-1, threshold, 0, i);
+        // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
+        w.take_largest_elements_by_abs_value_with_threshold(list_U, max_fill_in-1, threshold, i+1, n);
+
+        // (11.) Copy values to L:
+        for (Integer j = 0; j < list_L.dimension(); ++j) {
+            L.data[L.pointer[i]+j] = w[list_L[j]];
+            L.indices[L.pointer[i]+j] = list_L[j];
+        }
+        L.data[L.pointer[i]+list_L.dimension()] = 1.0;      // diagonal element
+        L.indices[L.pointer[i]+list_L.dimension()] = i;     // diagonal element
+        L.pointer[i+1] = L.pointer[i]+list_L.dimension()+1;
+
+        // (12.) Copy values to U:
+        U.data[U.pointer[i]] = w[i]; // diagonal element
+        U.indices[U.pointer[i]] = i; // diagonal element
+        for (Integer j = 0; j < list_U.dimension(); ++j) {
+            U.data[U.pointer[i]+j+1] = w[list_U[j]];
+            U.indices[U.pointer[i]+j+1] = list_U[j];
+        }
+        U.pointer[i+1] = U.pointer[i]+list_U.dimension()+1;
+
+        if (U.data[U.pointer[i]] == 0)
+            throw std::runtime_error("matrix_sparse::ILUT: encountered zero pivot in row " + std::to_string(i));
+
+        // (13.) w:=0
+        w.zero_reset();
+    }  // (14.) end for i
+    L.compress();
+    U.compress();
+    time_self = ((Real)clock() - (Real)time_begin) / (Real)CLOCKS_PER_SEC;
+}
 
 
 // not yet functional. does it wrong.
@@ -238,7 +332,7 @@ void ILUT2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
                 w.take_step_forward();
             }   // end if
         } // end while
-        // (10.) Do dropping in w. 
+        // (10.) Do dropping in w.
         std::cout<<"w"<<std::endl<<w.expand();
         w.take_largest_elements_by_abs_value_with_threshold(list_L,max_fill_in-1,threshold,0,i);      // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
         w.take_largest_elements_by_abs_value_with_threshold(list_U,max_fill_in-1,threshold,i+1,n);    // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.

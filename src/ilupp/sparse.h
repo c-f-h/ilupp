@@ -244,9 +244,84 @@ template<class T> class vector_dense
            Real memory() const;
    };
 
+// same as vector_sparse_dynamic, but allows sequential access to indices via a heap-based priority queue
+template <class T>
+class vector_sparse_ordered : public vector_sparse_dynamic<T>
+{
+private:
+    using vector_sparse_dynamic<T>::size;
+    using vector_sparse_dynamic<T>::nnz;
+    using vector_sparse_dynamic<T>::data;
+    using vector_sparse_dynamic<T>::occupancy;
+    using vector_sparse_dynamic<T>::pointer;
+
+    struct IndexComparator
+    {
+        const vector_sparse_ordered* me;
+
+        IndexComparator(const vector_sparse_ordered& _me)
+            : me(&_me)
+        { }
+
+        bool operator()(Integer x, Integer y) {
+            // keep entries in ascending index order
+            return me->get_pointer(x) > me->get_pointer(y);
+        }
+    };
+
+    typedef std::priority_queue<Integer, std::vector<T>, IndexComparator> Queue;
+    Queue pqueue;
+
+public:
+    vector_sparse_ordered() :
+        vector_sparse_dynamic<T>(), pqueue(IndexComparator(*this))
+    { }
+
+    vector_sparse_ordered(Integer m) :
+        vector_sparse_dynamic<T>(m), pqueue(IndexComparator(*this))
+    { }
+
+    void zero_set() {
+        vector_sparse_dynamic<T>::zero_set();
+        pqueue = Queue(IndexComparator(*this));
+    }
+    void zero_reset() {
+        vector_sparse_dynamic<T>::zero_reset();
+        pqueue = Queue(IndexComparator(*this));
+    }
+
+    void zero_set(Integer j) {
+        vector_sparse_dynamic<T>::zero_set(j);
+        // there is no good way to remove the index from the pqueue, but it's ok;
+        // it will just come up as a numeric zero
+    }
+
+    T& operator[](Integer j) {
+        if (occupancy[j] < 0) {
+            occupancy[j]=nnz;
+            pointer[nnz]=j;
+            nnz++;
+            data[occupancy[j]] = static_cast<T>(0);
+
+            // update the priority queue
+            pqueue.push(nnz-1);
+        }
+        return data[occupancy[j]];
+    }
+
+    Integer pop_next_index() {
+        if (pqueue.empty())
+            return -1;
+        else {
+            const Integer x = pqueue.top();
+            pqueue.pop();
+            return x;
+        }
+    }
+};
+
 
 // same as vector_sparse_dynamic, but all non-zero elements can be accessed by increasing indices -- needed for ILUTP
-
 
 template<class T> class vector_sparse_dynamic_enhanced  : public vector_sparse_dynamic<T>
   {
