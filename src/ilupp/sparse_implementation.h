@@ -3614,8 +3614,8 @@ template<class T> void matrix_sparse<T>::compress(double threshold){
     Integer counter=0;
     // make new fields to temporarily store the new data.
     std::vector<Integer> new_pointer(pointer_size);
-    std::vector<Integer> new_indices(nnz);
-    std::vector<T>       new_data(nnz);
+    std::vector<Integer> new_indices(actual_non_zeroes());
+    std::vector<T>       new_data(actual_non_zeroes());
     // check by one row/column if the absolute value of the data is larger than the treshold and then copy.
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
@@ -3644,8 +3644,8 @@ template<class T> void matrix_sparse<T>::positional_compress(const iluplusplus_p
     Integer size = max(rows(),columns());
     // make new fields to temporarily store the new data.
     std::vector<Integer> new_pointer(pointer_size);
-    std::vector<Integer> new_indices(nnz);
-    std::vector<T>       new_data(nnz);
+    std::vector<Integer> new_indices(actual_non_zeroes());
+    std::vector<T>       new_data(actual_non_zeroes());
     // check by one row/column if the absolute value of the data is sufficiently large, then copy
     new_pointer[0]=0;
     for (i=0; i<pointer_size-1; i++){
