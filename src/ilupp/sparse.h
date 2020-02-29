@@ -190,6 +190,7 @@ template<class T> class vector_dense
            Integer& get_pointer(Integer x)          { return pointer[x]; }
            bool zero_check(Integer j) const         { return occupancy[j] < 0; }
            bool non_zero_check(Integer j) const     { return !zero_check(j); }
+           Integer find_next_index(Integer j) const;    // find x for the entry with the next index after j; -1 if none
            void zero_set();
            void zero_reset();
            T abs_max() const;  // returns value of largest element by absolute value

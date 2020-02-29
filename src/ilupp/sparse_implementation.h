@@ -1058,6 +1058,19 @@ template<class T> void vector_sparse_dynamic<T>::zero_set(){
     nnz = 0;
 }
 
+template<class T>
+Integer vector_sparse_dynamic<T>::find_next_index(Integer j) const {
+    Integer z = -1;
+    Integer min_dist = size;    // larger than any valid distance
+    for (Integer x = 0; x < nnz; ++x) {
+        const Integer dist = get_pointer(x) - j;
+        if (dist > 0 && dist < min_dist) {
+            z = x;
+            min_dist = dist;
+        }
+    }
+    return z;
+}
 
 template<class T> void vector_sparse_dynamic<T>::print_non_zeroes() const {
     Integer k;
