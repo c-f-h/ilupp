@@ -10,7 +10,7 @@ namespace iluplusplus {
 // order is slow. This is improved in ILUTP2 using vector_sparse_dynamic_enhanced
 
 template<class T>
-bool ILUTP2(
+void ILUTP2(
         const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm,
         Integer max_fill_in, Real threshold, Real perm_tol, Integer bp,
         Integer& zero_pivots, Real& time_self, Real mem_factor)
@@ -77,10 +77,9 @@ bool ILUTP2(
             }
         }
 
-        if(L.pointer[i]+list_L.dimension()+1>reserved_memory){
-            std::cerr<<"matrix_sparse::ILUTP2: memory reserved was insufficient."<<std::endl;
-            return false;
-        }
+        if(L.pointer[i]+list_L.dimension()+1>reserved_memory)
+            throw std::runtime_error("ILUTP2: memory reserved was insufficient.");
+
         for(j=0;j<list_L.dimension();j++){
             L.data[L.pointer[i]+j] = w[list_L[list_L.dimension()-1-j]];
             L.indices[L.pointer[i]+j] = inverse_perm[list_L[list_L.dimension()-1-j]];
@@ -88,21 +87,21 @@ bool ILUTP2(
         L.data[L.pointer[i]+list_L.dimension()]=1.0;
         L.indices[L.pointer[i]+list_L.dimension()]=i;
         L.pointer[i+1]=L.pointer[i]+list_L.dimension()+1;
+
         // (12.) Copy values to U:
-        if(U.pointer[i]+list_U.dimension()>reserved_memory){
-            throw std::runtime_error("matrix_sparse::ILUTP2: memory reserved was insufficient.");
-        }
+        if (U.pointer[i] + list_U.dimension() > reserved_memory)
+            throw std::runtime_error("ILUTP2: memory reserved was insufficient.");
+
         for(j=0;j<list_U.dimension();j++){
             U.data[U.pointer[i]+j] = w[list_U[list_U.dimension()-1-j]];
             U.indices[U.pointer[i]+j] = list_U[list_U.dimension()-1-j];
-        }  // end j
+        }
         U.pointer[i+1]=U.pointer[i]+list_U.dimension();
         p=inverse_perm[U.indices[U.pointer[i]]];
         inverse_perm.switch_index(perm[i],U.indices[U.pointer[i]]);
         perm.switch_index(i,p);
-        if(U.data[U.pointer[i]]==0) {
+        if(U.data[U.pointer[i]]==0)
             throw std::runtime_error("matrix_sparse::ILUTP2: encountered zero pivot in row ");
-        }
 
         // (13.) w:=0
         w.zero_reset();
@@ -116,7 +115,6 @@ bool ILUTP2(
 
     time_end=clock();
     time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
-    return true;
 }
 
 } // end namespace iluplusplus

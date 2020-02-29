@@ -108,7 +108,7 @@ void update_sparse_matrix_fields(Integer k, Integer *pointer, Integer *indices, 
 // In this case, it still works as a preconditioner
 // ILUC2 employs the linked lists for data structures and ist MUCH faster.
 template <class T>
-bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor = 10.0)
+void ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, Integer max_fill_in, Real threshold, Real mem_factor = 10.0)
 {
     const Integer m = A.dim_along_orientation(), n = A.dim_against_orientation();   // for csr: rows, columns
     Integer k,j,h;
@@ -226,12 +226,12 @@ bool ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     }
     L.compress(-1.0);
     U.compress(-1.0);
-    return true;
 }
 
 // we use linked list for L and A, A is only needed in column format and we perform column pivoting
 // U is stored with a companion structure
-template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
+template<class T>
+void ILUCP4(const matrix_sparse<T>& Acol,
         matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in,
         Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0)
 {
@@ -384,7 +384,6 @@ template<class T> bool ILUCP4(const matrix_sparse<T>& Acol,
     U.compress();
 
     time_self = ((Real)clock() - (Real)time_begin) / (Real)CLOCKS_PER_SEC;
-    return true;
 }
 
 template<class T>

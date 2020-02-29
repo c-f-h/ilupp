@@ -889,14 +889,15 @@ template <class T, class matrix_type, class vector_type>
 ILUCPreconditioner<T,matrix_type,vector_type>::ILUCPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
     const clock_t time_begin = clock();
     if (A.orient() == ROW) {
-        this->preconditioner_exists = ILUC2(A, this->Precond_left, this->Precond_right, max_fill_in, threshold);
+        ILUC2(A, this->Precond_left, this->Precond_right, max_fill_in, threshold);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
     } else {
-        this->preconditioner_exists = ILUC2(A, this->Precond_right, this->Precond_left, max_fill_in, threshold);
+        ILUC2(A, this->Precond_right, this->Precond_left, max_fill_in, threshold);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
     }
+    this->preconditioner_exists = true;
     this->setup_time = ((Real)clock() - (Real) time_begin) / (Real) CLOCKS_PER_SEC;
     this->pre_image_size=this->Precond_left.rows();
     this->image_size=this->Precond_right.columns();
@@ -941,16 +942,17 @@ template <class T, class matrix_type, class vector_type>
 ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
     if(A.orient()==ROW){
         // NOTE: ILUT2 does not yet work.
-        this->preconditioner_exists = ILUT(A, this->Precond_left, this->Precond_right, max_fill_in, threshold, this->setup_time);
+        ILUT(A, this->Precond_left, this->Precond_right, max_fill_in, threshold, this->setup_time);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
     } else {
-        this->preconditioner_exists = ILUT(A, this->Precond_right, this->Precond_left, max_fill_in, threshold, this->setup_time);
+        ILUT(A, this->Precond_right, this->Precond_left, max_fill_in, threshold, this->setup_time);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
     }
+    this->preconditioner_exists = true;
     this->pre_image_size=this->Precond_left.rows();
     this->image_size=this->Precond_right.columns();
     this->intermediate_size=this->Precond_left.columns();
@@ -1005,16 +1007,16 @@ template <class T, class matrix_type, class vector_type>
 ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor)
 {
     if(A.orient()==ROW){
-        this->preconditioner_exists = ILUTP2(A, this->Precond_left,
-                this->Precond_right, this->permutation, max_fill_in, threshold,
+        ILUTP2(A, this->Precond_left, this->Precond_right,
+                this->permutation, max_fill_in, threshold,
                 perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
         this->right_matrix_usage = PERM1;
     } else {
-        this->preconditioner_exists = ILUTP2(A, this->Precond_right,
-                this->Precond_left, this->permutation, max_fill_in, threshold,
+        ILUTP2(A, this->Precond_right, this->Precond_left,
+                this->permutation, max_fill_in, threshold,
                 perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
@@ -1023,6 +1025,7 @@ ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix
         this->left_matrix_usage = PERM1;
         this->right_matrix_usage = NOPERM;
     }
+    this->preconditioner_exists = true;
     this->pre_image_size=this->Precond_left.rows();
     this->image_size=this->Precond_right.columns();
     this->intermediate_size=this->Precond_left.columns();
@@ -1073,16 +1076,16 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
         Integer rp, Real mem_factor)
 {
     if(Acol.orient()==COLUMN){
-        this->preconditioner_exists = ILUCP4(Acol, this->Precond_left,
-                this->Precond_right, this->permutation, max_fill_in, threshold,
+        ILUCP4(Acol, this->Precond_left, this->Precond_right,
+                this->permutation, max_fill_in, threshold,
                 perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
         this->right_matrix_usage = PERM1;
     } else {
-        this->preconditioner_exists = ILUCP4(Acol, this->Precond_right,
-                this->Precond_left, this->permutation, max_fill_in, threshold,
+        ILUCP4(Acol, this->Precond_right, this->Precond_left,
+                this->permutation, max_fill_in, threshold,
                 perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
@@ -1091,6 +1094,7 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
         this->left_matrix_usage = PERM1;
         this->right_matrix_usage = NOPERM;
     }
+    this->preconditioner_exists = true;
     this->pre_image_size=this->Precond_left.rows();
     this->image_size=this->Precond_right.columns();
     this->intermediate_size=this->Precond_left.columns();
