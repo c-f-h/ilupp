@@ -1,21 +1,33 @@
-# ilupp -- Python bindings for ILU++   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp)
+# ilupp -- ILU algorithms for C++ and Python   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp)
 
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
 
-This project provides Python bindings for the ILU++ package for incomplete LU
-factorization via pybind11. ILU++ is described in the publication
+This project provides C++ implementations and Python bindings for many incomplete LU
+and incomplete Cholesky algorithms. It is based on the original ILU++ package
+described in the publication
 
 - Mayer, J. (2007), ILU++: A new software package for solving sparse linear
   systems with iterative methods. *Proc. Appl. Math. Mech., 7: 2020123-2020124.*
   [doi:10.1002/pamm.200700911](https://dx.doi.org/10.1002/pamm.200700911)
 
-The original ILU++ homepage is lost to time, although it can still be accessed
+Compared to the original ILU++, this package has been significantly improved:
+
+- Code cleaned up and modernized for C++11
+- Extensive test suite
+- Many critical bugs fixed
+- Added several new factorizations, like ILU(0), IChol(0), and incomplete Cholesky
+  with choosable fill-in and thresholding
+
+It also contains the multilevel Crout ILU preconditioner described in
+[(Mayer 2007)](https://doi.org/10.1002/nla.554).
+
+The original ILU++ homepage is no longer available, although it can still be accessed
 via archive.org:
 
 https://web.archive.org/web/20101001133632/http://iamlasun8.mathematik.uni-karlsruhe.de/~ae04/iluplusplus_introduction.html
 
-There is little documentation beyond some comments in the source code.
+The original ILU++ had little documentation beyond some comments in the source code.
 Nevertheless, the Python bindings provide a simple interface to either solve a
 linear system in a black-box way, or to compute a preconditioner and apply it
 to a vector.  In both cases, the matrix should be provided as a Scipy CSR or
