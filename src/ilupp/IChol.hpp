@@ -164,7 +164,7 @@ matrix_sparse<T> ICholT_tri(const matrix_sparse<T>& A, Integer add_fill_in, Real
 }
 
 template <class T>
-matrix_sparse<T> ICholT(const matrix_sparse<T>& A, Integer add_fill_in, Real threshold, Real mem_factor=10.0)
+matrix_sparse<T> ICholT(const matrix_sparse<T>& A, Integer add_fill_in=0, Real threshold=0.0, Real mem_factor=10.0)
 {
     matrix_sparse<T> A_tri = A.natural_triangular_part(false);
     if (A.orientation == ROW)
