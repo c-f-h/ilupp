@@ -206,3 +206,7 @@ def ilu0(A):
 def ilut(A, fill_in=1000, threshold=0.1):
     """Compute the (L,U) factors of an incomplete LU decomposition with thresholding."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilut(*_matrix_fields(A), fill_in, threshold))
+
+def iluc(A, fill_in=1000, threshold=0.1):
+    """Compute the (L,U) factors of an incomplete Crout LU decomposition with thresholding."""
+    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.iluc(*_matrix_fields(A), fill_in, threshold))

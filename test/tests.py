@@ -161,6 +161,36 @@ def ilut_dense(A, fill_in=None, threshold=0.1):
     else:
         return (L, U)
 
+def iluc_dense(A, fill_in=1000, threshold=0.1):
+    # see (Li, Saad, Chow 2002), Crout versions of ILU for general sparse matrices
+    is_csc = isinstance(A, scipy.sparse.csc_matrix)
+    if is_csc:
+        A = A.T
+    A = A.toarray()
+    n = A.shape[0]
+    L = np.zeros_like(A)
+    U = np.zeros_like(A)
+    for k in range(n):
+        z = A[k, :].copy()     # get upper row into z
+        z[:k] = 0
+        for i in range(k):
+            if L[k,i] != 0:
+                z[k:] -= L[k,i] * U[i,k:]
+        w = A[:, k].copy()     # get lower column into w
+        w[:k+1] = 0
+        for i in range(k):
+            if U[i,k] != 0:
+                w[k+1:] -= U[i,k] * L[k+1:,i]
+        do_dropping(z[k+1:], max_entries=fill_in-1, threshold=threshold)
+        do_dropping(w[k+1:], max_entries=fill_in-1, threshold=threshold)
+        U[k,:] = z
+        L[:,k] = w / U[k,k]
+        L[k,k] = 1
+    if is_csc:
+        return U.T, L.T
+    else:
+        return L, U
+
 ########################################
 # auto-generated test cases
 
@@ -238,6 +268,7 @@ class TestCases(unittest.TestCase):
             (ilupp.icholt, icholt_dense, {}, True),
             (ilupp.ilu0, ilu0_dense, {}, False),
             (ilupp.ilut, ilut_dense, {'fill_in': 5, 'threshold': 0.1}, False),
+            (ilupp.iluc, iluc_dense, {'fill_in': 5, 'threshold': 0.1}, False),
     ]:
         base_name = 'test_' + F.__name__ + '_'
 
