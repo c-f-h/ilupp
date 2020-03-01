@@ -29,7 +29,7 @@ T sparse_dot_product(Integer l1, Integer u1, Integer l2, Integer u2, const Integ
 // input A should be in major triangular form (j <= i), the diagonal must have no zeros
 // returns an array of new data representing the L factor (same sparsity structure as A)
 template <class T>
-std::vector<T> compute_ichol(const matrix_sparse<T>& A)
+std::vector<T> compute_ichol0(const matrix_sparse<T>& A)
 {
     std::vector<T> new_data(A.actual_non_zeroes());
 
@@ -59,14 +59,14 @@ std::vector<T> compute_ichol(const matrix_sparse<T>& A)
 
 // compute the L factor in a L.L^T incomplete Cholesky decomposition
 template <class T>
-matrix_sparse<T> IChol(const matrix_sparse<T>& A)
+matrix_sparse<T> IChol0(const matrix_sparse<T>& A)
 {
     matrix_sparse<T> L = A.natural_triangular_part(true);
     // ensure we have the lower triangular part
     if (L.orientation == COLUMN)
         L.transpose_in_place();
 
-    std::vector<T> new_data = compute_ichol(L);
+    std::vector<T> new_data = compute_ichol0(L);
     std::copy(new_data.begin(), new_data.end(), &L.data[0]);
     return L;
 }

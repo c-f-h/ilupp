@@ -64,7 +64,7 @@ def do_dropping(X, max_entries=None, threshold=None):
         max_entries = min(max_entries, X.shape[0])
         X[indices[:-max_entries]] = 0
 
-def ichol_dense(A):
+def ichol0_dense(A):
     A = A.toarray()
     # simple reference implementation for ichol based on dense matrices
     L = np.tril(A)
@@ -234,7 +234,7 @@ class TestCases(unittest.TestCase):
     # generate tests for stand-alone factorization functions
     for (F, ref, args, sym) in [
             # function to test, reference implementation, symmetric
-            (ilupp.ichol, ichol_dense, {}, True),
+            (ilupp.ichol0, ichol0_dense, {}, True),
             (ilupp.icholt, icholt_dense, {}, True),
             (ilupp.ilu0, ilu0_dense, {}, False),
             (ilupp.ilut, ilut_dense, {'fill_in': 5, 'threshold': 0.1}, False),

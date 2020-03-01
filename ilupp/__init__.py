@@ -191,9 +191,9 @@ class ILUCPPreconditioner(_BaseWrapper):
 
 ########################################
 
-def ichol(A):
+def ichol0(A):
     """Compute the L factor of an incomplete Cholesky decomposition without fill-in for the symmetric matrix A."""
-    return _matrix_from_info(*_ilupp.ichol(*_matrix_fields(A)))
+    return _matrix_from_info(*_ilupp.ichol0(*_matrix_fields(A)))
 
 def icholt(A, add_fill_in=0, threshold=0.0):
     """Compute the L factor of an incomplete Cholesky decomposition with thresholding for the symmetric matrix A."""
