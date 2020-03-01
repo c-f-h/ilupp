@@ -1,6 +1,7 @@
 #pragma once
 
 #include "declarations.h"
+#include "dropping.hpp"
 
 namespace iluplusplus {
 
@@ -113,7 +114,7 @@ void ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
     const Integer m = A.dim_along_orientation(), n = A.dim_against_orientation();   // for csr: rows, columns
     Integer k,j,h;
     vector_sparse_dynamic<T> z,w;
-    index_list listw, listz;
+    std::vector<Integer> listw, listz;
     // calculate maximal size needed for L and U:
     Integer reserved_memory = min(max_fill_in*n, (Integer) mem_factor*A.non_zeroes());
 
@@ -175,42 +176,19 @@ void ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
             throw std::runtime_error("ILUC2: zero pivot on diagonal, k=" + std::to_string(k));
 
         // (10.) apply dropping to w
-        w.take_largest_elements_by_abs_value_with_threshold(listw, max_fill_in-1, threshold, k+1, m);
+        threshold_and_drop(w, listw, max_fill_in-1, threshold, k+1, m);
 
         // (11.) apply dropping to z
-        z.take_largest_elements_by_abs_value_with_threshold(listz, max_fill_in-1, threshold, k+1, n);
+        threshold_and_drop(z, listz, max_fill_in-1, threshold, k+1, n);
 
         // copy z to U - (12.) in the algorithm of Saad.
+        U.append_row_with_prefix(k, z, listz, k, z[k]);
 
-        // ensure we reserved enough space
-        if (U.pointer[k]+listz.dimension() > reserved_memory
-                || L.pointer[k]+listw.dimension()+1 > reserved_memory) {
-            throw std::runtime_error("ILUC2: memory reserved was insufficient. Increase mem_factor!");
-        }
-
-        // set U[k,k] = z[k] = A[k,k]
-        U.indices[U.pointer[k]] = k;
-        U.data[U.pointer[k]] = z[k];
-
-        // copy z[:] to U[k,:]
-        for(j=0; j<listz.dimension(); ++j) {
-            U.data   [U.pointer[k]+j+1] = z[listz[j]];
-            U.indices[U.pointer[k]+j+1] = listz[j];
-        }
-        U.pointer[k+1] = U.pointer[k]+listz.dimension()+1;
-
-        // copy w to L - (13.) in the algorithm of Saad.
-        // set L[k,k] = 1
-        L.indices[L.pointer[k]] = k;
-        L.data[L.pointer[k]] = 1.0;
-
-        // copy w[:] / U_kk to L[:,k]
+        // copy w / U_kk to L - (13.) in the algorithm of Saad.
         const T U_kk = U.data[U.pointer[k]];  // diagonal entry of U
-        for(j=0; j<listw.dimension(); ++j) {
-            L.data   [L.pointer[k]+j+1] = w[listw[j]] / U_kk;
-            L.indices[L.pointer[k]+j+1] = listw[j];
-        }
-        L.pointer[k+1] = L.pointer[k]+listw.dimension()+1;
+        for (size_t x = 0; x < listw.size(); ++x)
+            w.get_data(listw[x]) /= U_kk;
+        L.append_row_with_prefix(k, w, listw, k, 1.0);
 
         update_sparse_matrix_fields(k, A.pointer, A.indices, listA, headA, firstA);
         update_triangular_fields(k, L.pointer, L.indices, listL, firstL);
