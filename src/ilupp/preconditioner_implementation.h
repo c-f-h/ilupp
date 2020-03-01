@@ -941,12 +941,11 @@ template <class T, class matrix_type, class vector_type>
 template <class T, class matrix_type, class vector_type>
 ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold){
     if(A.orient()==ROW){
-        // NOTE: ILUT2 does not yet work.
-        ILUT(A, this->Precond_left, this->Precond_right, max_fill_in, threshold, this->setup_time);
+        ILUT_heap(A, this->Precond_left, this->Precond_right, max_fill_in, threshold, this->setup_time);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=UPPER_TRIANGULAR;
     } else {
-        ILUT(A, this->Precond_right, this->Precond_left, max_fill_in, threshold, this->setup_time);
+        ILUT_heap(A, this->Precond_right, this->Precond_left, max_fill_in, threshold, this->setup_time);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
         this->left_form=LOWER_TRIANGULAR;

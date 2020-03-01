@@ -300,7 +300,7 @@ PYBIND11_MODULE(_ilupp, m)
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer fill_in, Real threshold) {
             matrix L, U;
             Real time;
-            ILUT(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold, time);
+            ILUT_heap(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold, time);
             if (!is_csr) {
                 L.interchange(U);
                 L.transpose_in_place();
