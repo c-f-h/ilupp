@@ -439,6 +439,11 @@ template<class T> class matrix_sparse
            Real column_density() const;
            void scalar_multiply(T d);  // multiplies matrix itself with d (and overwrites it)
 
+           // append first the single prefix entry and then an indexed row (or column in the CSC case)
+           void append_row_with_prefix(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices, Integer prefix_j, T prefix_value);
+           // append an indexed row (or column in the CSC case) and then the single suffix entry
+           void append_row_with_suffix(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices, Integer suffix_j, T suffix_value);
+
            //////////////////////////////////////////////
            // scaling the rows and columns of matrices //
            //////////////////////////////////////////////

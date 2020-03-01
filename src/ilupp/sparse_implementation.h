@@ -3134,6 +3134,49 @@ template<class T> void matrix_sparse<T>::matrix_vector_multiplication(matrix_usa
     generic_matrix_vector_multiplication_addition(use,w,v);
   }
 
+template <class T>
+void matrix_sparse<T>::append_row_with_prefix(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices, Integer prefix_j, T prefix_value)
+{
+    if (i >= dim_major())
+        throw std::logic_error("append_row_with_prefix: row index too large");
+
+    Integer kk = pointer[i];
+
+    if (kk + row_indices.size() + 1 > nnz)
+        throw std::runtime_error("append_row_with_prefix: insufficient memory reserved");
+
+    // insert prefix element
+    data[kk] = prefix_value;
+    indices[kk++] = prefix_j;
+
+    for (size_t j = 0; j < row_indices.size(); ++j) {
+        data[kk] = w.get_data(row_indices[j]);
+        indices[kk++] = w.get_pointer(row_indices[j]);
+    }
+    pointer[i+1] = kk;
+}
+
+template <class T>
+void matrix_sparse<T>::append_row_with_suffix(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices, Integer suffix_j, T suffix_value)
+{
+    if (i >= dim_major())
+        std::logic_error("append_row_with_suffix: row index too large");
+
+    Integer kk = pointer[i];
+
+    if (kk + row_indices.size() + 1 > nnz)
+        throw std::runtime_error("append_row_with_suffix: insufficient memory reserved");
+
+    for (size_t j = 0; j < row_indices.size(); ++j) {
+        data[kk] = w.get_data(row_indices[j]);
+        indices[kk++] = w.get_pointer(row_indices[j]);
+    }
+    // insert suffix element
+    data[kk] = suffix_value;
+    indices[kk++] = suffix_j;
+
+    pointer[i+1] = kk;
+}
 
 
 

@@ -261,22 +261,10 @@ void ILUT_heap(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>&
         threshold_and_drop(w, list_U, max_fill_in-1, threshold, i+1, n);
 
         // (11.) Copy values to L:
-        for (size_t j = 0; j < list_L.size(); ++j) {
-            L.data[L.pointer[i]+j] = w.get_data(list_L[j]);
-            L.indices[L.pointer[i]+j] = w.get_pointer(list_L[j]);
-        }
-        L.data[L.pointer[i]+list_L.size()] = 1.0;      // diagonal element
-        L.indices[L.pointer[i]+list_L.size()] = i;     // diagonal element
-        L.pointer[i+1] = L.pointer[i]+list_L.size()+1;
+        L.append_row_with_suffix(i, w, list_L, i, 1.0);
 
         // (12.) Copy values to U:
-        U.data[U.pointer[i]] = w[i]; // diagonal element
-        U.indices[U.pointer[i]] = i; // diagonal element
-        for (size_t j = 0; j < list_U.size(); ++j) {
-            U.data[U.pointer[i]+j+1] = w.get_data(list_U[j]);
-            U.indices[U.pointer[i]+j+1] = w.get_pointer(list_U[j]);
-        }
-        U.pointer[i+1] = U.pointer[i]+list_U.size()+1;
+        U.append_row_with_prefix(i, w, list_U, i, w[i]);
 
         if (U.data[U.pointer[i]] == 0)
             throw std::runtime_error("ILUT_heap: encountered zero pivot in row " + std::to_string(i));
