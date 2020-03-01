@@ -122,11 +122,11 @@ setup(
     ],
     ext_modules = ext_modules,
     packages = ['ilupp'],
-    install_requires = [],
+    install_requires = [ 'numpy>=1.11', 'scipy' ],
     setup_requires = ['pybind11>=2.4'],
     cmdclass = {'build_ext': BuildExt},
     zip_safe = False,
 
-    tests_require = ['nose', 'numpy', 'scipy'],
+    tests_require = ['nose'],
     test_suite = 'nose.collector'
 )
