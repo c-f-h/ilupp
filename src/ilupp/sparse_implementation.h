@@ -3135,6 +3135,24 @@ template<class T> void matrix_sparse<T>::matrix_vector_multiplication(matrix_usa
   }
 
 template <class T>
+void matrix_sparse<T>::append_row(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices)
+{
+    if (i >= dim_major())
+        throw std::logic_error("append_row: row index too large");
+
+    Integer kk = pointer[i];
+
+    if (kk + row_indices.size() > nnz)
+        throw std::runtime_error("append_row: insufficient memory reserved");
+
+    for (size_t j = 0; j < row_indices.size(); ++j) {
+        data[kk] = w.get_data(row_indices[j]);
+        indices[kk++] = w.get_pointer(row_indices[j]);
+    }
+    pointer[i+1] = kk;
+}
+
+template <class T>
 void matrix_sparse<T>::append_row_with_prefix(Integer i, const vector_sparse_dynamic<T>& w, const std::vector<Integer>& row_indices, Integer prefix_j, T prefix_value)
 {
     if (i >= dim_major())

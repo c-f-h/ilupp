@@ -2,6 +2,7 @@
 
 #include "declarations.h"
 #include <cmath>
+#include "dropping.hpp"
 
 namespace iluplusplus {
 
@@ -95,7 +96,7 @@ matrix_sparse<T> ICholT_tri(const matrix_sparse<T>& A, Integer add_fill_in, Real
     vector_sparse_dynamic<T> w(m);
 
     std::vector<T> D(m, 0.0);       // storage for the diagonal of L
-    index_list listw;               // storage for selected entries to keep
+    std::vector<Integer> listw;     // indices of selected entries to keep
 
     // refer to icholt_dense in tests.py for the algorithm
 
@@ -141,20 +142,10 @@ matrix_sparse<T> ICholT_tri(const matrix_sparse<T>& A, Integer add_fill_in, Real
 
         // apply dropping to w
         const Integer col_len = A.pointer[j+1] - A.pointer[j];  // nnz in the original column A[:,j]
-        w.take_largest_elements_by_abs_value_with_threshold(listw, col_len + add_fill_in, threshold, j, m);   // TODO: limiting to [j,m) is unnecessary
+        threshold_and_drop(w, listw, col_len + add_fill_in, threshold, j, m);   // TODO: limiting to [j,m) is unnecessary
 
         // copy w into L[:,j]
-
-        // ensure we reserved enough space
-        if (L.pointer[j] + listw.dimension() > reserved_memory) {
-            throw std::runtime_error("ICholT: memory reserved was insufficient. Increase mem_factor!");
-        }
-
-        for(Integer x = 0; x < listw.dimension(); ++x) {
-            L.data   [L.pointer[j]+x] = w[listw[x]];
-            L.indices[L.pointer[j]+x] = listw[x];
-        }
-        L.pointer[j+1] = L.pointer[j] + listw.dimension();
+        L.append_row(j, w, listw);
 
         update_triangular_fields(j, L.pointer, L.indices, listL, firstL);
     }
