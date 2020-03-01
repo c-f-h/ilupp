@@ -1,6 +1,7 @@
 #pragma once
 
 #include "declarations.h"
+#include "dropping.hpp"
 
 namespace iluplusplus {
 
@@ -199,13 +200,13 @@ void ILUT_heap(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>&
 {
     const clock_t time_begin=clock();
     // the notation will be for A being a ROW matrix, i.e. U also a ROW matrix and L a ROW matrix.
-    if (non_fatal_error(!A.square_check(), "ILUT: argument matrix must be square"))
+    if (non_fatal_error(!A.square_check(), "ILUT_heap: argument matrix must be square"))
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     const Integer m = A.rows(), n = A.columns();
 
     // sparse vector which allows sequential access to indices via a heap
     vector_sparse_ordered<T> w(m);
-    index_list list_L, list_U;
+    std::vector<Integer> list_L, list_U;
 
     if(max_fill_in<1) max_fill_in = 1;
     if(max_fill_in>n) max_fill_in = n;
@@ -255,30 +256,30 @@ void ILUT_heap(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>&
 
         // (10.) Do dropping in w.
         // keep one space free for the diagonal; begin with 0 and go upto the diagonal, but not including it.
-        w.take_largest_elements_by_abs_value_with_threshold(list_L, max_fill_in-1, threshold, 0, i);
+        threshold_and_drop(w, list_L, max_fill_in-1, threshold, 0, i);
         // keep one space free for the diagonal; begin with the element after the diagonal and go to the end.
-        w.take_largest_elements_by_abs_value_with_threshold(list_U, max_fill_in-1, threshold, i+1, n);
+        threshold_and_drop(w, list_U, max_fill_in-1, threshold, i+1, n);
 
         // (11.) Copy values to L:
-        for (Integer j = 0; j < list_L.dimension(); ++j) {
-            L.data[L.pointer[i]+j] = w[list_L[j]];
-            L.indices[L.pointer[i]+j] = list_L[j];
+        for (size_t j = 0; j < list_L.size(); ++j) {
+            L.data[L.pointer[i]+j] = w.get_data(list_L[j]);
+            L.indices[L.pointer[i]+j] = w.get_pointer(list_L[j]);
         }
-        L.data[L.pointer[i]+list_L.dimension()] = 1.0;      // diagonal element
-        L.indices[L.pointer[i]+list_L.dimension()] = i;     // diagonal element
-        L.pointer[i+1] = L.pointer[i]+list_L.dimension()+1;
+        L.data[L.pointer[i]+list_L.size()] = 1.0;      // diagonal element
+        L.indices[L.pointer[i]+list_L.size()] = i;     // diagonal element
+        L.pointer[i+1] = L.pointer[i]+list_L.size()+1;
 
         // (12.) Copy values to U:
         U.data[U.pointer[i]] = w[i]; // diagonal element
         U.indices[U.pointer[i]] = i; // diagonal element
-        for (Integer j = 0; j < list_U.dimension(); ++j) {
-            U.data[U.pointer[i]+j+1] = w[list_U[j]];
-            U.indices[U.pointer[i]+j+1] = list_U[j];
+        for (size_t j = 0; j < list_U.size(); ++j) {
+            U.data[U.pointer[i]+j+1] = w.get_data(list_U[j]);
+            U.indices[U.pointer[i]+j+1] = w.get_pointer(list_U[j]);
         }
-        U.pointer[i+1] = U.pointer[i]+list_U.dimension()+1;
+        U.pointer[i+1] = U.pointer[i]+list_U.size()+1;
 
         if (U.data[U.pointer[i]] == 0)
-            throw std::runtime_error("matrix_sparse::ILUT: encountered zero pivot in row " + std::to_string(i));
+            throw std::runtime_error("ILUT_heap: encountered zero pivot in row " + std::to_string(i));
 
         // (13.) w:=0
         w.zero_reset();
