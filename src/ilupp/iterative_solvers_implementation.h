@@ -422,12 +422,12 @@ template<class T, class matrix_type, class vector_type>
        rel_tol = std::exp(-rel_tol*std::log(10.0));
        abs_tol = std::exp(-abs_tol*std::log(10.0));
        Integer problem_size = A.rows();
-       vector_type r(problem_size);
-       vector_type y(problem_size);
-       vector_type p(problem_size);
-       vector_type s(problem_size);
-       vector_type Ap(problem_size);
-       vector_type As(problem_size);
+       vector_type r(problem_size, 0.0);
+       vector_type y(problem_size, 0.0);
+       vector_type p(problem_size, 0.0);
+       vector_type s(problem_size, 0.0);
+       vector_type Ap(problem_size, 0.0);
+       vector_type As(problem_size, 0.0);
        vector_type r0star(problem_size);
        T omega, alpha, beta, dot_r_r0star;
        Integer iter;
@@ -570,8 +570,8 @@ template<class T, class matrix_type, class vector_type>
        rel_tol = std::exp(-rel_tol*std::log(10.0));
        abs_tol = std::exp(-abs_tol*std::log(10.0));
        Integer problem_size = A.rows();
-       vector_type r(problem_size);
-       vector_type z(problem_size);
+       vector_type r(problem_size, 0);
+       vector_type z(problem_size, 0);
        Integer iter;
        Real initial_res, res;
        // calculate initial residual r=L'(b-Ax), L' left part of preconditioner
@@ -679,14 +679,14 @@ template<class T, class matrix_type, class vector_type>
        rel_tol = std::exp(-rel_tol*std::log(10.0));
        abs_tol = std::exp(-abs_tol*std::log(10.0));
        Integer problem_size = A.rows();
-       vector_type y(problem_size);
-       vector_type r(problem_size);
-       vector_type r0star(problem_size);
-       vector_type p(problem_size);
-       vector_type q(problem_size);
-       vector_type h(problem_size);
-       vector_type u(problem_size);
-       vector_type uq(problem_size);
+       vector_type y(problem_size, 0.0);
+       vector_type r(problem_size, 0.0);
+       vector_type r0star(problem_size, 0.0);
+       vector_type p(problem_size, 0.0);
+       vector_type q(problem_size, 0.0);
+       vector_type h(problem_size, 0.0);
+       vector_type u(problem_size, 0.0);
+       vector_type uq(problem_size, 0.0);
        T alpha, beta, dot_r_r0star_old, dot_r_r0star_new;
        Integer iter;
        Real initial_res, res;
@@ -779,7 +779,7 @@ template<class matrix_type, class vector_type>
     void Update(vector_type &x, Integer k, matrix_type &H, const vector_type &s, std::vector<vector_type>& v)
     {
        Integer i,j;
-       vector_type y(s);
+       vector_type y(s, 0.0);
        // Backsolve:
        for (i = k; i >= 0; i--) {
            y[i] /= H(i,i);
@@ -828,7 +828,7 @@ template<class T, class matrix_type, class vector_type>
        if(size < 1){x.resize(0,0.0); return false;}
        Real rel_resid, initial_res, res;
        Integer i, j = 1, k;
-       vector_type s(restart+1), cs(restart+1), sn(restart+1), w;
+       vector_type s(restart+1, 0.0), cs(restart+1, 0.0), sn(restart+1, 0.0), w;
        matrix_dense<T> H(restart+1,restart+1,0.0);
 
        vector_type r,y;

@@ -95,23 +95,10 @@ template<class T> vector_dense<T>::vector_dense(){
     size = 0; data = 0;
 }
 
-
-/*
-template<class T> vector_dense<T>::vector_dense(Integer m) {
-    size = m;
-    data   = new (std::nothrow) T[m];
-    if (data == 0){
-        std::cerr<<"vector_dense::vector_dense: "<<ippe.error_message()<<std::endl;
-        exit(1);
-    }
-    for(Integer i=0;i<size;i++) data[i]=0;
- }
-*/
-
 template<class T> vector_dense<T>::vector_dense(Integer m) {
     size = 0; data = 0; // initialization needed, so that erase_resize_data_field actually can check if resizing needs to take place.
     erase_resize_data_field(m);
-    for(Integer i=0;i<size;i++) data[i]=0;
+    // NB: vector_dense doesn't initialize by default for performance
  }
 
 
@@ -1079,7 +1066,7 @@ template<class T> void vector_sparse_dynamic<T>::print_non_zeroes() const {
 }
 
 template<class T> vector_dense<T> vector_sparse_dynamic<T>::expand() const {
-     vector_dense<T> z(size);
+     vector_dense<T> z(size, static_cast<T>(0));
      for(Integer i=0;i<nnz;i++) z[pointer[i]]=data[i];
      return z;
   }
@@ -4884,7 +4871,7 @@ template<class T> void matrix_sparse<T>::symmetric_move_to_corner(index_list& P)
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
-    vector_dense<Real> w(n);
+    vector_dense<Real> w(n, 0.0);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
@@ -4902,8 +4889,8 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner(index
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::weighted_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
-    vector_dense<Real> w(n);
-    vector_dense<Real> counter(n);
+    vector_dense<Real> w(n, 0.0);
+    vector_dense<Real> counter(n, 0.0);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
@@ -4924,9 +4911,9 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner(inde
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::weighted2_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
-    vector_dense<Real> colsum(n);
-    vector_dense<Real> w(n);
-    vector_dense<Real> colcounter(n);
+    vector_dense<Real> colsum(n, 0.0);
+    vector_dense<Real> w(n, 0.0);
+    vector_dense<Real> colcounter(n, 0.0);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             //if(indices[j] != i){
@@ -4947,7 +4934,7 @@ template<class T> void matrix_sparse<T>::sym_ddPQ(index_list& P) const {
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symm_ddPQ: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
-    vector_dense<Real> w(n);
+    vector_dense<Real> w(n, 0.0);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             w[i] += fabs(data[j]);
@@ -5063,7 +5050,8 @@ template<class T> void matrix_sparse<T>::weighted_symmetric_move_to_corner_impro
     P.resize(n);
     matrix_sparse<T> A = this->change_orientation();
 
-    for(i=0;i<n;i++) counter[i]=pointer[i+1]-pointer[i]+A.pointer[i+1]-A.pointer[i];
+    for(i=0;i<n;i++)
+        counter[i]=pointer[i+1]-pointer[i]+A.pointer[i+1]-A.pointer[i];
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
         w.remove_min();
@@ -5090,8 +5078,10 @@ template<class T> void matrix_sparse<T>::weighted2_symmetric_move_to_corner_impr
     P.resize(n);
     matrix_sparse<T> A = this->change_orientation();
 
-    for(i=0;i<n;i++) counterrows[i]=pointer[i+1]-pointer[i];
-    for(i=0;i<n;i++) countercols[i]=A.pointer[i+1]-A.pointer[i];
+    for(i=0;i<n;i++)
+        counterrows[i]=pointer[i+1]-pointer[i];
+    for(i=0;i<n;i++)
+        countercols[i]=A.pointer[i+1]-A.pointer[i];
     for(i = 0; i < pointer_size-1; i++){
         P[i] = w.index_min();
         w.remove_min();
@@ -5165,7 +5155,8 @@ template<class T> void matrix_sparse<T>::sp_symmetric_move_to_corner(index_list&
     for(k=0;k<n;k++){
         //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = fabs(data[j]);
         //for(j=pointer[k];j<pointer[k+1];j++) x[indices[j]] = data[j];
-        for(j=pointer[k];j<pointer[k+1];j++) if (data[j] != 0.0) x[indices[j]] = 1.0;
+        for(j=pointer[k];j<pointer[k+1];j++) if (data[j] != 0.0)
+            x[indices[j]] = 1.0;
         h=headA[k];
         while(h!=-1){
             //y[h]=data[firstA[h]];
@@ -5213,7 +5204,7 @@ template<class T> void matrix_sparse<T>::symb_symmetric_move_to_corner(index_lis
     if(non_fatal_error(rows()!=columns(),"matrix_sparse::symb_symmetric_move_to_corner: this routine requires a square matrix!")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer n = rows();
     Integer i,j;
-    vector_dense<Real> w(n);
+    vector_dense<Real> w(n, 0.0);
     for(i = 0; i < pointer_size-1; i++){
         for(j = pointer[i]; j<pointer[i+1]; j++){
             if(indices[j] != i){
