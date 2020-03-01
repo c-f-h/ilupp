@@ -1156,9 +1156,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Real val_larg_el=0.0;
 
     index_list complete_list;
-    complete_list.resize_without_initialization(size);
-
-    vector_dense<Real> input_abs(size);
+    complete_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
 
     Real norm = 0.0;
     for(i=0;i<nnz;i++){
@@ -1234,90 +1233,90 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
     Real product,weight;
     Real xiplus, ximinus;
     index_list complete_list;
-    vector_dense<Real> input_abs;
-        if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-        if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
-        for(i=0;i<nnz;i++){
-            if(std::abs(data[i])>val_larg_el){
-                val_larg_el=std::abs(data[i]);
-                pos_larg_el=pointer[i]; // position in *this
-            }
-            norm += absvalue_squared(data[i]);
+    complete_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
+
+    for(i=0;i<nnz;i++){
+        if(std::abs(data[i])>val_larg_el){
+            val_larg_el=std::abs(data[i]);
+            pos_larg_el=pointer[i]; // position in *this
         }
-        if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
-            xiplus=1.0+weights[pos_larg_el];
-            ximinus=-1.0+weights[pos_larg_el];
-            if(std::abs(xiplus)<std::abs(ximinus)) weights[pos_larg_el] = ximinus/read(pos_larg_el);
-            else weights[pos_larg_el] = xiplus/read(pos_larg_el);
-            weight=std::abs(weights[pos_larg_el]);
+        norm += absvalue_squared(data[i]);
+    }
+    if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
+        xiplus=1.0+weights[pos_larg_el];
+        ximinus=-1.0+weights[pos_larg_el];
+        if(std::abs(xiplus)<std::abs(ximinus)) weights[pos_larg_el] = ximinus/read(pos_larg_el);
+        else weights[pos_larg_el] = xiplus/read(pos_larg_el);
+        weight=std::abs(weights[pos_larg_el]);
+        for(i=0;i<nnz;i++){
+            product=std::abs(data[i]*weight);
+            if(product/std::abs(read(pos_larg_el))>tau){
+                input_abs[number_elements_larger_tau]=product;
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
+            }
+        }
+        if(number_elements_larger_tau==0){
             for(i=0;i<nnz;i++){
-                product=std::abs(data[i]*weight);
-                if(product/std::abs(read(pos_larg_el))>tau){
-                    input_abs[number_elements_larger_tau]=product;
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
+                input_abs[i]=std::abs(data[i]*weight);
+                complete_list[i]=pointer[i];
+            }   // end for
+            number_elements_larger_tau=nnz;
+        } // end if
+        if(number_elements_larger_tau > n){
+            offset=number_elements_larger_tau-n;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+            list.resize_without_initialization(n);
+            for (i=0;i<n;i++) list[i]=complete_list[offset+i];
+        } else {
+            pos_larg_el=0;
+            val_larg_el=0.0;
+            for(i=0;i<number_elements_larger_tau;i++){
+                if(std::abs(read(complete_list[i]))>val_larg_el){
+                    val_larg_el=std::abs(read(complete_list[i]));
+                    pos_larg_el=i;                 // position in complete_list
                 }
             }
-            if(number_elements_larger_tau==0){
-                for(i=0;i<nnz;i++){
-                    input_abs[i]=std::abs(data[i]*weight);
-                    complete_list[i]=pointer[i];
-                }   // end for
-                number_elements_larger_tau=nnz;
-            } // end if
-            if(number_elements_larger_tau > n){
-                offset=number_elements_larger_tau-n;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                list.resize_without_initialization(n);
-                for (i=0;i<n;i++) list[i]=complete_list[offset+i];
-            } else {
-                pos_larg_el=0;
-                val_larg_el=0.0;
-                for(i=0;i<number_elements_larger_tau;i++){
-                    if(std::abs(read(complete_list[i]))>val_larg_el){
-                        val_larg_el=std::abs(read(complete_list[i]));
-                        pos_larg_el=i;                 // position in complete_list
-                   }
-                }
-                if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+            if(number_elements_larger_tau>0) complete_list.switch_index(pos_larg_el,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+        }
+    } else {    // don't pivot
+        if(read(pivot_position)==0.0){
+            list.resize_without_initialization(0);
+#ifdef DEBUG
+            std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last: returning an empty list. Pivoting was not performed."<<std::endl;
+#endif
+            return;
+        }
+        xiplus=1.0+weights[pivot_position];
+        ximinus=-1.0+weights[pivot_position];
+        if(std::abs(xiplus)<std::abs(ximinus)) weights[pivot_position] = ximinus/read(pivot_position);
+        else weights[pivot_position] = xiplus/read(pivot_position);
+        weight=weights[pivot_position];
+        for(i=0;i<nnz;i++){
+            if(std::abs(data[i]*weight/read(pivot_position)) > tau && pointer[i] != pivot_position){
+                input_abs[number_elements_larger_tau]=std::abs(data[i]);
+                complete_list[number_elements_larger_tau]=pointer[i];
+                number_elements_larger_tau++;
             }
-        } else {    // don't pivot
-            if(read(pivot_position)==0.0){
-                list.resize_without_initialization(0);
-                #ifdef DEBUG
-                    std::cerr<<"vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last: returning an empty list. Pivoting was not performed."<<std::endl;
-                #endif
-                return;
-            }
-            xiplus=1.0+weights[pivot_position];
-            ximinus=-1.0+weights[pivot_position];
-            if(std::abs(xiplus)<std::abs(ximinus)) weights[pivot_position] = ximinus/read(pivot_position);
-            else weights[pivot_position] = xiplus/read(pivot_position);
-            weight=weights[pivot_position];
-            for(i=0;i<nnz;i++){
-                if(std::abs(data[i]*weight/read(pivot_position)) > tau && pointer[i] != pivot_position){
-                    input_abs[number_elements_larger_tau]=std::abs(data[i]);
-                    complete_list[number_elements_larger_tau]=pointer[i];
-                    number_elements_larger_tau++;
-                }
-            }
-            if(number_elements_larger_tau > n-1){
-                offset=number_elements_larger_tau-n+1;
-                input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-                // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
-                list.resize_without_initialization(n);
-                for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
-                list[n-1]=pivot_position;
-            } else {
-                //complete_list.quicksort(0,number_elements_larger_tau-1);
-                list.resize_without_initialization(number_elements_larger_tau+1);
-                for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
-                list[number_elements_larger_tau]=pivot_position;
-            }
-        }  // end if "to pivot or not to pivot"
+        }
+        if(number_elements_larger_tau > n-1){
+            offset=number_elements_larger_tau-n+1;
+            input_abs.sort(complete_list,0,number_elements_larger_tau-1,n);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+            // we do not need the indices of the largest elements in ascending order. To get this order, we sort here.
+            list.resize_without_initialization(n);
+            for (i=0;i<n-1;i++) list[i]=complete_list[offset+i];
+            list[n-1]=pivot_position;
+        } else {
+            //complete_list.quicksort(0,number_elements_larger_tau-1);
+            list.resize_without_initialization(number_elements_larger_tau+1);
+            for(i=0;i<number_elements_larger_tau;i++) list[i]=complete_list[i];
+            list[number_elements_larger_tau]=pivot_position;
+        }
+    }  // end if "to pivot or not to pivot"
 }
 
 template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold(index_list& list, Integer n, Real tau, Integer from, Integer to) const
@@ -1325,9 +1324,8 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Integer i, number_elements_larger_tau=0;
 
     index_list complete_list;
-    complete_list.resize_without_initialization(size);
-
-    vector_dense<Real> input_abs(size);
+    complete_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
 
     const Real norm = norm2(from, to);
 
@@ -1365,10 +1363,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
     Integer i;
     Integer number_elements_larger_tau=0;
     index_list complete_list;
-    vector_dense<Real> input_abs;
+    complete_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
+
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1389,7 +1387,8 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         if(nnz-offset>n) offset=nnz-n;
         complete_list.quicksort(offset,nnz-1);
         list.resize_without_initialization(nnz-offset);
-        for (i=0;i<nnz-offset;i++) list[i]=complete_list[offset+i];
+        for (i=0;i<nnz-offset;i++)
+            list[i] = complete_list[offset+i];
     } // end SUM_DROPPING
     if(IP.get_WEIGHTED_DROPPING()){
         for(i=0;i<nnz;i++){ // mark elements to be kept
@@ -1422,11 +1421,11 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
     Integer number_elements_larger_tau=0;
     Integer rejected_number=0;
     index_list complete_list, complete_rejected_list;
-    vector_dense<Real> input_abs;
+    complete_list.resize_without_initialization(nnz);
+    complete_rejected_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1496,10 +1495,9 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
     Integer i;
     Integer number_elements_larger_tau=0;
     index_list complete_list;
-    vector_dense<Real> input_abs;
+    complete_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic:::take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1558,11 +1556,11 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_weighted_lar
     Integer number_elements_larger_tau=0;
     Integer rejected_number=0;
     index_list complete_list, complete_rejected_list;
-    vector_dense<Real> input_abs;
+    complete_list.resize_without_initialization(nnz);
+    complete_rejected_list.resize_without_initialization(nnz);
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "take_single_weight_weighted_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1633,10 +1631,9 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     Integer i;
     Integer number_elements_larger_tau=0;
     index_list complete_list;
-    vector_dense<Real> input_abs;
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(nnz);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1706,11 +1703,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_pos_drop_lar
     Integer number_elements_larger_tau=0;
     Integer rejected_number=0;
     index_list complete_list, complete_rejected_list;
-    vector_dense<Real> input_abs;
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(nnz);
+    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(nnz);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1791,10 +1787,9 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     Integer i;
     Integer number_elements_larger_tau=0;
     index_list complete_list;
-    vector_dense<Real> input_abs;
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(nnz);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1866,11 +1861,10 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_bw_largest_e
     Integer number_elements_larger_tau=0;
     Integer rejected_number=0;
     index_list complete_list, complete_rejected_list;
-    vector_dense<Real> input_abs;
+    vector_dense<Real> input_abs(nnz);
     Real sum = 0.0;
-    if (complete_list.dimension() != size) complete_list.resize_without_initialization(size);
-    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(size);
-    if (input_abs.dimension() != size) input_abs.erase_resize_data_field(size);
+    if (complete_list.dimension() != size) complete_list.resize_without_initialization(nnz);
+    if (complete_rejected_list.dimension() != size) complete_rejected_list.resize_without_initialization(nnz);
 #ifdef DEBUG
     if(non_fatal_error((from<0 || to>size), "vector_sparse_dynamic::take_single_weight_bw_largest_elements_by_abs_value_with_threshold: sorting range is not permitted.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
 #endif
@@ -1956,12 +1950,10 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Integer pos_larg_element=0;
     index_list complete_list_L;
     index_list complete_list_U;
-    vector_dense<Real> input_abs_L;
-    vector_dense<Real> input_abs_U;
-    if (complete_list_L.dimension() != size) complete_list_L.resize_without_initialization(size);
-    if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(size);
-    if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(size);
-    if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(size);
+    vector_dense<Real> input_abs_L(nnz);
+    vector_dense<Real> input_abs_U(nnz);
+    if (complete_list_L.dimension() != size) complete_list_L.resize_without_initialization(nnz);
+    if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(nnz);
 #ifdef DEBUG
     if(size==0){
         std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
@@ -2049,14 +2041,14 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     Integer pos_pot_pivot=-1;
     index_list complete_list_L;
     index_list complete_list_U;
-    vector_dense<Real> input_abs_L;
-    vector_dense<Real> input_abs_U;
+    vector_dense<Real> input_abs_L(nnz);
+    vector_dense<Real> input_abs_U(nnz);
     vector_dense<T> fabsdata;
     fabsdata.erase_resize_data_field(nnz);
-    if (complete_list_L.dimension() != size) complete_list_L.resize_without_initialization(size);
-    if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(size);
-    if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(size);
-    if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(size);
+    if (complete_list_L.dimension() != size) complete_list_L.resize_without_initialization(nnz);
+    if (complete_list_U.dimension() != size) complete_list_U.resize_without_initialization(nnz);
+    if (input_abs_L.dimension() != size) input_abs_L.erase_resize_data_field(nnz);
+    if (input_abs_U.dimension() != size) input_abs_U.erase_resize_data_field(nnz);
 #ifdef DEBUG
     if(size==0){
         std::cerr<<"vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold: size=0: returning empty list"<<std::endl;
