@@ -2079,22 +2079,23 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
     norm_input_L = sqrt(norm_input_L);
     norm_input_U = sqrt(norm_input_U);
 
-    // pivot if largest(U[i,:]) * piv_ol >= U[i,i] or if the diagonal is 0
+    // pivot if largest(U[i,:]) * piv_tol >= U[i,i] or if the diagonal is 0
     const bool pivoting = (val_larg_element*piv_tol >= val_pot_pivot) || (pos_pot_pivot < 0);
 
     if (!pivoting)
         fabsdata[pos_pot_pivot] = norm_input_U; // this ensures that this element is selected and moved to the end when //std::cout<<"paramater: tau_L: "<<tau_L<<" tau_U "<<tau_U<<std::endl;
 
-    for(i=0;i<nnz;i++){
-        if(invperm[pointer[i]]<mid){
-            if(fabsdata[i] > norm_input_L*tau_L){
+    // store all entries above the dropping threshold into the respective lists
+    for (i=0;i<nnz;i++) {
+        if (invperm[pointer[i]]<mid) {      // L part
+            if (fabsdata[i] > norm_input_L*tau_L) {
                 input_abs_L[number_elements_larger_tau_L]=fabsdata[i];
                 //complete_list_L[number_elements_larger_tau_L]=invperm[pointer[i]];
                 complete_list_L[number_elements_larger_tau_L]=pointer[i];
                 number_elements_larger_tau_L++;
             }
-        } else {
-            if(fabsdata[i] > norm_input_U*tau_U){
+        } else {                            // U part
+            if (fabsdata[i] > norm_input_U*tau_U) {
                 input_abs_U[number_elements_larger_tau_U]=fabsdata[i];
                 //complete_list_U[number_elements_larger_tau_U]=invperm[pointer[i]]; // the true index in w
                 complete_list_U[number_elements_larger_tau_U]=pointer[i]; // the true index in w
@@ -2102,41 +2103,58 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
             }
         }
     }
+
+    // perform dropping on L
     if(number_elements_larger_tau_L==0){
         list_L.resize(0);
     } else {
-        if(number_elements_larger_tau_L > n_L){
-            offset=number_elements_larger_tau_L-n_L;
-            input_abs_L.sort(complete_list_L,0,number_elements_larger_tau_L-1,n_L);   // sort abs. vector created above from small to large. Largest elements needed are at end.
+        if (number_elements_larger_tau_L > n_L) {
+            // not enough space -- copy only n_L largest elements
+            offset = number_elements_larger_tau_L - n_L;
+            // sort abs. vector created above from small to large. Largest elements needed are at end.
+            input_abs_L.sort(complete_list_L, 0, number_elements_larger_tau_L-1, n_L);
             list_L.resize_without_initialization(n_L);
-            for (i=0;i<list_L.dimension();i++) list_L[i]=complete_list_L[offset+i];
+            for (i=0;i<list_L.dimension();i++)
+                list_L[i] = complete_list_L[offset+i];
         } else {
+            // enough space -- copy everything
             list_L.resize_without_initialization(number_elements_larger_tau_L);
-            for(i=0;i<number_elements_larger_tau_L;i++) list_L[i]=complete_list_L[i];
+            for(i=0;i<number_elements_larger_tau_L;i++)
+                list_L[i] = complete_list_L[i];
             //list_L.switch_index(pos_larg_element,list_L.dimension()-1);
         }  // end if
     } // end if
+
+    // perform dropping on U
     if(number_elements_larger_tau_U==0){
         list_U.resize(0);
     } else {
         if(number_elements_larger_tau_U > n_U){
-            offset=number_elements_larger_tau_U-n_U;
-            input_abs_U.sort(complete_list_U,0,number_elements_larger_tau_U-1,n_U);   // sort abs. vector created above from small to large. Largest elements needed are at end.
-            pos_larg_element=offset;
-            for(i=offset+1;i<number_elements_larger_tau_U;i++)
-                if(input_abs_U[i]>input_abs_U[pos_larg_element])
-                    pos_larg_element=i;
-            complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);
+            offset = number_elements_larger_tau_U-n_U;
+            // sort abs. vector created above from small to large. Largest elements needed are at end.
+            input_abs_U.sort(complete_list_U, 0, number_elements_larger_tau_U-1, n_U);
+
+            // find largest element and switch its index with the last one
+            pos_larg_element = offset;
+            for(i=offset+1; i<number_elements_larger_tau_U; i++)
+                if(input_abs_U[i] > input_abs_U[pos_larg_element])
+                    pos_larg_element = i;
+            complete_list_U.switch_index(pos_larg_element, number_elements_larger_tau_U-1);
+
             list_U.resize_without_initialization(n_U);
-            for (i=0;i<list_U.dimension();i++) list_U[i]=complete_list_U[offset+i];
+            for (i=0;i<list_U.dimension();i++)
+                list_U[i] = complete_list_U[offset+i];
         } else {
+            // find largest element and switch its index with the last one
             pos_larg_element=0;
             for(i=1;i<number_elements_larger_tau_U;i++)
                 if(input_abs_U[i]>input_abs_U[pos_larg_element])
-                    pos_larg_element=i;
-            complete_list_U.switch_index(pos_larg_element,number_elements_larger_tau_U-1);
+                    pos_larg_element = i;
+            complete_list_U.switch_index(pos_larg_element, number_elements_larger_tau_U-1);
+
             list_U.resize_without_initialization(number_elements_larger_tau_U);
-            for(i=0;i<number_elements_larger_tau_U;i++) list_U[i]=complete_list_U[i];
+            for(i=0;i<number_elements_larger_tau_U;i++)
+                list_U[i] = complete_list_U[i];
         }  // end if
     } // end if
 }
