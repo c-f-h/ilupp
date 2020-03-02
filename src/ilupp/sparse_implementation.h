@@ -2255,12 +2255,13 @@ template<class T> T& vector_sparse_dynamic_enhanced<T>::operator()(Integer j, In
         }
      #endif
      if (this->occupancy[j]<0) {
-         this->occupancy[j]=this->nnz;
-         key[k]=this->nnz;
-         this->pointer[this->nnz]=j;
-         this->nnz++;
-         this->data[this->occupancy[j]]=0.0;
-         return this->data[this->occupancy[j]];
+         const Integer x = this->nnz++;
+         this->pointer[x] = j;
+         this->data[x] = 0.0;
+
+         this->occupancy[j] = x;
+         key[k] = x;
+         return this->data[x];
      } else {
          #ifdef DEBUG
              if(this->pointer[key[k]] != j) std::cerr<<"vector_sparse_dynamic<T>::(): sorting index and index do not correspond. Ignoring discrepancy."<<std::endl;
@@ -3362,9 +3363,9 @@ template<class T> void matrix_sparse<T>::reorder(const index_list& invperm){
     for(k=0;k<pointer_size-1;k++){
         list.init();
         for(j=pointer[k];j<pointer[k+1];j++)
-            used_indices[j-pointer[k]]=indices[j];
+            used_indices[j-pointer[k]] = indices[j];
         for(j=pointer[k];j<pointer[k+1];j++)
-            stored_data[j-pointer[k]]=data[j];
+            stored_data[j-pointer[k]] = data[j];
         quicksort(used_indices,list,invperm,0,pointer[k+1]-pointer[k]-1);
         for(j=pointer[k];j<pointer[k+1];j++){
             indices[j]=used_indices[j-pointer[k]];

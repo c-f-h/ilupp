@@ -19,8 +19,7 @@ void ILUTP2(
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     const Integer m = A.rows(), n = A.columns();
 
-    clock_t time_begin, time_end;
-    time_begin=clock();
+    const clock_t time_begin = clock();
     // the notation will be for A being a ROW matrix, i.e. U and L also ROW matrices
 
     if(max_fill_in<1) max_fill_in = 1;
@@ -42,28 +41,36 @@ void ILUTP2(
     for(i=0;i<n;i++){
         if (i == bp) piv_tol = 1.0;
 
-        // (2.) initialize w to A[i,:]
+        // (2.) initialize w to A[i,:], compute norm of lower part
+        Real norm_wL = 0.0;
         for(k=A.pointer[i]; k<A.pointer[i+1]; k++){
-            w(A.indices[k], inverse_perm[A.indices[k]]) = A.data[k];
+            j = inverse_perm[A.indices[k]];
+            w(A.indices[k], j) = A.data[k];
+            if (j < i)
+                norm_wL += absvalue_squared(A.data[k]);
         }
+        norm_wL = std::sqrt(norm_wL);
 
-        const Real norm_w = w.norm2();
         w.move_to_beginning();
         while(w.current_sorting_index() < i && !w.at_end()){
-            w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
-            if(abs(w.current_element())<threshold*norm_w){
+            if (std::abs(w.current_element()) < threshold*norm_wL){
                 w.current_zero_set();
                 // taking a step forward is not necessary, because the iterator
                 // jumps automatically ahead if current element is erased.
             } else {
-                for(j=U.pointer[w.current_sorting_index()]+1; j<U.pointer[w.current_sorting_index()+1]; j++){
-                    w(U.indices[j], inverse_perm[U.indices[j]]) -= w.current_element()*U.data[j];
+                k = w.current_sorting_index();
+                const T wk = (w.current_element() /= U.data[U.pointer[k]]);
+                for (j = U.pointer[k]+1; j<U.pointer[k+1]; j++) {
+                    w(U.indices[j], inverse_perm[U.indices[j]]) -= wk * U.data[j];
                 } // end for
                 w.take_step_forward();
             }   // end if
         } // end while
 
         // (10.) Do dropping in w.
+        // NB: The dropping criterion for U is slightly different than in
+        // standard ILUT because the norm also takes the diagonal entry into
+        // account (which can never be dropped in ILUT).
         w.take_largest_elements_by_abs_value_with_threshold(
                 list_L, list_U, inverse_perm, max_fill_in-1, max_fill_in,
                 threshold, threshold, i, piv_tol);
@@ -84,29 +91,35 @@ void ILUTP2(
             }
         }
 
+        // (11.) Copy values to L:
         if(L.pointer[i]+list_L.dimension()+1>reserved_memory)
             throw std::runtime_error("ILUTP2: memory reserved was insufficient.");
 
-        for(j=0;j<list_L.dimension();j++){
+        for (j=0; j<list_L.dimension(); j++) {
             L.data[L.pointer[i]+j] = w[list_L[list_L.dimension()-1-j]];
             L.indices[L.pointer[i]+j] = inverse_perm[list_L[list_L.dimension()-1-j]];
-        } // end for j
+        }
+        // write 1 to the diagonal
         L.data[L.pointer[i]+list_L.dimension()]=1.0;
         L.indices[L.pointer[i]+list_L.dimension()]=i;
+
         L.pointer[i+1]=L.pointer[i]+list_L.dimension()+1;
 
         // (12.) Copy values to U:
         if (U.pointer[i] + list_U.dimension() > reserved_memory)
             throw std::runtime_error("ILUTP2: memory reserved was insufficient.");
 
-        for(j=0;j<list_U.dimension();j++){
+        // write them in opposite order so the largest (pivoting) element comes first
+        for(j=0; j<list_U.dimension(); j++){
             U.data[U.pointer[i]+j] = w[list_U[list_U.dimension()-1-j]];
             U.indices[U.pointer[i]+j] = list_U[list_U.dimension()-1-j];
         }
         U.pointer[i+1]=U.pointer[i]+list_U.dimension();
-        p=inverse_perm[U.indices[U.pointer[i]]];
-        inverse_perm.switch_index(perm[i],U.indices[U.pointer[i]]);
-        perm.switch_index(i,p);
+
+        // perform pivoting
+        p = inverse_perm[U.indices[U.pointer[i]]];
+        inverse_perm.switch_index(perm[i], U.indices[U.pointer[i]]);
+        perm.switch_index(i, p);
         if(U.data[U.pointer[i]]==0)
             throw std::runtime_error("matrix_sparse::ILUTP2: encountered zero pivot in row ");
 
@@ -120,8 +133,7 @@ void ILUTP2(
     U.reorder(inverse_perm);
     L.normal_order();
 
-    time_end=clock();
-    time_self=((Real)time_end-(Real)time_begin)/(Real)CLOCKS_PER_SEC;
+    time_self=((Real)clock() - (Real)time_begin)/(Real)CLOCKS_PER_SEC;
 }
 
 } // end namespace iluplusplus
