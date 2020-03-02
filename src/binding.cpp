@@ -242,9 +242,9 @@ PYBIND11_MODULE(_ilupp, m)
     wrapPreconditioner<_ILUTPPreconditioner>(m, "ILUTPPreconditioner")
         .def("__init__",
             [](_ILUTPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
-                    Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor) {
+                    Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUTPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
+                new (&pr) _ILUTPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
                 if (!pr.exists())
                     throw std::runtime_error("ILUTP factorization failed");
             }
@@ -268,9 +268,9 @@ PYBIND11_MODULE(_ilupp, m)
     wrapPreconditioner<_ILUCPPreconditioner>(m, "ILUCPPreconditioner")
         .def("__init__",
             [](_ILUCPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
-                Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor) {
+                Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUCPPreconditioner(*A, max_fill_in, threshold, perm_tol, row_pos, mem_factor);
+                new (&pr) _ILUCPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
                 if (!pr.exists())
                     throw std::runtime_error("ILUCP factorization failed");
             }

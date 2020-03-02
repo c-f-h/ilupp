@@ -12,7 +12,7 @@ namespace iluplusplus {
 template<class T>
 void ILUTP2(
         const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm,
-        Integer max_fill_in, Real threshold, Real perm_tol, Integer bp,
+        Integer max_fill_in, Real threshold, Real piv_tol, Integer bp,
         Integer& zero_pivots, Real& time_self, Real mem_factor)
 {
     if(non_fatal_error(!A.square_check(),"matrix_sparse::ILUTP2: argument matrix must be square."))
@@ -22,8 +22,6 @@ void ILUTP2(
     clock_t time_begin, time_end;
     time_begin=clock();
     // the notation will be for A being a ROW matrix, i.e. U and L also ROW matrices
-    if (perm_tol > 500) perm_tol=0.0;
-    else perm_tol=std::exp(-perm_tol*std::log(10.0));
 
     if(max_fill_in<1) max_fill_in = 1;
     if(max_fill_in>n) max_fill_in = n;
@@ -42,7 +40,7 @@ void ILUTP2(
 
     // (1.) begin for i
     for(i=0;i<n;i++){
-        if (i == bp) perm_tol = 1.0;
+        if (i == bp) piv_tol = 1.0;
 
         // (2.) initialize w to A[i,:]
         for(k=A.pointer[i]; k<A.pointer[i+1]; k++){
@@ -68,7 +66,7 @@ void ILUTP2(
         // (10.) Do dropping in w.
         w.take_largest_elements_by_abs_value_with_threshold(
                 list_L, list_U, inverse_perm, max_fill_in-1, max_fill_in,
-                threshold, threshold, i, perm_tol);
+                threshold, threshold, i, piv_tol);
         // we need one element less for L, as the diagonal will always be 1.
         if(list_U.dimension()==0) {
             // no nonzero pivot found - try again without threshold for U

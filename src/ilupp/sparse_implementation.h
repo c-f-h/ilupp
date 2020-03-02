@@ -1148,7 +1148,7 @@ template<class T> T vector_sparse_dynamic<T>::scalar_product_pos_factors(const v
 
 }
 
-template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, Integer n, Real tau, Integer pivot_position, Real perm_tol) const {
+template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, Integer n, Real tau, Integer pivot_position, Real piv_tol) const {
     Integer offset=0;
     Integer i;
     Integer number_elements_larger_tau=0;
@@ -1164,7 +1164,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
         if(std::abs(data[i])>val_larg_el) val_larg_el=std::abs(data[i]);
         norm += absvalue_squared(data[i]);
     }
-    if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
+    if(val_larg_el*piv_tol>std::abs(read(pivot_position))){ // do pivoting
         norm=sqrt(norm);
         for(i=0;i<nnz;i++){
             if(std::abs(data[i])> norm*tau){
@@ -1222,7 +1222,7 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
 }
 
 
-template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real perm_tol) const
+template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(index_list& list, vector_dense<Real>& weights, Integer n, Real tau, Integer pivot_position, Real piv_tol) const
 {
     Real norm=0.0;
     Integer offset=0;
@@ -1243,7 +1243,7 @@ template<class T> void vector_sparse_dynamic<T>::take_single_weight_largest_elem
         }
         norm += absvalue_squared(data[i]);
     }
-    if(val_larg_el*perm_tol>std::abs(read(pivot_position))){ // do pivoting
+    if(val_larg_el*piv_tol>std::abs(read(pivot_position))){ // do pivoting
         xiplus=1.0+weights[pos_larg_el];
         ximinus=-1.0+weights[pos_larg_el];
         if(std::abs(xiplus)<std::abs(ximinus)) weights[pos_larg_el] = ximinus/read(pos_larg_el);
@@ -2081,7 +2081,6 @@ template<class T> void vector_sparse_dynamic<T>::take_largest_elements_by_abs_va
 
     // pivot if largest(U[i,:]) * piv_ol >= U[i,i] or if the diagonal is 0
     const bool pivoting = (val_larg_element*piv_tol >= val_pot_pivot) || (pos_pot_pivot < 0);
-    std::cout << mid << ": pot.piv.: " << pos_pot_pivot << " " << val_pot_pivot << "  --  largest: " << val_larg_element << " -- pivot=" << pivoting << std::endl;
 
     if (!pivoting)
         fabsdata[pos_pot_pivot] = norm_input_U; // this ensures that this element is selected and moved to the end when //std::cout<<"paramater: tau_L: "<<tau_L<<" tau_U "<<tau_U<<std::endl;

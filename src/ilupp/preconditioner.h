@@ -374,7 +374,7 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor); // default threshold=-1.0, pt = 0.0,  rp=0
+          ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor); // default threshold=-1.0, pt = 0.0,  rp=0
           virtual Integer zero_pivots_encountered()         { return zero_pivots; }
           virtual std::string special_info() const;
           virtual void write_binary(std::string filename) const;
@@ -397,7 +397,7 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold=-1.0, Real perm_tol=0.0, Integer rp=-1, Real mem_factor=10.0);
+          ILUCPPreconditioner(const matrix_type &Acol, Integer max_fill_in, Real threshold=-1.0, Real piv_tol=1.0, Integer rp=-1, Real mem_factor=10.0);
           ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p);
           virtual Integer zero_pivots_encountered()         { return zero_pivots; }
           virtual std::string special_info() const;
@@ -419,8 +419,8 @@ template <class T, class matrix_type, class vector_type>
        private:
           Integer zero_pivots;
        public:
-          ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr); // default: threshold=1000.0, perm_tol=1000.0, bpr = -1
-          ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real perm_tol, Integer); // default: threshold=1000.0, perm_tol=1000.0, bpr = -1
+          ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real piv_tol, Integer bpr); // default: threshold=1000.0, piv_tol=0.0, bpr = -1
+          ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real piv_tol, Integer); // default: threshold=1000.0, piv_tol=0.0, bpr = -1
           ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p);
           virtual Integer zero_pivots_encountered();
           virtual std::string special_info() const;

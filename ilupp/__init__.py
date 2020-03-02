@@ -148,10 +148,10 @@ class ILUTPPreconditioner(_BaseWrapper):
         fill_in: the fill_in parameter for the ILU++ preconditioner
         threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000, perm_tol=0.0, row_pos=-1, mem_factor=10.0):
+    def __init__(self, A, threshold=1.0, fill_in=10000, piv_tol=0.0, row_pos=-1, mem_factor=10.0):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUTPPreconditioner(Ad, Ai, Ap, Ao,
-                fill_in, threshold, perm_tol, row_pos, mem_factor)
+                fill_in, threshold, piv_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property
@@ -179,10 +179,10 @@ class ILUCPPreconditioner(_BaseWrapper):
         fill_in: the fill_in parameter for the ILU++ preconditioner
         threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000, perm_tol=0.0, row_pos=-1, mem_factor=10.0):
+    def __init__(self, A, threshold=1.0, fill_in=10000, piv_tol=0.0, row_pos=-1, mem_factor=10.0):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUCPPreconditioner(Ad, Ai, Ap, Ao,
-                fill_in, threshold, perm_tol, row_pos, mem_factor)
+                fill_in, threshold, piv_tol, row_pos, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property

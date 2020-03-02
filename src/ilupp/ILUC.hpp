@@ -211,12 +211,9 @@ void ILUC2(const matrix_sparse<T>& A, matrix_sparse<T>& L, matrix_sparse<T>& U, 
 template<class T>
 void ILUCP4(const matrix_sparse<T>& Acol,
         matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm, Integer max_fill_in,
-        Real threshold, Real perm_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0)
+        Real threshold, Real piv_tol, Integer rp, Integer& zero_pivots, Real& time_self, Real mem_factor=10.0)
 {
     const clock_t time_begin = clock();
-
-    if (perm_tol > 500.0) perm_tol=0.0;
-    else perm_tol=std::exp(-perm_tol*std::log(10.0));
 
     if (non_fatal_error(!Acol.square_check(), "matrix_sparse::ILUCP4: argument matrix must be square."))
         throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
@@ -248,7 +245,8 @@ void ILUCP4(const matrix_sparse<T>& Acol,
 
     // (1.) begin for k
     for(k=0;k<n;k++){
-        if (k == rp) perm_tol = 1.0;  // permute always
+        if (k == rp)
+            piv_tol = 1.0;  // permute always
         // (2.) initialize z
         z.zero_reset();
 
@@ -272,12 +270,12 @@ void ILUCP4(const matrix_sparse<T>& Acol,
         } // end while (5.)
 
         // (6.) sort and copy data to U; update information for accessing columns of U
-        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,threshold,perm[k],perm_tol);
+        z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,threshold,perm[k],piv_tol);
         // dropping too stringent?
         if(list_U.dimension()==0){
             if(threshold>0.0)
                 //std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
-                z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],perm_tol);
+                z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],piv_tol);
         }
         // still no non-zero elements?
         if(list_U.dimension()==0){
@@ -368,7 +366,7 @@ template<class T>
 bool ILUCP4inv(
         const iluplusplus_precond_parameter& IP,
         const matrix_sparse<T>& Acol, matrix_sparse<T>& L, matrix_sparse<T>& U, index_list& perm,
-        /*Integer max_fill_in, Real threshold, Real perm_tol,*/ Integer rp,
+        /*Integer max_fill_in, Real threshold, Real piv_tol,*/ Integer rp,
         Integer& zero_pivots, Real& time_self) //, Real mem_factor)
 {
     if(non_fatal_error(!Acol.square_check(),"matrix_sparse::ILUCP4inv: argument matrix must be square."))
@@ -379,11 +377,13 @@ bool ILUCP4inv(
 
     const Integer max_fill_in = IP.get_fill_in();
     const Real threshold = IP.get_threshold();
-    Real perm_tol = IP.get_perm_tol();
-    const Real mem_factor = IP.get_MEM_FACTOR();
 
-    if (perm_tol > 500.0) perm_tol=0.0;
-    else perm_tol=std::exp(-perm_tol*std::log(10.0));
+    Real piv_tol = IP.get_perm_tol();
+    // convert from logarithmic to standard scale
+    if (piv_tol > 500.0) piv_tol=0.0;
+    else piv_tol = std::exp(-piv_tol*std::log(10.0));
+
+    const Real mem_factor = IP.get_MEM_FACTOR();
 
     Integer n = Acol.columns();
     Integer k,i,j,p;
@@ -417,7 +417,8 @@ bool ILUCP4inv(
 
     // (1.) begin for k
     for(k=0;k<n;k++){
-        if (k == rp) perm_tol = 1.0;  // permute always
+        if (k == rp)
+            piv_tol = 1.0;  // permute always
         // (2.) initialize z
         z.zero_reset();
 
@@ -441,7 +442,7 @@ bool ILUCP4inv(
         } // end while (5.)
 
         // (6.) sort and copy data to U; update information for accessing columns of U
-        z.take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,weights_U,max_fill_in,threshold,perm[k],perm_tol);
+        z.take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,weights_U,max_fill_in,threshold,perm[k],piv_tol);
         // still no non-zero elements?
         if(list_U.dimension()==0){
             //std::cout<<"Obtained a zero row, setting an arbitrary element to 1."<<std::endl;
