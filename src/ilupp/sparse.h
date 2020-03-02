@@ -222,9 +222,9 @@ template<class T> class vector_dense
              // selects upto n_L elements and upto n_U elements using threshold. Results are stored in list_L and list_U
              // respectively. An element with index i is put in list_L if invperm[i]<mid, else in list_U.
              // The last index in list_L and list_U corresponds to the largest element.
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const;
+           void take_largest_elements_by_abs_value_with_threshold(index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid) const;
              // same as above, but with pivoting tolerance for U.
-           void take_largest_elements_by_abs_value_with_threshold(Real& norm_input_L, Real& norm_input_U, index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid, Real piv_tol) const;
+           void take_largest_elements_by_abs_value_with_threshold(index_list& list_L, index_list& list_U, const index_list& invperm, Integer n_L, Integer n_U, Real tau_L,  Real tau_U, Integer mid, Real piv_tol) const;
 
              // same as above, with selection done by weight.
            void take_single_weight_largest_elements_by_abs_value_with_threshold(const iluplusplus_precond_parameter& IP, index_list& list, Real weight, Integer n, Real tau, Integer from, Integer to) const;

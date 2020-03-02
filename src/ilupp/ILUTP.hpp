@@ -30,7 +30,6 @@ void ILUTP2(
 
     Integer k,i,j,p;
     zero_pivots=0;
-    Real norm_L, norm_U, norm_w; // output parameters - unused here
     vector_sparse_dynamic_enhanced<T> w(m);
     index_list list_L, list_U;
 
@@ -45,35 +44,45 @@ void ILUTP2(
     for(i=0;i<n;i++){
         if (i == bp) perm_tol = 1.0;
 
-        // (2.) initialize w
-        for(k=A.pointer[i];k<A.pointer[i+1];k++){
-            w(A.indices[k],inverse_perm[A.indices[k]]) = A.data[k];
+        // (2.) initialize w to A[i,:]
+        for(k=A.pointer[i]; k<A.pointer[i+1]; k++){
+            w(A.indices[k], inverse_perm[A.indices[k]]) = A.data[k];
         }
 
-        norm_w = w.norm2();
+        const Real norm_w = w.norm2();
         w.move_to_beginning();
-        while(w.current_sorting_index()<i && !w.at_end()){
+        while(w.current_sorting_index() < i && !w.at_end()){
             w.current_element() /= U.data[U.pointer[w.current_sorting_index()]];
             if(abs(w.current_element())<threshold*norm_w){
                 w.current_zero_set();
-                // taking a step forward is not necessary, because the iterator jumps automatically ahead if current element is erased.
+                // taking a step forward is not necessary, because the iterator
+                // jumps automatically ahead if current element is erased.
             } else {
                 for(j=U.pointer[w.current_sorting_index()]+1; j<U.pointer[w.current_sorting_index()+1]; j++){
-                    w(U.indices[j],inverse_perm[U.indices[j]]) -= w.current_element()*U.data[j];
+                    w(U.indices[j], inverse_perm[U.indices[j]]) -= w.current_element()*U.data[j];
                 } // end for
                 w.take_step_forward();
             }   // end if
         } // end while
 
         // (10.) Do dropping in w.
-        w.take_largest_elements_by_abs_value_with_threshold(norm_L,norm_U,list_L,list_U,inverse_perm,max_fill_in-1,max_fill_in,threshold,threshold,i,perm_tol); // we need one element less for L, as the diagonal will always be 1.
-        if(list_U.dimension()==0){
-            if(threshold>0.0) w.take_largest_elements_by_abs_value_with_threshold(norm_L,norm_U,list_L,list_U,inverse_perm,max_fill_in-1,max_fill_in,threshold,0.0,i); // we need one element less for L, as the diagonal will always be 1.
-            if(list_U.dimension()==0){
+        w.take_largest_elements_by_abs_value_with_threshold(
+                list_L, list_U, inverse_perm, max_fill_in-1, max_fill_in,
+                threshold, threshold, i, perm_tol);
+        // we need one element less for L, as the diagonal will always be 1.
+        if(list_U.dimension()==0) {
+            // no nonzero pivot found - try again without threshold for U
+            if (threshold > 0.0)
+                w.take_largest_elements_by_abs_value_with_threshold(
+                        list_L, list_U, inverse_perm, max_fill_in-1, max_fill_in,
+                        threshold, 0.0, i);
+                // we need one element less for L, as the diagonal will always be 1.
+
+            if (list_U.dimension() == 0) {
                 zero_pivots++;
-                w(perm[i],i)=1.0;
+                w(perm[i],i) = 1.0;
                 list_U.resize(1);
-                list_U[0]=perm[i];
+                list_U[0] = perm[i];
             }
         }
 
