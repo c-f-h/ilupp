@@ -4187,16 +4187,19 @@ template<class T> void matrix_sparse<T>::triangular_solve_perm(special_matrix_ty
     }
     if ( ((form==PERMUTED_LOWER_TRIANGULAR) && (orientation==COLUMN) && (use==ID)) ||
          ((form==PERMUTED_UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
-    {   // untested, requires inverse perm (called perm as well)
-        Integer k,j;
-        for (k = 0; k < b.dimension(); ++k)
-            x[k] = b[perm[k]];
-
-        for(k=0; k<number_columns; k++) {
-            x[k] /= data[pointer[k]];
-            for(j=pointer[k]+1; j<pointer[k+1]; j++)
-                x[indices[j]] -= data[j]*x[k];
-         }
+    {
+        // L[perm,:] is lower triangular; nnz per column is still as in
+        // a standard lower triangular matrix.
+        // We first compute y = inv_perm(L^-1 b) by pseudo forward substitution,
+        // then compute x = perm(y).
+        vector_dense<T> y = b;
+        for (Integer k = 0; k < number_columns; ++k) {
+            y[perm[k]] /= data[pointer[k]];
+            for(Integer j = pointer[k] + 1; j < pointer[k+1]; ++j)
+                y[indices[j]] -= data[j] * y[perm[k]];
+        }
+        for (Integer k = 0; k < y.dimension(); ++k)
+            x[k] = y[perm[k]];
         return;
     }
 

@@ -269,9 +269,10 @@ class TestCases(unittest.TestCase):
         base_name = 'test_' + P.__name__[:-14] + '_pivot_'
 
         for problem in ('random',):
-            for format in ('csr',):    # 'csc' currently fails
+            for format in ('csr', 'csc'):
                 case_name = base_name + problem + '_' + format
-                vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, problem, (50,format,0.0))
+                # we set eye_factor=0 so that the matrix has some 0 diagonal entries
+                vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0, 'piv_tol':1}, problem, (50,format,0.0))
 
                 # factors check needs application of permutation
                 #case_name = base_name + problem + '_factorscorrect_' + format
