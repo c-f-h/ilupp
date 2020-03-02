@@ -4189,14 +4189,14 @@ template<class T> void matrix_sparse<T>::triangular_solve_perm(special_matrix_ty
          ((form==PERMUTED_UPPER_TRIANGULAR) && (orientation==ROW) && (use==TRANSPOSE)) )
     {   // untested, requires inverse perm (called perm as well)
         Integer k,j;
-        vector_dense<T> y = b;
+        for (k = 0; k < b.dimension(); ++k)
+            x[k] = b[perm[k]];
+
         for(k=0; k<number_columns; k++) {
-            y[k] /= data[pointer[k]];
+            x[k] /= data[pointer[k]];
             for(j=pointer[k]+1; j<pointer[k+1]; j++)
-                y[indices[j]] -= data[j]*y[perm[k]];
+                x[indices[j]] -= data[j]*x[k];
          }
-        for(k=0;k<number_columns;k++)
-            x[k]=y[perm[k]];
         return;
     }
 

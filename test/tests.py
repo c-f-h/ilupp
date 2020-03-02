@@ -30,13 +30,13 @@ def example_laplace(n, format='csr'):
     x_exact = X*(1-X)/2
     return A, b, x_exact
 
-def random_matrix(n, format='csr'):
+def random_matrix(n, format='csr', eye_factor=10.0):
     avg_nnz_per_row = 5
     density = min(1.0, avg_nnz_per_row / n)
-    return (scipy.sparse.random(n, n, density=density, random_state=39273) + 10*scipy.sparse.eye(n)).asformat(format)
+    return (scipy.sparse.random(n, n, density=density, random_state=39273) + eye_factor*scipy.sparse.eye(n)).asformat(format)
 
-def example_random(n, format='csc'):
-    A = random_matrix(n, format=format)
+def example_random(n, format='csc', eye_factor=10.0):
+    A = random_matrix(n, format=format, eye_factor=eye_factor)
     x_exact = np.ones(n)
     b = A.dot(x_exact)
     return A, b, x_exact
@@ -260,6 +260,22 @@ class TestCases(unittest.TestCase):
         case_name = base_name + 'total_nnz'
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, 'laplace', (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
+
+    # test the pivoting preconditioners on pseudo-random matrices without diagonal dominance
+    for P in [
+            ilupp.ILUTPPreconditioner,
+            #ilupp.ILUCPPreconditioner,     # currently fails
+    ]:
+        base_name = 'test_' + P.__name__[:-14] + '_pivot_'
+
+        for problem in ('random',):
+            for format in ('csr',):    # 'csc' currently fails
+                case_name = base_name + problem + '_' + format
+                vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0}, problem, (50,format,0.0))
+
+                # factors check needs application of permutation
+                #case_name = base_name + problem + '_factorscorrect_' + format
+                #vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, problem, (50,format,0.0), _assert_factors_correct)
 
     # generate tests for stand-alone factorization functions
     for (F, ref, args, sym) in [
