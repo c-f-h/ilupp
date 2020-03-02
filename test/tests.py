@@ -231,8 +231,12 @@ def is_upper_triangular(A):
 
 def _assert_factors_correct(A, P):
     L, U = P.factors()
-    assert is_lower_triangular(L)
-    assert is_upper_triangular(U)
+    if not hasattr(P, 'permutation'):
+        # for preconditioners with pivoting, we only have
+        # that L[perm,:] or U[:,perm] is triangular, however
+        # A = L.U is still correct
+        assert is_lower_triangular(L)
+        assert is_upper_triangular(U)
     LU = L.dot(U)
     assert np.allclose(A.A, LU.A)
     return True
@@ -274,9 +278,8 @@ class TestCases(unittest.TestCase):
                 # we set eye_factor=0 so that the matrix has some 0 diagonal entries
                 vars()[case_name] = _gen_solve_in_one_step(P, {'threshold': 0.0, 'piv_tol':1}, problem, (50,format,0.0))
 
-                # factors check needs application of permutation
-                #case_name = base_name + problem + '_factorscorrect_' + format
-                #vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, problem, (50,format,0.0), _assert_factors_correct)
+                case_name = base_name + problem + '_factorscorrect_' + format
+                vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0, 'piv_tol':0.5}, problem, (50,format,0.0), _assert_factors_correct)
 
     # generate tests for stand-alone factorization functions
     for (F, ref, args, sym) in [
