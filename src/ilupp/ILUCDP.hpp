@@ -1430,16 +1430,25 @@ template<class T> bool matrix_sparse<T>::partialILUC(
     Integer bandwidth, bandwidth_L, bandwidth_U;
     Integer i,j,k;//help;
     Integer h,pos;
+
     Integer max_fill_in;
-    if(IP.get_MAX_FILLIN_IS_INF())  max_fill_in = n;
-    else max_fill_in = IP.get_fill_in();
+    if (IP.get_MAX_FILLIN_IS_INF())
+        max_fill_in = n;
+    else
+        max_fill_in = IP.get_fill_in();
+
     if(max_fill_in<1) max_fill_in = 1;
     if(max_fill_in>n) max_fill_in = n;
+
     T pivot = 0.0;  // dummy initialization
     zero_pivots=0;
     Real norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     Real max_inv_piv=0.0;
-    if(IP.get_DROP_TYPE_L()==4||IP.get_DROP_TYPE_U()==4) bandwidth=Arow.bandwidth(); else bandwidth=0;
+    if (IP.get_DROP_TYPE_L()==4 || IP.get_DROP_TYPE_U()==4)
+        bandwidth=Arow.bandwidth();
+    else
+        bandwidth=0;
+
     switch (IP.get_DROP_TYPE_L()){
         case 3: bandwidth_L = (Integer) (n*IP.get_BANDWIDTH_MULTIPLIER())+IP.get_BANDWIDTH_OFFSET(); break;
         case 4: bandwidth_L = bandwidth; break;

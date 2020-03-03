@@ -1342,7 +1342,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     Real partial_setup_time;
     Real mem_factor=IP.get_MEM_FACTOR();
     this->setup_time = 0.0;
-    Integer last_row_to_eliminate,bp,bpr,epr,end_PQ;
+    Integer last_row_to_eliminate,bp,bpr,epr;
 
     if (A.orient() == ROW)
         Akrow = A;
@@ -1386,14 +1386,25 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             std::cout<<"     symmetry of permutations used in factorization          = "<<(Real) 1.0 <<std::endl;
 #endif
         } else {
-            end_PQ = Akrow.preprocess(IP,pr1,pc1,ipr1,ipc1,this->D_l[this->number_levels],this->D_r[this->number_levels]);
-            if (IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = end_PQ-1;
-            else last_row_to_eliminate = (Akrow.rows()-1)/2;
+            const Integer end_PQ = Akrow.preprocess(IP,pr1,pc1,ipr1,ipc1,this->D_l[this->number_levels],this->D_r[this->number_levels]);
+            if (IP.get_EXTERNAL_FINAL_ROW())
+                last_row_to_eliminate = end_PQ-1;
+            else
+                last_row_to_eliminate = (Akrow.rows()-1)/2;
+
             switch (IP.get_PERMUTE_ROWS()) {
-                case 0:  bpr = 0; epr = 0; break;
-                case 1:  if(IP.get_EXTERNAL_FINAL_ROW()){bpr = 0; epr = 0;} else {bpr = end_PQ; epr = Akrow.rows()-1;} break;
-                case 2:  bpr = 0; epr = last_row_to_eliminate; break;
-                case 3:  bpr = 0; epr = Akrow.rows()-1; break;
+                case 0:         // never permute
+                    bpr = 0; epr = 0; break;
+                case 1:         // permute only final rows
+                    if(IP.get_EXTERNAL_FINAL_ROW())
+                        {bpr = 0; epr = 0;}
+                    else
+                        {bpr = end_PQ; epr = Akrow.rows()-1;}
+                    break;
+                case 2:         // permute only in reordering block
+                    bpr = 0; epr = last_row_to_eliminate; break;
+                case 3:         // permute full matrix
+                    bpr = 0; epr = Akrow.rows()-1; break;
                 default: std::cerr<<"choose permissible value for PERMUTE_ROWS!"<<std::endl; throw iluplusplus_error(OTHER_ERROR);
             }
             switch (IP.get_TOTAL_PIV()) {
@@ -1452,9 +1463,11 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
 #endif
 
             if(use_ILUC){
+                // permutation comes only from preprocessing
                 this->permutation_columns[this->number_levels] = pc1;
                 this->permutation_rows[this->number_levels ]= pr1;                  
             } else {
+                // permutation from preprocessing and pivoting
                 this->permutation_columns[this->number_levels].compose(pc1,pc2);
                 this->permutation_rows[this->number_levels].compose(pr1,pr2);                  
             }
@@ -1510,13 +1523,13 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             std::cout<<"     symmetry of permutations used in factorization          = "<<(Real) 1.0 <<std::endl;
 #endif
         } else {
-            end_PQ = Akrow.preprocess(IP,pr1,pc1,ipr1,ipc1,this->D_l[this->number_levels],this->D_r[this->number_levels]);
+            const Integer end_PQ = Akrow.preprocess(IP,pr1,pc1,ipr1,ipc1,this->D_l[this->number_levels],this->D_r[this->number_levels]);
             last_row_to_eliminate = Akrow.rows()-1;  // must complete LU factorisation
             switch (IP.get_PERMUTE_ROWS()) {
                 case 0:  bpr = 0; epr = 0; break;                   // never permute
                 case 1:  bpr = end_PQ; epr = Akrow.rows()-1; break; // only permute rows unaffected by PQ
                 case 2:  bpr = 0; epr = Akrow.rows()-1; break;
-                case 3:  bpr = 0; epr = Akrow.rows()-1; break;
+                case 3:  bpr = 0; epr = Akrow.rows()-1; break;      // permute full matrix
                 default: std::cerr<<"choose permissible value for PERMUTE_ROWS!"<<std::endl; throw iluplusplus_error(OTHER_ERROR);
             }
             switch (IP.get_TOTAL_PIV()) {
