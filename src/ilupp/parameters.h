@@ -121,12 +121,12 @@ class ILUTPD_precond_parameter
 class iluplusplus_precond_parameter
   {
       protected:
-         Integer                  fill_in;
-         Real                     threshold;
+         Integer                  fill_in;                // maximum permissible entries per row/column of L/U factors
+         Real                     threshold;              // dropping tolerance. 0 = drop only zeros, 1 = drop everything, inbetween: drop depending on relative magnitude
          Real                     piv_tol;                // pivot tolerance. 0 = never pivot, >0 = pivot to avoid zero diagonal, 1 = always pivot to largest entry
          std::string              GLOBAL_COMMENT;
          Integer                  PRECON_PARAMETER;       // number of preconditioner. -1: use PARDISO as a direct solver.
-         preprocessing_sequence   PREPRPOCESSING;
+         preprocessing_sequence   PREPRPOCESSING;         // the sequence of preprocessing steps (reorderings) to apply to the matrix before factorization
          Real                     PQ_THRESHOLD;           // threshold for PQ-Ordering. If larger, less rows are selected resulting in more levels.
          Integer                  PQ_ALGORITHM;           // indicates which PQ algorithm will be used.
                                                           //  0: standard greedy PC
