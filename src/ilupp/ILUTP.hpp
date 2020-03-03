@@ -39,7 +39,8 @@ void ILUTP2(
 
     // (1.) begin for i
     for(i=0;i<n;i++){
-        if (i == bp) piv_tol = 1.0;
+        if (i == bp)
+            piv_tol = 1.0;     // always pivot
 
         // (2.) initialize w to A[i,:], compute norm of lower part
         Real norm_wL = 0.0;

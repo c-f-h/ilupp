@@ -316,9 +316,7 @@ bool matrix_sparse<T>::partialILUCDP(
     Real max_inv_piv=0.0;
     Real threshold_Schur_factor = IP.get_THRESHOLD_SHIFT_SCHUR();
 
-    Real piv_tol = IP.get_perm_tol();
-    if (piv_tol > 500.0) piv_tol=0.0;
-    else piv_tol = std::exp(-piv_tol*std::log(10.0));
+    Real piv_tol = IP.get_piv_tol();
 
     bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
     bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
@@ -547,7 +545,7 @@ bool matrix_sparse<T>::partialILUCDP(
         if(eliminate){  // select potential pivot
             val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
             if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-                if (std::abs(val_larg_el*piv_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+                if (std::abs(val_larg_el*piv_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_piv_tol() > 0){
                     //pivoting = true;
                     pivot = val_larg_el;
                 } else {
@@ -572,7 +570,7 @@ bool matrix_sparse<T>::partialILUCDP(
            if(eliminate){  // select potential pivot
            val_larg_el=z.abs_max(pos_pivot); // finds largest element by absolute value. Returns value and position in z.
            if(non_pivot[selected_row]){  // not pivoting is with respect to the diagonal element of the selected row (if possible)
-           if (std::abs(val_larg_el*piv_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){
+           if (std::abs(val_larg_el*piv_tol)>std::abs(z[selected_row]) && pos_pivot>=0 && IP.get_piv_tol() > 0){
            pivoting = true;
            pivot = val_larg_el;
            } else {
@@ -581,7 +579,7 @@ bool matrix_sparse<T>::partialILUCDP(
            pivot = z[pos_pivot];
            }
            } else {   // not pivoting is with respect to the perm(k)-th element if diagonal element has already been eliminated
-           if (std::abs(val_larg_el*piv_tol)>std::abs(z[perm[k]]) && pos_pivot>=0 && IP.get_perm_tol() <= 500.0){ 
+           if (std::abs(val_larg_el*piv_tol)>std::abs(z[perm[k]]) && pos_pivot>=0 && IP.get_piv_tol() > 0){
            pivoting = true;
            pivot = val_larg_el;
            } else {
@@ -2235,7 +2233,7 @@ bool matrix_sparse<T>::preprocessed_partialILUCDP(
     bool use_ILUC;
     if( (IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))
             && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) )
-            && IP.get_perm_tol() > 500.0)
+            && IP.get_piv_tol() == 0.0)
         use_ILUC = true;
     else
         use_ILUC = false;
@@ -2283,7 +2281,7 @@ bool matrix_sparse<T>::preprocessed_partialILUCDP(
     std::cout<<"  ** factorization parameters:"<<std::endl;
     std::cout<<"     max. numb. nnz/row p   = "<<max_fill_in<<std::endl;
     std::cout<<"     tau                    = "<<threshold<<std::endl;
-    std::cout<<"     perm tolerance         = "<<perm_tol<<std::endl;
+    std::cout<<"     pivot tolerance        = "<<piv_tol<<std::endl;
     std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
     std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
     if(IP.get_EXTERNAL_FINAL_ROW())
@@ -2320,12 +2318,10 @@ bool matrix_sparse<T>::preprocessed_partialILUCDP(
 
 /*
 template<class T>
-bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol,  Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor){
+bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real piv_tol,  Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor){
     try {
       clock_t time_begin, time_end;
       time_begin=clock();
-      if (perm_tol > 500.0) perm_tol=0.0;
-      else perm_tol=std::exp(-perm_tol*std::log(10.0));
       #ifdef VERBOSE
           clock_t time_0, time_1, time_2, time_3, time_4,time_5,time_6,time_7,time_8,time_9;
           Real time_init=0.0;
@@ -2417,14 +2413,14 @@ bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_spar
               time_calc_U += (Real)(time_5-time_4)/(Real)CLOCKS_PER_SEC;
           #endif
           // (6.) sort and copy data to U; update information for accessing columns of U
-          z.take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,weights_U,max_fill_in,threshold,perm[k],perm_tol);
+          z.take_single_weight_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,weights_U,max_fill_in,threshold,perm[k],piv_tol);
               // dropping too stringent?
           if(list_U.dimension()==0){
               if(threshold>0.0)
                   #ifdef VERBOSE
                       std::cout<<"Dropping too stringent, selecting elements without threshold."<<std::endl;
                   #endif
-                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],perm_tol);
+                  z.take_largest_elements_by_abs_value_with_threshold_pivot_last(list_U,max_fill_in,0.0,perm[k],piv_tol);
           }
           // still no non-zero elements?
           if(list_U.dimension()==0){

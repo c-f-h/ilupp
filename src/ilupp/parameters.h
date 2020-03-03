@@ -36,7 +36,7 @@ class ILUCP_precond_parameter
       protected:
          Integer fill_in;
          Real threshold;
-         Real perm_tol;
+         Real piv_tol;
          Integer row_pos;
       public:
          ILUCP_precond_parameter();
@@ -45,13 +45,13 @@ class ILUCP_precond_parameter
          ILUCP_precond_parameter& operator =(const ILUCP_precond_parameter& p);
          Integer get_fill_in() const ;
          Real get_threshold() const;
-         Real get_perm_tol() const;
+         Real get_piv_tol() const;
          Integer get_row_pos() const;
          std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt, Integer rp);
          void set_row_pos(Integer rp);
          void set_threshold(Real th);
-         void set_perm_tol(Real pt);
+         void set_piv_tol(Real pt);
   };
 
 
@@ -67,7 +67,7 @@ class ILUCDP_precond_parameter
       protected:
          Integer fill_in;
          Real threshold;
-         Real perm_tol;
+         Real piv_tol;
          Integer begin_perm_row;
       public:
          ILUCDP_precond_parameter();
@@ -76,12 +76,12 @@ class ILUCDP_precond_parameter
          ILUCDP_precond_parameter& operator =(const ILUCDP_precond_parameter& p);
          Integer get_fill_in() const;
          Real get_threshold() const;
-         Real get_perm_tol() const;
+         Real get_piv_tol() const;
          Integer get_begin_perm_row() const;
          std::string convert_to_string() const;
          void set(Integer fi, Real th, Real pt, Integer bpr);  // default bpr = 1
          void set_threshold(Real th);
-         void set_perm_tol(Real pt);
+         void set_piv_tol(Real pt);
          void set_begin_perm_row(Integer pbr);
   };
 
@@ -123,7 +123,7 @@ class iluplusplus_precond_parameter
       protected:
          Integer                  fill_in;
          Real                     threshold;
-         Real                     perm_tol;               // pivot tolerance. 0 = pivot always; 500 = pivot to avoid zero pivot; 1000 = never pivot
+         Real                     piv_tol;                // pivot tolerance. 0 = never pivot, >0 = pivot to avoid zero diagonal, 1 = always pivot to largest entry
          std::string              GLOBAL_COMMENT;
          Integer                  PRECON_PARAMETER;       // number of preconditioner. -1: use PARDISO as a direct solver.
          preprocessing_sequence   PREPRPOCESSING;
@@ -135,7 +135,7 @@ class iluplusplus_precond_parameter
          Integer                  MAX_LEVELS;             // maximum number of levels used by preconditioner. (must be <= MEMORY_RESERVED_LEVELS !!!)
          bool                     MAX_FILLIN_IS_INF;      // if true, do not restrict the number of fill-in elements by number per row/colums (only by threshold)
          Integer                  MEMORY_MAX_LEVELS;
-         bool                     BEGIN_TOTAL_PIV;        // true: switch to perm_tol = 0.0 (pivot always), when TOTAL_PIV indicates
+         bool                     BEGIN_TOTAL_PIV;        // true: switch to piv_tol = 1.0 (pivot always), when TOTAL_PIV indicates
          Integer                  TOTAL_PIV;              // if(BEGIN_TOTAL_PIV): indicates how pivoting always should be started
                                                           //     0 = never
                                                           //     1 = only after row indicated by preprocessing on final level (never if no index returned by preprocessing)
@@ -250,7 +250,7 @@ class iluplusplus_precond_parameter
          // inline functions
          Integer                  get_fill_in() const                   {return fill_in;}
          Real                     get_threshold() const                 {return threshold;}
-         Real                     get_perm_tol() const                  {return perm_tol;}
+         Real                     get_piv_tol() const                   {return piv_tol;}
          std::string              get_GLOBAL_COMMENT() const            {return GLOBAL_COMMENT;}
          Integer                  get_PRECON_PARAMETER() const          {return PRECON_PARAMETER;}
          const preprocessing_sequence&  get_PREPROCESSING() const       {return PREPRPOCESSING;}
@@ -321,7 +321,7 @@ class iluplusplus_precond_parameter
          //## new parameter demands change here
          void                     set_fill_in(Integer x);
          void                     set_threshold(Real x);
-         void                     set_perm_tol(Real x);
+         void                     set_piv_tol(Real x);
          void                     set_GLOBAL_COMMENT(std::string x);
          void                     set_PRECON_PARAMETER(Integer x);
          void                     set_PREPROCESSING(preprocessing_sequence x);

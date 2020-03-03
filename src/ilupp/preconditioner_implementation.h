@@ -1003,12 +1003,12 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real perm_tol, Integer row_pos, Real mem_factor)
+ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor)
 {
     if(A.orient()==ROW){
         ILUTP2(A, this->Precond_left, this->Precond_right,
                 this->permutation, max_fill_in, threshold,
-                perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
+                piv_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
@@ -1016,7 +1016,7 @@ ILUTPPreconditioner<T,matrix_type,vector_type>::ILUTPPreconditioner(const matrix
     } else {
         ILUTP2(A, this->Precond_right, this->Precond_left,
                 this->permutation, max_fill_in, threshold,
-                perm_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
+                piv_tol, row_pos, this->zero_pivots, this->setup_time, mem_factor);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
@@ -1071,13 +1071,13 @@ template <class T, class matrix_type, class vector_type>
 
 template <class T, class matrix_type, class vector_type>
 ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
-        matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol,
+        matrix_type &Acol, Integer max_fill_in, Real threshold, Real piv_tol,
         Integer rp, Real mem_factor)
 {
     if(Acol.orient()==COLUMN){
         ILUCP4(Acol, this->Precond_left, this->Precond_right,
                 this->permutation, max_fill_in, threshold,
-                perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
+                piv_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->left_form=LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = NOPERM;
@@ -1085,7 +1085,7 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
     } else {
         ILUCP4(Acol, this->Precond_right, this->Precond_left,
                 this->permutation, max_fill_in, threshold,
-                perm_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
+                piv_tol, rp, this->zero_pivots, this->setup_time, mem_factor);
         this->Precond_left.transpose_in_place();
         this->Precond_right.transpose_in_place();
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
@@ -1103,7 +1103,7 @@ ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const
 
 template <class T, class matrix_type, class vector_type>
 ILUCPPreconditioner<T,matrix_type,vector_type>::ILUCPPreconditioner(const matrix_type &Acol, const ILUCP_precond_parameter& p)
-    : ILUCPPreconditioner<T,matrix_type,vector_type>(Acol, p.get_fill_in(), p.get_threshold(), p.get_perm_tol(), p.get_row_pos())
+    : ILUCPPreconditioner<T,matrix_type,vector_type>(Acol, p.get_fill_in(), p.get_threshold(), p.get_piv_tol(), p.get_row_pos())
 {
 }
 
@@ -1146,9 +1146,9 @@ template <class T, class matrix_type, class vector_type>
 
 
 template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr){
+ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, Integer max_fill_in, Real threshold, Real piv_tol, Integer bpr){
     if(Acol.orient()==COLUMN && Arow.orient()==ROW){
-        this->preconditioner_exists = this->Precond_left.ILUCDP(Arow,Acol,this->Precond_right,this->permutation,this->permutation2,max_fill_in,threshold,perm_tol,bpr,this->zero_pivots,this->setup_time);      // preconditioner of A.
+        this->preconditioner_exists = this->Precond_left.ILUCDP(Arow,Acol,this->Precond_right,this->permutation,this->permutation2,max_fill_in,threshold,piv_tol,bpr,this->zero_pivots,this->setup_time);      // preconditioner of A.
         this->left_form=PERMUTED_LOWER_TRIANGULAR;
         this->right_form=PERMUTED_UPPER_TRIANGULAR;
         this->left_matrix_usage = PERM2;
@@ -1165,7 +1165,7 @@ ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matr
 
 
 template <class T, class matrix_type, class vector_type>
-ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real perm_tol, Integer bpr){
+ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, matrix_type &Anew, Integer max_fill_in, Real threshold, Real piv_tol, Integer bpr){
     index_list invperm,invperm2; Integer last_row;
     Real memory_allocated_factorization, memory_used_factorization;
     if(Acol.orient()==COLUMN && Arow.orient()==ROW){
@@ -1189,7 +1189,7 @@ ILUCDPPreconditioner<T,matrix_type,vector_type>:: ILUCDPPreconditioner(const mat
 template <class T, class matrix_type, class vector_type>
 ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(const matrix_type &Arow, const matrix_type &Acol, const ILUCDP_precond_parameter& p)
     :   ILUCDPPreconditioner<T,matrix_type,vector_type>::ILUCDPPreconditioner(Arow, Acol, p.get_fill_in(),
-            p.get_threshold(), p.get_perm_tol(), p.get_begin_perm_row())
+            p.get_threshold(), p.get_piv_tol(), p.get_begin_perm_row())
 {}
 
 template <class T, class matrix_type, class vector_type>
@@ -1333,7 +1333,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     bool use_ILUC;
     if ((IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))
             && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) )
-            && IP.get_perm_tol() > 500.0)
+            && IP.get_piv_tol() == 0.0)
         use_ILUC = true;
     else
         use_ILUC = false;
@@ -1415,7 +1415,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             std::cout<<"  ** preconditioner parameters:"<<std::endl;
             std::cout<<"     max. numb. nnz/row p   = "<<IP.get_fill_in()<<std::endl;
             std::cout<<"     tau                    = "<<tau<<std::endl;
-            std::cout<<"     perm tolerance         = "<<IP.get_perm_tol()<<std::endl;
+            std::cout<<"     pivot tolerance        = "<<IP.get_piv_tol()<<std::endl;
             std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
             std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
             if(IP.get_EXTERNAL_FINAL_ROW())
@@ -1534,7 +1534,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             std::cout<<"  ** preconditioner parameters:"<<std::endl;
             std::cout<<"     max. numb. nnz/row p   = "<<IP.get_fill_in()<<std::endl;
             std::cout<<"     tau                    = "<<tau<<std::endl;
-            std::cout<<"     perm tolerance         = "<<IP.get_perm_tol()<<std::endl;
+            std::cout<<"     pivot tolerance        = "<<IP.get_piv_tol()<<std::endl;
             std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
             std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
             std::cout<<std::endl;
@@ -1685,7 +1685,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
         std::cout<<"  ** preconditioner parameters:"<<std::endl;
         std::cout<<"     max. numb. nnz/row p   = "<<IP.get_fill_in()<<std::endl;
         std::cout<<"     tau                    = "<<threshold<<std::endl;
-        std::cout<<"     perm tolerance         = "<<IP.get_perm_tol()<<std::endl;
+        std::cout<<"     pivot tolerance        = "<<IP.get_piv_tol()<<std::endl;
         std::cout<<"     begin permuting rows   = "<<bpr<<std::endl;
         std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
         if(IP.get_EXTERNAL_FINAL_ROW())

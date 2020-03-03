@@ -39,7 +39,7 @@ namespace iluplusplus {
 
 iluplusplus_precond_parameter::iluplusplus_precond_parameter(){default_parameters();}
 
-void iluplusplus_precond_parameter::set(Integer fi, Real th, Real pt){fill_in=fi; threshold=th; perm_tol=pt;}
+void iluplusplus_precond_parameter::set(Integer fi, Real th, Real pt){fill_in=fi; threshold=th; piv_tol=pt;}
 
 std::string iluplusplus_precond_parameter::filename() const {
     std::string name;
@@ -162,7 +162,7 @@ std::string iluplusplus_precond_parameter::short_string() const {
 //## new parameter demands change here
 void                     iluplusplus_precond_parameter::set_fill_in(Integer x){fill_in=x;}
 void                     iluplusplus_precond_parameter::set_threshold(Real x){threshold=x;}
-void                     iluplusplus_precond_parameter::set_perm_tol(Real x){perm_tol=x;}
+void                     iluplusplus_precond_parameter::set_piv_tol(Real x){piv_tol=x;}
 void                     iluplusplus_precond_parameter::set_GLOBAL_COMMENT(std::string x){GLOBAL_COMMENT=x;}
 void                     iluplusplus_precond_parameter::set_PRECON_PARAMETER(Integer x){PRECON_PARAMETER=x;}
 void                     iluplusplus_precond_parameter::set_PREPROCESSING(preprocessing_sequence x){PREPRPOCESSING=x;}
@@ -238,7 +238,7 @@ void iluplusplus_precond_parameter::print() const {
         std::cout<<"Main Parameters:"<<std::endl;
         std::cout<<"   max fill-in:             "<<fill_in<<std::endl;
         std::cout<<"   threshold:               "<<threshold<<std::endl;
-        std::cout<<"   perm_tol:                "<<perm_tol<<std::endl;
+        std::cout<<"   piv_tol:                 "<<piv_tol<<std::endl;
         std::cout<<"Restrictions on Memory and Calculation Times:"<<std::endl;
         std::cout<<"   MEMORY_MAX_LEVELS:       "<<MEMORY_MAX_LEVELS<<std::endl;
         std::cout<<"   MAX_LEVELS:              "<<MAX_LEVELS<<std::endl;
@@ -430,7 +430,7 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
  void iluplusplus_precond_parameter::default_parameters(){
              fill_in               = 10000;
              threshold             = 0.0;
-             perm_tol              = 0.0;
+             piv_tol               = 1.0;
              GLOBAL_COMMENT        = "default parameters";
              PRECON_PARAMETER      = 0;
              PQ_ALGORITHM          = 0;
@@ -509,19 +509,16 @@ std::string iluplusplus_precond_parameter::convert_to_string() const {
            _threshold.precision(2);
            _threshold<<threshold;
 
-           std::ostringstream _perm_tol;
-           _perm_tol.setf(std::ios::right|std::ios::fixed);
-           _perm_tol.precision(1);
-           if(perm_tol<500.0)
-               _perm_tol<<perm_tol;
-           else
-             _perm_tol<<"Inf";
+           std::ostringstream _piv_tol;
+           _piv_tol.setf(std::ios::right|std::ios::fixed);
+           _piv_tol.precision(2);
+           _piv_tol<<piv_tol;
 
            if(MAX_FILLIN_IS_INF)
              _fill_in<<"Inf";
            else
              _fill_in<<fill_in;
-           return _fill_in.str()+"/"+_threshold.str()+"/"+_perm_tol.str();
+           return _fill_in.str()+"/"+_threshold.str()+"/"+_piv_tol.str();
    }
 
 
@@ -900,7 +897,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   10:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
         break;
@@ -909,7 +906,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
         break;
@@ -918,7 +915,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
         break;
@@ -927,14 +924,14 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
         break;
         case   15:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -944,7 +941,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -954,7 +951,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -964,7 +961,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -975,13 +972,13 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   20:  //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
         break;
         case   21:  //  multilevel ILUC, inverse-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
@@ -989,7 +986,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   22:  //  multilevel ILUC, weighted-dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -997,7 +994,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   23:  //  multilevel ILUC, dual threshold dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1005,14 +1002,14 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   25:  //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              SCHUR_COMPLEMENT      = 1;
         break;
         case   26:  //  multilevel ILUC, inverse-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1021,7 +1018,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   27:  //  multilevel ILUC, weighted-dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1030,7 +1027,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   28:  //  multilevel ILUC, dual threshold dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1140,44 +1137,44 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         //   multilevel ILUCDP with row permutations and corresponding column as pivot, switching levels whenever fill-in too large.  I-matrix preprocessing almost essential
         
         case    50:  // multilevel ILUCDP, error-based dropping 
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    51:  // multilevel ILUCDP, inverse-based dropping
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    52:  // multilevel ILUCDP, weighted-dropping
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    53:  // multilevel ILUCDP, dual threshold dropping
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    55:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    56:  // multilevel ILUCDP, inverse-based dropping
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    57:  // multilevel ILUCDP, weighted-dropping
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
         case    58:  // multilevel ILUCDP, dual threshold dropping
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
         break;
 
 
@@ -1186,7 +1183,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   60:    //  multilevel ILUC, error-based dropping, with Schur == 0 check, see 10 -- 18
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -1196,7 +1193,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -1206,7 +1203,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -1216,7 +1213,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -1224,7 +1221,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case   65:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1235,7 +1232,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1246,7 +1243,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1257,7 +1254,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1426,28 +1423,28 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case  110:  //  ILUC error-based dropping
              MAX_LEVELS            = 1;
              PERMUTE_ROWS          = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
         break;
         case  111:  //  ILUC inverse-based dropping
              MAX_LEVELS            = 1;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              PERMUTE_ROWS          = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
         break;
         case  112:  //  ILUC  weighted-dropping
              MAX_LEVELS            = 1;
              PERMUTE_ROWS          = 0;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
         break;
         case  113:  //  ILUC dual threshold dropping
              MAX_LEVELS            = 1;
              PERMUTE_ROWS          = 0;
              USE_ERR_PROP_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
         break;
 
         // single-level ILUCP
@@ -1595,7 +1592,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1010:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
@@ -1607,7 +1604,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
@@ -1619,7 +1616,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
@@ -1631,7 +1628,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
@@ -1641,7 +1638,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1015:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1654,7 +1651,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1667,7 +1664,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1680,7 +1677,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -1694,7 +1691,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1020:  //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
@@ -1703,7 +1700,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1021:  //  multilevel ILUC, inverse-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1714,7 +1711,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1022:  //  multilevel ILUC, weighted-dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1725,7 +1722,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1023:  //  multilevel ILUC, dual threshold dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1736,7 +1733,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1025:  //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              SCHUR_COMPLEMENT      = 1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
@@ -1746,7 +1743,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1026:  //  multilevel ILUC, inverse-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1758,7 +1755,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1027:  //  multilevel ILUC, weighted-dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1770,7 +1767,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1028:  //  multilevel ILUC, dual threshold dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              BEGIN_TOTAL_PIV       = false;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
@@ -1929,7 +1926,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              fill_in               = 500;
         break;
         case  1050:  // multilevel ILUCDP, error-based dropping 
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1937,7 +1934,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case  1051:  // multilevel ILUCDP, inverse-based dropping
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1945,7 +1942,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case  1052:  // multilevel ILUCDP, weighted-dropping
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1953,14 +1950,14 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case  1053:  // multilevel ILUCDP, dual threshold dropping
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case  1055:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1969,7 +1966,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1978,7 +1975,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1987,7 +1984,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             perm_tol              = 1.0;
+             piv_tol               = 1e-1;
              THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
@@ -1997,7 +1994,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1060:    //  multilevel ILUC, error-based dropping, with Schur == 0 check, see 10 -- 18
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -2010,7 +2007,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -2023,7 +2020,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -2036,7 +2033,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
@@ -2047,7 +2044,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1065:    //  multilevel ILUC, error-based dropping
              PERMUTE_ROWS          = 0;
              TOTAL_PIV             = 0;
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -2061,7 +2058,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -2075,7 +2072,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -2089,7 +2086,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              TOTAL_PIV             = 0; 
-             perm_tol              = 1000.0;
+             piv_tol               = 0.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
@@ -2287,35 +2284,29 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-         ILUCP_precond_parameter::ILUCP_precond_parameter() : fill_in(0), threshold(1000.0), perm_tol(0.0), row_pos(-1){}
-         ILUCP_precond_parameter::ILUCP_precond_parameter(Integer fi, Real th, Real pt, Integer rp = -1) : fill_in(fi), threshold(th), perm_tol(pt), row_pos(rp) {}
-         ILUCP_precond_parameter::ILUCP_precond_parameter(const ILUCP_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol;row_pos=p.row_pos;}
-         ILUCP_precond_parameter& ILUCP_precond_parameter::operator =(const ILUCP_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol;row_pos=p.row_pos; return *this;}
+         ILUCP_precond_parameter::ILUCP_precond_parameter() : fill_in(0), threshold(1000.0), piv_tol(0.0), row_pos(-1){}
+         ILUCP_precond_parameter::ILUCP_precond_parameter(Integer fi, Real th, Real pt, Integer rp = -1) : fill_in(fi), threshold(th), piv_tol(pt), row_pos(rp) {}
+         ILUCP_precond_parameter::ILUCP_precond_parameter(const ILUCP_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold; piv_tol=p.piv_tol;row_pos=p.row_pos;}
+         ILUCP_precond_parameter& ILUCP_precond_parameter::operator =(const ILUCP_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; piv_tol=p.piv_tol;row_pos=p.row_pos; return *this;}
          Integer ILUCP_precond_parameter::get_fill_in() const {return fill_in;}
          Real ILUCP_precond_parameter::get_threshold() const {return threshold;}
-         Real ILUCP_precond_parameter::get_perm_tol() const {return perm_tol;}
+         Real ILUCP_precond_parameter::get_piv_tol() const {return piv_tol;}
          Integer ILUCP_precond_parameter::get_row_pos() const {return row_pos;}
          std::string ILUCP_precond_parameter::convert_to_string() const {
              std::ostringstream _fill_in;
              std::ostringstream _threshold;
-             std::ostringstream _perm_tol;
+             std::ostringstream _piv_tol;
              _threshold.precision(2);
-             _perm_tol.precision(2);
-             if(threshold<500.0)
-                 _threshold<<threshold;
-             else
-                 _threshold<<"N";
-             if(perm_tol<500.0)
-                 _perm_tol<<perm_tol;
-             else
-                 _perm_tol<<"N";
+             _piv_tol.precision(2);
+             _threshold<<threshold;
+             _piv_tol<<piv_tol;
              _fill_in<<fill_in;
-             return _fill_in.str()+"-"+_threshold.str()+"-"+_perm_tol.str();
+             return _fill_in.str()+"-"+_threshold.str()+"-"+_piv_tol.str();
          }
-         void ILUCP_precond_parameter::set(Integer fi, Real th, Real pt, Integer rp){fill_in=fi; threshold=th; perm_tol=pt;row_pos=rp;}
+         void ILUCP_precond_parameter::set(Integer fi, Real th, Real pt, Integer rp){fill_in=fi; threshold=th; piv_tol=pt;row_pos=rp;}
          void ILUCP_precond_parameter::set_row_pos(Integer rp){row_pos=rp;}
          void ILUCP_precond_parameter::set_threshold(Real th){threshold=th;}
-         void ILUCP_precond_parameter::set_perm_tol(Real pt){perm_tol=pt;}
+         void ILUCP_precond_parameter::set_piv_tol(Real pt){piv_tol=pt;}
 
 
 //***********************************************************************************************************************//
@@ -2324,34 +2315,28 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
-         ILUCDP_precond_parameter::ILUCDP_precond_parameter() : fill_in(0), threshold(1000.0), perm_tol(0.0), begin_perm_row(-1) {}
-         ILUCDP_precond_parameter::ILUCDP_precond_parameter(Integer fi, Real th, Real pt, Integer bpr =-1) : fill_in(fi), threshold(th), perm_tol(pt), begin_perm_row(bpr) {}
-         ILUCDP_precond_parameter::ILUCDP_precond_parameter(const ILUCDP_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol; begin_perm_row=p.begin_perm_row;}
-         ILUCDP_precond_parameter& ILUCDP_precond_parameter::operator =(const ILUCDP_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; perm_tol=p.perm_tol; begin_perm_row=p.begin_perm_row; return *this;}
+         ILUCDP_precond_parameter::ILUCDP_precond_parameter() : fill_in(0), threshold(1000.0), piv_tol(0.0), begin_perm_row(-1) {}
+         ILUCDP_precond_parameter::ILUCDP_precond_parameter(Integer fi, Real th, Real pt, Integer bpr =-1) : fill_in(fi), threshold(th), piv_tol(pt), begin_perm_row(bpr) {}
+         ILUCDP_precond_parameter::ILUCDP_precond_parameter(const ILUCDP_precond_parameter& p) {fill_in=p.fill_in; threshold=p.threshold; piv_tol=p.piv_tol; begin_perm_row=p.begin_perm_row;}
+         ILUCDP_precond_parameter& ILUCDP_precond_parameter::operator =(const ILUCDP_precond_parameter& p){fill_in=p.fill_in; threshold=p.threshold; piv_tol=p.piv_tol; begin_perm_row=p.begin_perm_row; return *this;}
          Integer ILUCDP_precond_parameter::get_fill_in() const {return fill_in;}
          Real ILUCDP_precond_parameter::get_threshold() const {return threshold;}
-         Real ILUCDP_precond_parameter::get_perm_tol() const {return perm_tol;}
+         Real ILUCDP_precond_parameter::get_piv_tol() const {return piv_tol;}
          Integer ILUCDP_precond_parameter::get_begin_perm_row() const {return begin_perm_row;}
          std::string ILUCDP_precond_parameter::convert_to_string() const {
              std::ostringstream _fill_in;
              std::ostringstream _threshold;
-             std::ostringstream _perm_tol;
+             std::ostringstream _piv_tol;
              _threshold.precision(2);
-             _perm_tol.precision(2);
-             if(threshold<500.0)
-                 _threshold<<threshold;
-             else
-                 _threshold<<"N";
-             if(perm_tol<500.0)
-                 _perm_tol<<perm_tol;
-             else
-                 _perm_tol<<"N";
+             _piv_tol.precision(2);
+             _threshold<<threshold;
+             _piv_tol<<piv_tol;
              _fill_in<<fill_in;
-             return _fill_in.str()+"-"+_threshold.str()+"-"+_perm_tol.str();
+             return _fill_in.str()+"-"+_threshold.str()+"-"+_piv_tol.str();
          }
-         void ILUCDP_precond_parameter::set(Integer fi, Real th, Real pt, Integer bpr = -1){fill_in=fi; threshold=th; perm_tol=pt; begin_perm_row = bpr;}
+         void ILUCDP_precond_parameter::set(Integer fi, Real th, Real pt, Integer bpr = -1){fill_in=fi; threshold=th; piv_tol=pt; begin_perm_row = bpr;}
          void ILUCDP_precond_parameter::set_threshold(Real th){threshold=th;}
-         void ILUCDP_precond_parameter::set_perm_tol(Real pt){perm_tol=pt;}
+         void ILUCDP_precond_parameter::set_piv_tol(Real pt){piv_tol=pt;}
          void ILUCDP_precond_parameter::set_begin_perm_row(Integer pbr){begin_perm_row = pbr;}
 
 

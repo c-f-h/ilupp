@@ -377,12 +377,7 @@ bool ILUCP4inv(
 
     const Integer max_fill_in = IP.get_fill_in();
     const Real threshold = IP.get_threshold();
-
-    Real piv_tol = IP.get_perm_tol();
-    // convert from logarithmic to standard scale
-    if (piv_tol > 500.0) piv_tol=0.0;
-    else piv_tol = std::exp(-piv_tol*std::log(10.0));
-
+    const Real piv_tol = IP.get_piv_tol();
     const Real mem_factor = IP.get_MEM_FACTOR();
 
     Integer n = Acol.columns();

@@ -324,7 +324,7 @@ PYBIND11_MODULE(_ilupp, m)
         //
         .def_property("fill_in", &iluplusplus_precond_parameter::get_fill_in, &iluplusplus_precond_parameter::set_fill_in)
         .def_property("threshold", &iluplusplus_precond_parameter::get_threshold, &iluplusplus_precond_parameter::set_threshold)
-        .def_property("perm_tol", &iluplusplus_precond_parameter::get_perm_tol, &iluplusplus_precond_parameter::set_perm_tol)
+        .def_property("piv_tol", &iluplusplus_precond_parameter::get_piv_tol, &iluplusplus_precond_parameter::set_piv_tol)
         .def_property("GLOBAL_COMMENT", &iluplusplus_precond_parameter::get_GLOBAL_COMMENT, &iluplusplus_precond_parameter::set_GLOBAL_COMMENT)
         .def_property("PRECON_PARAMETER", &iluplusplus_precond_parameter::get_PRECON_PARAMETER, &iluplusplus_precond_parameter::set_PRECON_PARAMETER)
         .def_property("PREPROCESSING", (preprocessing_sequence& (iluplusplus_precond_parameter::*)()) &iluplusplus_precond_parameter::get_PREPROCESSING, &iluplusplus_precond_parameter::set_PREPROCESSING)
