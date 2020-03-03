@@ -16,6 +16,7 @@ Compared to the original ILU++, this package has been significantly improved:
 - Code cleaned up and modernized for C++11
 - Extensive test suite
 - Many critical bugs fixed
+- Massive performance improvements (orders of magnitude for large matrices)
 - Added several new factorizations, like ILU(0), IChol(0), and incomplete Cholesky
   with choosable fill-in and thresholding
 
