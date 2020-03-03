@@ -144,7 +144,7 @@ class iluplusplus_precond_parameter
          bool                     USE_FINAL_THRESHOLD ;   // use different threshold for last level (i.e. for size < MIN_ML_SIZE)
          Real                     FINAL_THRESHOLD ;       // threshold shift for final level; default: keep all elements. Requires USE_FINAL_THRESHOLD == true
          Real                     VARY_THRESHOLD_FACTOR;  // factor to vary threshold by; default: same threshold for all levels
-         Real                     THRESHOLD_SHIFT_SCHUR;  // additive shift for threshold for Schur Complement; Schur Complement is calculated with threshold+THRESHOLD_SHIFT_SCHUR
+         Real                     THRESHOLD_SHIFT_SCHUR;  // multiplicative shift for threshold for Schur Complement; Schur Complement is calculated with threshold*THRESHOLD_SHIFT_SCHUR
          Integer                  PERMUTE_ROWS;           // indicates which rows should be permuted:
                                                           //     0 = never
                                                           //     1 = permute only the final rows unaffected by resorting on final level (same as 0 if !EXTERNAL_FINAL_ROW)

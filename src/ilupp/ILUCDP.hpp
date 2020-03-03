@@ -318,7 +318,7 @@ bool matrix_sparse<T>::partialILUCDP(
     zero_pivots=0;
     Real norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     Real max_inv_piv=0.0;
-    Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
+    Real threshold_Schur_factor = IP.get_THRESHOLD_SHIFT_SCHUR();
     Real post_fact_threshold;
     Real perm_tol = IP.get_perm_tol();
     bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
@@ -1460,7 +1460,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(
     }
     if (threshold > 500.0) threshold=0.0;
     else threshold=std::exp(-threshold*std::log(10.0));
-    Real threshold_Schur_factor = std::exp(-IP.get_THRESHOLD_SHIFT_SCHUR()*std::log(10.0));
+    Real threshold_Schur_factor = IP.get_THRESHOLD_SHIFT_SCHUR();
     Real post_fact_threshold;
     if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
     else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));

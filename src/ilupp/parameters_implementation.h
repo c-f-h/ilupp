@@ -444,7 +444,7 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
              USE_FINAL_THRESHOLD   = false;
              FINAL_THRESHOLD       = 1000.0;
              VARY_THRESHOLD_FACTOR = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 1000.0;
+             THRESHOLD_SHIFT_SCHUR = 0.0;       // threshold = 0 for the Schur complement
              PERMUTE_ROWS          = 3;
              EXTERNAL_FINAL_ROW    = false;
              MIN_ELIM_FACTOR       = 0.5;
@@ -1534,34 +1534,34 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 
 
         case 1000:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case 1001:  // multilevel ILUCDP, inverse-based dropping
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case 1002:  // multilevel ILUCDP, weighted-dropping
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case 1003:  // multilevel ILUCDP, dual threshold dropping
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case 1005:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1569,7 +1569,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1577,7 +1577,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1585,7 +1585,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1598,7 +1598,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              perm_tol              = 1000.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1610,7 +1610,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              perm_tol              = 1000.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1622,7 +1622,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              perm_tol              = 1000.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1634,7 +1634,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              perm_tol              = 1000.0;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1645,7 +1645,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1658,7 +1658,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1671,7 +1671,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1684,7 +1684,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1696,7 +1696,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              EXTERNAL_FINAL_ROW    = true;
              perm_tol              = 1000.0;
              BEGIN_TOTAL_PIV       = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1707,7 +1707,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              BEGIN_TOTAL_PIV       = false;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1718,7 +1718,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              BEGIN_TOTAL_PIV       = false;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1729,7 +1729,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              BEGIN_TOTAL_PIV       = false;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1739,7 +1739,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              perm_tol              = 1000.0;
              BEGIN_TOTAL_PIV       = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1751,7 +1751,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1763,7 +1763,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1775,7 +1775,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1785,7 +1785,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1030:  //  ILUCP, error-based dropping
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1794,7 +1794,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              EXTERNAL_FINAL_ROW    = true;
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1803,7 +1803,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              EXTERNAL_FINAL_ROW    = true;
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1812,7 +1812,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              EXTERNAL_FINAL_ROW    = true;
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1820,7 +1820,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              PERMUTE_ROWS          = 0;
              EXTERNAL_FINAL_ROW    = true;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1830,7 +1830,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1840,7 +1840,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1850,7 +1850,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1859,7 +1859,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
         case 1040:  // multilevel ILUCDP, error-based dropping
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1868,7 +1868,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1877,7 +1877,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1886,7 +1886,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1894,7 +1894,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1904,7 +1904,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1914,7 +1914,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1924,13 +1924,13 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case  1050:  // multilevel ILUCDP, error-based dropping 
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1938,7 +1938,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1946,7 +1946,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1954,14 +1954,14 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case  1055:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              SCHUR_COMPLEMENT      = 1;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1970,7 +1970,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1979,7 +1979,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -1988,7 +1988,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              perm_tol              = 1.0;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2001,7 +2001,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2014,7 +2014,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2027,7 +2027,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2040,7 +2040,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2052,7 +2052,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2066,7 +2066,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2080,7 +2080,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2094,7 +2094,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2105,7 +2105,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2115,7 +2115,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2125,7 +2125,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2135,7 +2135,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              SMALL_PIVOT_TERMINATES= true;
              MIN_ELIM_FACTOR       = 0.0;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2144,7 +2144,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2155,7 +2155,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2166,7 +2166,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2177,7 +2177,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              MIN_ELIM_FACTOR       = 0.0;
              SCHUR_COMPLEMENT      = 1;
              USE_THRES_ZERO_SCHUR  = true;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2190,7 +2190,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
 
         case 1200:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2198,7 +2198,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_INVERSE_DROPPING  = true;
              USE_ERR_PROP_DROPPING = false;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2206,7 +2206,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_WEIGHTED_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2214,14 +2214,14 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_STANDARD_DROPPING = true;
              USE_ERR_PROP_DROPPING = false;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
         case 1205:  // multilevel ILUCDP, error-based dropping (DEFAULT preconditioner)
              SCHUR_COMPLEMENT      = 1;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2230,7 +2230,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2239,7 +2239,7 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
@@ -2248,12 +2248,12 @@ void iluplusplus_precond_parameter::init(const preprocessing_sequence& L, Intege
              USE_ERR_PROP_DROPPING = false;
              SCHUR_COMPLEMENT      = 1;
              FINAL_ROW_CRIT        = -2;
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
         break;
   /*
-             THRESHOLD_SHIFT_SCHUR = 3.0;
+             THRESHOLD_SHIFT_SCHUR = 1e-3;
              MAX_FILLIN_IS_INF     = false;
              fill_in               = 500;
   */
