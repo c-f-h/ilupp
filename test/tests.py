@@ -268,7 +268,7 @@ class TestCases(unittest.TestCase):
     # test the pivoting preconditioners on pseudo-random matrices without diagonal dominance
     for P in [
             ilupp.ILUTPPreconditioner,
-            #ilupp.ILUCPPreconditioner,     # currently fails
+            ilupp.ILUCPPreconditioner,
     ]:
         base_name = 'test_' + P.__name__[:-14] + '_pivot_'
 
