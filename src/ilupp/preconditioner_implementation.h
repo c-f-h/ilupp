@@ -1303,7 +1303,8 @@ template <class T, class matrix_type, class vector_type>
   }
 
 template <class T, class matrix_type, class vector_type>
-void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocessed_multilevelILUCDP(const matrix_type &A, const iluplusplus_precond_parameter& IP){
+void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocessed_multilevelILUCDP(const matrix_type &A, const iluplusplus_precond_parameter& IP)
+{
     if(IP.get_PRECON_PARAMETER() < 0){
         std::cout<<"multilevelILUCDPPreconditioner::make_preprocessed_multilevelILUCDP: PRECON_PARAMETER < 0: these values are reserved for special solvers. Please choose permissible value. Doing nothing and returning without preconditioner."<<std::endl;
         return;
@@ -1328,6 +1329,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     init(IP.get_MEMORY_MAX_LEVELS());
     param = IP;
     Real tau = IP.get_threshold();
+
     bool use_ILUC;
     if ((IP.get_PERMUTE_ROWS() == 0 || (IP.get_PERMUTE_ROWS() == 1 && !IP.get_EXTERNAL_FINAL_ROW()))
             && (!IP.get_BEGIN_TOTAL_PIV() || (IP.get_BEGIN_TOTAL_PIV() && IP.get_TOTAL_PIV() == 0) )
@@ -1335,7 +1337,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
         use_ILUC = true;
     else
         use_ILUC = false;
-    bool have_zero_matrix = false;
+
     matrix_type Akrow,Akcol,Akrow_next;
     index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
     Real partial_setup_time;
@@ -1359,8 +1361,9 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
         max_memory_allocated = 3.0 * Amemory;  // in this case, two copies are neeed (total of 3 matrices)
         max_memory_used = 3.0 * Amemory;
     }
-    while(matrix_size>IP.get_MIN_ML_SIZE() && this->number_levels<IP.get_MAX_LEVELS()-1 && nonzeroes>0){
-        have_zero_matrix =  IP.get_USE_THRES_ZERO_SCHUR() && Akrow.rows()<= IP.get_MIN_SIZE_ZERO_SCHUR() && Akrow.numerical_zero_check(IP.get_THRESHOLD_ZERO_SCHUR());
+    // loop until matrix is small enough or we have reached the maximum number of levels
+    while(matrix_size > IP.get_MIN_ML_SIZE() && this->number_levels < IP.get_MAX_LEVELS()-1 && nonzeroes > 0){
+        const bool have_zero_matrix = IP.get_USE_THRES_ZERO_SCHUR() && Akrow.rows()<= IP.get_MIN_SIZE_ZERO_SCHUR() && Akrow.numerical_zero_check(IP.get_THRESHOLD_ZERO_SCHUR());
         if(have_zero_matrix) {
 #ifdef INFO
             std::cout<<"multilevelILUCDPPreconditioner::make_preprocessed_multilevelILUCDP: zero coefficient matrix of dimension "<<Akrow.rows()<<", calculating Drazin inverse."<<std::endl;
@@ -1468,7 +1471,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             matrix_size = Akrow.rows();
             nonzeroes = Akrow.actual_non_zeroes();
             if(!IP.get_EXTERNAL_FINAL_ROW()) last_row_to_eliminate = min(last_row_to_eliminate/2,matrix_size-1);
-            tau += IP.get_VARY_THRESHOLD_FACTOR();
+            tau *= IP.get_VARY_THRESHOLD_FACTOR();
             switch(IP.get_VARIABLE_MEM()){
                 case 0: mem_factor = IP.get_MEM_FACTOR(); break;
                 case 1: mem_factor = IP.get_MEM_FACTOR()*((Real)A.rows())/((Real)matrix_size); break;
@@ -1478,7 +1481,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
         }
     } // end while
     if(matrix_size>0){
-        have_zero_matrix =  IP.get_USE_THRES_ZERO_SCHUR() && Akrow.rows()<= IP.get_MIN_SIZE_ZERO_SCHUR() && Akrow.numerical_zero_check(IP.get_THRESHOLD_ZERO_SCHUR());
+        const bool have_zero_matrix = IP.get_USE_THRES_ZERO_SCHUR() && Akrow.rows()<= IP.get_MIN_SIZE_ZERO_SCHUR() && Akrow.numerical_zero_check(IP.get_THRESHOLD_ZERO_SCHUR());
         if(have_zero_matrix) {
 #ifdef INFO
             std::cout<<"multilevelILUCDPPreconditioner::make_preprocessed_multilevelILUCDP: zero coefficient matrix, calculating Drazin inverse."<<std::endl;
@@ -1519,7 +1522,8 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             }
             if(!use_ILUC)
                 Akcol = Akrow.change_orientation();
-            if (IP.get_USE_FINAL_THRESHOLD()) tau += IP.get_FINAL_THRESHOLD();
+            if (IP.get_USE_FINAL_THRESHOLD())
+                tau *= IP.get_FINAL_THRESHOLD();
 #ifdef INFO
             std::cout<<std::endl;
             std::cout<<"**** level: "<<this->number_levels<<" ****"<<std::endl;
@@ -1535,8 +1539,26 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             std::cout<<"     end   permuting rows   = "<<epr<<std::endl;
             std::cout<<std::endl;
 #endif
-            if(use_ILUC) this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUC(Akrow,Akrow_next,IP,true,this->Precond_right[this->number_levels],this->Precond_middle[this->number_levels],last_row_to_eliminate,tau,this->zero_pivots[this->number_levels],partial_setup_time,mem_factor,memory_allocated_factorization,memory_used_factorization);
-            else this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUCDP(Akrow,Akcol,Akrow_next,IP,true,this->Precond_right[this->number_levels],this->Precond_middle[this->number_levels],pc2,pr2,ipc2,ipr2,last_row_to_eliminate,tau,bp,bpr,epr,this->zero_pivots[this->number_levels],partial_setup_time,mem_factor,memory_allocated_factorization,memory_used_factorization);
+            if(use_ILUC)
+                this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUC(
+                        Akrow, Akrow_next, IP, true,
+                        this->Precond_right[this->number_levels],
+                        this->Precond_middle[this->number_levels],
+                        last_row_to_eliminate, tau,
+                        this->zero_pivots[this->number_levels],
+                        partial_setup_time, mem_factor,
+                        memory_allocated_factorization,
+                        memory_used_factorization);
+            else
+                this->preconditioner_exists &= this->Precond_left[this->number_levels].partialILUCDP(
+                        Akrow, Akcol, Akrow_next, IP, true,
+                        this->Precond_right[this->number_levels],
+                        this->Precond_middle[this->number_levels], pc2, pr2,
+                        ipc2, ipr2, last_row_to_eliminate, tau, bp, bpr, epr,
+                        this->zero_pivots[this->number_levels],
+                        partial_setup_time, mem_factor,
+                        memory_allocated_factorization,
+                        memory_used_factorization);
 #ifdef INFO
             std::cout<<"     zero-pivots            = "<<this->zero_pivots[this->number_levels]<<std::endl;
             std::cout<<"     local fill-in          = "<<((Real)(this->Precond_left[this->number_levels].actual_non_zeroes()+this->Precond_right[this->number_levels].actual_non_zeroes())- (Real) Akrow.rows() )/((Real)Akrow.actual_non_zeroes())<<std::endl;

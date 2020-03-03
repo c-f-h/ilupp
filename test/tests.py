@@ -305,7 +305,7 @@ def test_ml_solve_laplace2d_PQ():
     A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_PQ()
-    param.threshold = 2.0
+    param.threshold = 1e-2
     x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
@@ -314,7 +314,7 @@ def test_ml_solve_laplace2d_MWM():
     A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING()
-    param.threshold = 2.0
+    param.threshold = 1e-2
     x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
@@ -323,7 +323,7 @@ def test_ml_solve_laplace2d_MWM_sPQ():
     A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_MAX_WEIGHTED_MATCHING_ORDERING_SYM_PQ()
-    param.threshold = 2.0
+    param.threshold = 1e-2
     x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
@@ -332,7 +332,7 @@ def test_ml_solve_laplace2d_SF():
     A, b, x_exact = example_laplace2d(900)
     param = ilupp.iluplusplus_precond_parameter()
     param.PREPROCESSING.set_SPARSE_FIRST()
-    param.threshold = 2.0
+    param.threshold = 1e-2
     x, info = ilupp.solve(A, b, atol=1e-8, rtol=1e-8, params=param, info=True)
     print('Convergence info:', info)
     assert np.allclose(x_exact, x)
@@ -347,7 +347,7 @@ def test_ml_precond_laplace():
     n = 100
     A = laplace_matrix(n)
     b = np.ones(n)
-    P = ilupp.ILUppPreconditioner(A, threshold=1000)
+    P = ilupp.ILUppPreconditioner(A, threshold=0)
     x = P.dot(b)
     X = np.linspace(0, 1, n+2)[1:-1]
     assert np.allclose(x, X*(1-X)/2)
@@ -355,7 +355,7 @@ def test_ml_precond_laplace():
 
 def test_ml_precond_random():
     A, b, x_exact = example_random(50)
-    P = ilupp.ILUppPreconditioner(A, threshold=1000)
+    P = ilupp.ILUppPreconditioner(A, threshold=0)
     x = b.copy()
     P.apply(x)
     print('Error:', np.linalg.norm(x - x_exact))

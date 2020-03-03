@@ -7,8 +7,6 @@ namespace iluplusplus {
 template<class T> bool matrix_sparse<T>::ILUCDP(const matrix_sparse<T>& Arow, const matrix_sparse<T>& Acol, matrix_sparse<T>& U, index_list& perm, index_list& permrows, Integer max_fill_in, Real threshold, Real perm_tol,  Integer bpr, Integer& zero_pivots, Real& time_self, Real mem_factor){
     clock_t time_begin, time_end;
     time_begin=clock();
-    if (threshold > 500.0) threshold=0.0;
-    else threshold=std::exp(-threshold*std::log(10.0));
     if (perm_tol > 500.0) perm_tol=0.0;
     else perm_tol=std::exp(-perm_tol*std::log(10.0));
 #ifdef VERBOSE
@@ -319,7 +317,6 @@ bool matrix_sparse<T>::partialILUCDP(
     Real norm; // this variable is needed to call take_largest_elements_by_absolute_value, but serves no purpose in this routine.
     Real max_inv_piv=0.0;
     Real threshold_Schur_factor = IP.get_THRESHOLD_SHIFT_SCHUR();
-    Real post_fact_threshold;
     Real perm_tol = IP.get_perm_tol();
     bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
     bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
@@ -369,12 +366,9 @@ bool matrix_sparse<T>::partialILUCDP(
         case 4: bandwidth_U = bandwidth; break;
         default: bandwidth_U = 0;
     }
-    if (threshold > 500.0) threshold=0.0;
-    else threshold=std::exp(-threshold*std::log(10.0));
     if (perm_tol > 500.0) perm_tol=0.0;
     else perm_tol=std::exp(-perm_tol*std::log(10.0));
-    if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
-    else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
+
     if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
     if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
     if(epr<0)  epr=0;
@@ -1190,8 +1184,8 @@ bool matrix_sparse<T>::partialILUCDP(
     permute(permrows,ROW);
     U.permute(perm,COLUMN);
     if(IP.get_USE_POS_COMPRESS()){
-        positional_compress(IP,post_fact_threshold);
-        U.positional_compress(IP,post_fact_threshold);
+        positional_compress(IP, IP.get_POST_FACT_THRESHOLD());
+        U.positional_compress(IP, IP.get_POST_FACT_THRESHOLD());
     }
 #ifdef VERBOSE
     time_3=clock();
@@ -1458,12 +1452,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(
         case 4: bandwidth_U = bandwidth; break;
         default: bandwidth_U = 0;
     }
-    if (threshold > 500.0) threshold=0.0;
-    else threshold=std::exp(-threshold*std::log(10.0));
     Real threshold_Schur_factor = IP.get_THRESHOLD_SHIFT_SCHUR();
-    Real post_fact_threshold;
-    if  (IP.get_POST_FACT_THRESHOLD() > 500.0) post_fact_threshold = 0.0; 
-    else post_fact_threshold = threshold*std::exp(-IP.get_POST_FACT_THRESHOLD()*std::log(10.0));
+
     if(last_row_to_eliminate+1>n) last_row_to_eliminate = n-1;
     if(last_row_to_eliminate<0) last_row_to_eliminate = 0;
     bool use_improved_SCHUR = (IP.get_SCHUR_COMPLEMENT()>0);
@@ -2072,8 +2062,8 @@ template<class T> bool matrix_sparse<T>::partialILUC(
         }
     }
     if(IP.get_USE_POS_COMPRESS()){
-        positional_compress(IP,post_fact_threshold);
-        U.positional_compress(IP,post_fact_threshold);
+        positional_compress(IP, IP.get_POST_FACT_THRESHOLD());
+        U.positional_compress(IP, IP.get_POST_FACT_THRESHOLD());
     }
 #ifdef VERBOSE
     time_3=clock();
@@ -2334,8 +2324,6 @@ bool matrix_sparse<T>::ILUCDPinv(const matrix_sparse<T>& Arow, const matrix_spar
     try {
       clock_t time_begin, time_end;
       time_begin=clock();
-      if (threshold > 500.0) threshold=0.0;
-      else threshold=std::exp(-threshold*std::log(10.0));
       if (perm_tol > 500.0) perm_tol=0.0;
       else perm_tol=std::exp(-perm_tol*std::log(10.0));
       #ifdef VERBOSE

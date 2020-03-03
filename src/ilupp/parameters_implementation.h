@@ -429,7 +429,7 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
 
  void iluplusplus_precond_parameter::default_parameters(){
              fill_in               = 10000;
-             threshold             = 1000.0;
+             threshold             = 0.0;
              perm_tol              = 0.0;
              GLOBAL_COMMENT        = "default parameters";
              PRECON_PARAMETER      = 0;
@@ -442,8 +442,8 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
              TOTAL_PIV             = 1;
              MIN_ML_SIZE           = 0;
              USE_FINAL_THRESHOLD   = false;
-             FINAL_THRESHOLD       = 1000.0;
-             VARY_THRESHOLD_FACTOR = 0.0;
+             FINAL_THRESHOLD       = 0.0;
+             VARY_THRESHOLD_FACTOR = 1.0;       // do not change the threshold per level
              THRESHOLD_SHIFT_SCHUR = 0.0;       // threshold = 0 for the Schur complement
              PERMUTE_ROWS          = 3;
              EXTERNAL_FINAL_ROW    = false;
@@ -493,7 +493,7 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
              WEIGHTED_DROPPING     = true;
              SUM_DROPPING          = false;
              USE_POS_COMPRESS      = false;
-             POST_FACT_THRESHOLD   = 1000.0;
+             POST_FACT_THRESHOLD   = 0.0;
              SCHUR_COMPLEMENT      = 0;
              make_table();
              PREPRPOCESSING.set_PQ();
@@ -504,19 +504,19 @@ void iluplusplus_precond_parameter::use_only_pivot_dropping(){
 std::string iluplusplus_precond_parameter::convert_to_string() const {
            std::ostringstream _fill_in;
            std::ostringstream _threshold;
-           std::ostringstream _perm_tol;
+
            _threshold.setf(std::ios::right|std::ios::fixed);
+           _threshold.precision(2);
+           _threshold<<threshold;
+
+           std::ostringstream _perm_tol;
            _perm_tol.setf(std::ios::right|std::ios::fixed);
-           _threshold.precision(1);
            _perm_tol.precision(1);
-           if(threshold<500.0)
-               _threshold<<threshold;
-           else
-               _threshold<<"Inf";
            if(perm_tol<500.0)
                _perm_tol<<perm_tol;
            else
              _perm_tol<<"Inf";
+
            if(MAX_FILLIN_IS_INF)
              _fill_in<<"Inf";
            else
