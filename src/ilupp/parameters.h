@@ -132,7 +132,7 @@ class iluplusplus_precond_parameter
                                                           //  0: standard greedy PC
                                                           //  1: dynamic averaging PQ
                                                           //  3: symmetrized dynamic averaging PQ for I-matrices
-         Integer                  MAX_LEVELS;             // maximum number of levels used by preconditioner. (must be <= MEMORY_RESERVED_LEVELS !!!)
+         Integer                  MAX_LEVELS;             // maximum number of levels used by preconditioner. (must be <= MEMORY_MAX_LEVELS !!!)
          bool                     MAX_FILLIN_IS_INF;      // if true, do not restrict the number of fill-in elements by number per row/colums (only by threshold)
          Integer                  MEMORY_MAX_LEVELS;
          bool                     BEGIN_TOTAL_PIV;        // true: switch to piv_tol = 1.0 (pivot always), when TOTAL_PIV indicates

@@ -1324,8 +1324,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     Integer equality_permutations = 0;
     Integer total_equality_permutations = 0;
 #endif
-    clock_t time_1,time_2;
-    time_1 = clock();
+    const clock_t time_1 = clock();
     init(IP.get_MEMORY_MAX_LEVELS());
     param = IP;
     Real tau = IP.get_threshold();
@@ -1444,8 +1443,10 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
 #ifdef INFO
             std::cout<<"     zero-pivots            = "<<this->zero_pivots[this->number_levels]<<std::endl;
             std::cout<<"     local fill-in          = "<<((Real)(this->Precond_left[this->number_levels].actual_non_zeroes()+this->Precond_right[this->number_levels].actual_non_zeroes())- (Real) Akrow.rows() )/((Real)Akrow.actual_non_zeroes())<<std::endl;
-            if(use_ILUC) equality_permutations = Akrow.rows()-Akrow_next.rows();
-            else equality_permutations = pc2.equality(pr2,0,Akrow.rows()-Akrow_next.rows());
+            if(use_ILUC)
+                equality_permutations = Akrow.rows()-Akrow_next.rows();
+            else
+                equality_permutations = pc2.equality(pr2,0,Akrow.rows()-Akrow_next.rows());
             total_equality_permutations += equality_permutations;
             std::cout<<"     symmetry of permutations used in factorization          = "<<(Real) equality_permutations/(Real)(Akrow.rows()-Akrow_next.rows()) <<std::endl;
 #endif
@@ -1460,12 +1461,16 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
             this->inverse_permutation_columns[this->number_levels].invert(this->permutation_columns[this->number_levels]);
             this->inverse_permutation_rows[this->number_levels].invert(this->permutation_rows[this->number_levels]);
             this->number_levels++;
+
+            // update count of used memory
             memory_matrices = Amemory + Akrow.memory() + Akcol.memory(); // Akrow_next is not needed, as this is included in the memory counted by the factorization.
             memory_currently_used = memory_matrices + memory_used_factorization + memory_previous_levels;
             memory_currently_allocated = memory_matrices + memory_allocated_factorization + memory_previous_levels;
             if(memory_currently_allocated > max_memory_allocated) max_memory_allocated = memory_currently_allocated;
             if(memory_currently_used > max_memory_used) max_memory_used = memory_currently_used;
             memory_previous_levels += this->memory(this->number_levels-1);
+
+            // update the matrix for the next level
             Akrow.interchange(Akrow_next);
             this->setup_time += partial_setup_time;
             matrix_size = Akrow.rows();
@@ -1562,8 +1567,10 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
 #ifdef INFO
             std::cout<<"     zero-pivots            = "<<this->zero_pivots[this->number_levels]<<std::endl;
             std::cout<<"     local fill-in          = "<<((Real)(this->Precond_left[this->number_levels].actual_non_zeroes()+this->Precond_right[this->number_levels].actual_non_zeroes())- (Real) Akrow.rows() )/((Real)Akrow.actual_non_zeroes())<<std::endl;
-            if(use_ILUC) equality_permutations = Akrow.rows()-Akrow_next.rows();
-            else equality_permutations = pc2.equality(pr2,0,Akrow.rows()-Akrow_next.rows());
+            if(use_ILUC)
+                equality_permutations = Akrow.rows()-Akrow_next.rows();
+            else
+                equality_permutations = pc2.equality(pr2,0,Akrow.rows()-Akrow_next.rows());
             total_equality_permutations += equality_permutations;
             std::cout<<"     symmetry of permutations used in factorization          = "<<(Real) equality_permutations/(Real)(Akrow.rows()-Akrow_next.rows()) <<std::endl;
 #endif
@@ -1592,8 +1599,7 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_preprocesse
     this->pre_image_size=A.rows();
     this->image_size=A.rows();
     this->intermediate_size=A.rows();
-    time_2 = clock();
-    this->setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
+    this->setup_time = ((Real)clock() - (Real)time_1)/(Real)CLOCKS_PER_SEC;
     this->memory_allocated_to_create = max_memory_allocated;
     this->memory_used_to_create = max_memory_used;
 #ifdef INFO
@@ -1645,8 +1651,8 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
     Real memory_used_factorization = 0.0;
     Real memory_matrices = 0.0;
     param = IP;
-    clock_t time_1,time_2;
-    time_1 = clock();
+    const clock_t time_1 = clock();
+
     if(Arow.orient()==ROW){
         matrix_type Akrow,Akcol,Akrow_next;
         index_list pr1, pr2, ipr1,ipr2,pc1,pc2,ipc1,ipc2;
@@ -1724,9 +1730,9 @@ void multilevelILUCDPPreconditioner<T,matrix_type,vector_type>::make_single_leve
     this->pre_image_size=Arow.rows();
     this->image_size=Arow.rows();
     this->intermediate_size=Arow.rows();
-    time_2 = clock();
-    this->setup_time = ((Real)time_2-(Real)time_1)/(Real)CLOCKS_PER_SEC;
-    if(IP.get_PREPROCESSING().size()<2){  // in this case, only one copy of matrix is needed (total of 2 matrices)
+    this->setup_time = ((Real)clock() - (Real)time_1)/(Real)CLOCKS_PER_SEC;
+
+    if(IP.get_PREPROCESSING().size() < 2){  // in this case, only one copy of matrix is needed (total of 2 matrices)
         this->memory_allocated_to_create = max(memory_matrices + memory_allocated_factorization, 2.0*Arow.memory());  // max of factorization and preprocessing
         this->memory_used_to_create = max(memory_matrices + memory_used_factorization, 2.0*Arow.memory());
     } else {

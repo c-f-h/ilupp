@@ -4567,17 +4567,19 @@ template<class T> Integer matrix_sparse<T>::choose_ddPQ(const iluplusplus_precon
 
 template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, Real tau) const
 {
+    // see: Saad, "Multilevel ILU with reorderings for diagonal dominance", 2015
     if(non_fatal_error(!square_check(),"matrix_sparse::ddPQ: argument matrix must be square.")) throw iluplusplus_error(INCOMPATIBLE_DIMENSIONS);
     Integer j,k,count,Qcount,pos;
     Integer n = columns();
-    //Real tau = 0.01;
-    Real current_max;
-    Real divisor=0.0;
+    Real current_max, divisor=0.0;
+
     index_list I(n);
     std::vector<Integer> J(n);
     vector_dense<Real> W(n);
     P.resize_with_constant_value(n,-1);
     Q.resize_with_constant_value(n,-1);
+
+    // Algorithm 3.1: Preselection of candidate (i,j) pairs for pivoting with weights
     for(k=0; k<n; k++) {
         current_max = 0.0;
         W[k] = 0.0;
@@ -4599,12 +4601,16 @@ template<class T> Integer matrix_sparse<T>::ddPQ(index_list& P, index_list& Q, R
         else
             W[k] = -current_max / divisor;
     }
+    // sort the candidates by decreasing weight (increasing negative weight)
     W.quicksort(I,0,n-1);
     J = permute_vec(J, I);
+
+    // Algorithm 3.2: Greedy matching set selection
     count = -1;
     for (k=0;k<n;k++){
         if ((P[I[k]] == -1) && (Q[J[k]] == -1) && (-W[k] >= tau)) {
             count++;
+            // pivot (I[k],J[k]) to diagonal entry (count,count)
             P[I[k]] = count;
             Q[J[k]] = count;
         }

@@ -322,7 +322,7 @@ bool matrix_sparse<T>::partialILUCDP(
     bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
     //bool pivoting = true;        // indicates if columns are pivoted in a particular step
     T pivot = 0.0;
-    Integer k_Anew,n_Anew=0; // set later
+    Integer n_Anew=0; // set later
     Integer reserved_memory_Anew=0; // will be set later
     T  xplus, xminus, yplus, yminus,vi;
     Real nuplus,numinus;
@@ -823,7 +823,7 @@ bool matrix_sparse<T>::partialILUCDP(
                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
             }  // end updating droppedU
         } else {
-            k_Anew = k -last_row_to_eliminate-1;
+            const Integer k_Anew = k -last_row_to_eliminate-1;
             if(U.pointer[k]+1>reserved_memory_U){
                 reserved_memory_U = 2*(U.pointer[k]+1);
                 U.enlarge_fields_keep_data(reserved_memory_U);
@@ -1458,7 +1458,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(
     bool use_weightsLU = IP.get_USE_WEIGHTED_DROPPING() || IP.get_USE_WEIGHTED_DROPPING2();
     bool end_level_now = false;  // indicates if next iteration in k-loop starts a new level, i.e. calculations of Schur complement begin.
     bool eliminate = true;       // indicates if standard elimination is being performed or Schur complement being calculated
-    Integer k_Anew,n_Anew=0; // set later
+    Integer n_Anew=0; // set later
     Integer reserved_memory_Anew=0; // will be set later
     T  xplus, xminus, yplus, yminus,vi;
     Real nuplus,numinus;
@@ -1804,7 +1804,7 @@ template<class T> bool matrix_sparse<T>::partialILUC(
                 droppedU.pointer[k+1]=droppedU.pointer[k]+rejected_U.dimension();
             }  // end updating droppedU
         } else {
-            k_Anew = k -last_row_to_eliminate-1;
+            const Integer k_Anew = k -last_row_to_eliminate-1;
             if(U.pointer[k]+1>reserved_memory_U){
                 reserved_memory_U = 2*(U.pointer[k]+1);
                 U.enlarge_fields_keep_data(reserved_memory_U);
