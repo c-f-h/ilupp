@@ -66,13 +66,6 @@ void preconditioner<T,matrix_type,vector_type>::apply_preconditioner_only(matrix
 }
 
 template <class T, class matrix_type, class vector_type>
-std::string preconditioner<T,matrix_type,vector_type>::special_info() const {
-    std::ostringstream info;
-    info<<"";
-    return info.str();
-}
-
-template <class T, class matrix_type, class vector_type>
 void preconditioner<T,matrix_type,vector_type>::preconditioned_residual(preconditioner_application1_type PA1,const matrix_type& A, const vector_type &b, const vector_type &x, vector_type &r) const {
     vector_type h;
     h.residual(ID,A,x,b);
@@ -370,6 +363,64 @@ void indirect_split_triangular_preconditioner<T,matrix_type,vector_type>::print_
     Precond_left.print_info();
     std::cout<<"The right matrix of the preconditioner:"<<std::endl;
     Precond_right.print_info();
+}
+
+
+//***********************************************************************************************************************//
+//                                                                                                                       //
+//         The class: indirect_split_triangular_symmetric_preconditioner                                                 //
+//                                                                                                                       //
+//***********************************************************************************************************************//
+
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const {
+    Precond_left.triangular_solve(left_form, use, v, w);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_left(matrix_usage_type use, vector_type &w) const {
+    Precond_left.triangular_solve(left_form, use, w);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const {
+    Precond_left.triangular_solve(left_form, other_usage(use), v, w);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::apply_preconditioner_right(matrix_usage_type use, vector_type &w) const {
+    Precond_left.triangular_solve(left_form, other_usage(use), w);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const{
+    std::cerr<<"indirect_split_triangular_symmetric_preconditioner::unapply_preconditioner_left: undoing this preconditioner is not yet implemented."<<std::endl;
+    throw iluplusplus_error(OTHER_ERROR);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_left(matrix_usage_type use, vector_type &w) const{
+    std::cerr<<"indirect_split_triangular_symmetric_preconditioner::unapply_preconditioner_left: undoing this preconditioner is not yet implemented."<<std::endl;
+    throw iluplusplus_error(OTHER_ERROR);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const{
+    std::cerr<<"indirect_split_triangular_symmetric_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
+    throw iluplusplus_error(OTHER_ERROR);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const{
+    std::cerr<<"indirect_split_triangular_symmetric_preconditioner::unapply_preconditioner_right: undoing this preconditioner is not yet implemented."<<std::endl;
+    throw iluplusplus_error(OTHER_ERROR);
+}
+
+template <class T, class matrix_type, class vector_type>
+void indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>::print_info() const {
+    std::cout<<"The left matrix of the preconditioner:"<<std::endl;
+    Precond_left.print_info();
 }
 
 
@@ -958,13 +1009,6 @@ ILUTPreconditioner<T,matrix_type,vector_type>::ILUTPreconditioner(const matrix_t
     this->memory_allocated_to_create=0.0;
     this->memory_used_to_create=0.0;
 }
-
-template <class T, class matrix_type, class vector_type>
-  std::string ILUTPreconditioner<T,matrix_type,vector_type>::special_info() const {
-      std::ostringstream info;
-      info<<"";
-      return info.str();
-  }
 
 template <class T, class matrix_type, class vector_type>
   void ILUTPreconditioner<T,matrix_type,vector_type>::write_binary(std::string filename) const {

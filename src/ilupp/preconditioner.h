@@ -49,11 +49,11 @@ namespace iluplusplus {
 template <class T, class matrix_type, class vector_type> class preconditioner
   {
        protected:
+          Integer image_size;
+          Integer pre_image_size;
           Real setup_time;
           Real memory_allocated_to_create;
           Real memory_used_to_create;
-          Integer pre_image_size;
-          Integer image_size;
           bool preconditioner_exists;
           virtual void apply_preconditioner_and_matrix(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const = 0;
           virtual void apply_preconditioner_and_matrix_transposed(preconditioner_application1_type PA1, matrix_usage_type use, const matrix_type &A,const vector_type &v, vector_type &w) const = 0;
@@ -61,7 +61,8 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &y, vector_type &x) const = 0;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &x, vector_type &y) const = 0;
        public:
-          preconditioner() : pre_image_size(0), image_size(0) {}
+          preconditioner() : image_size(0), pre_image_size(0) {}
+          preconditioner(Integer m, Integer n) : image_size(m), pre_image_size(n), setup_time(0), memory_allocated_to_create(0), memory_used_to_create(0), preconditioner_exists(true) {}
 
         // essentials
         // preconditioned multiplication with prescribed usage: from left, from right or split preconditioning used as simple, QTQ or QQT preconditioning
@@ -110,12 +111,12 @@ template <class T, class matrix_type, class vector_type> class preconditioner
           Real time() const                     { return setup_time; }
 
           virtual Real memory() const           { return 0.0; }
-          virtual std::string special_info() const;
+          virtual std::string special_info() const  { return std::string(); }
         // info
           virtual Integer total_nnz() const = 0;
           virtual void print_info() const = 0;
-          virtual void read_binary(std::string filename) = 0;
-          virtual void write_binary(std::string filename) const = 0;
+          virtual void read_binary(std::string filename)            { throw std::logic_error("read_binary() not implemented"); }
+          virtual void write_binary(std::string filename) const     { throw std::logic_error("write_binary() not implemented"); }
   };
 
 
@@ -152,6 +153,12 @@ template <class T, class matrix_type, class vector_type>
           virtual void apply_preconditioner_solution(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &y, vector_type &x) const;
           virtual void apply_preconditioner_starting_value(preconditioner_application1_type PA1, const matrix_type &A,const vector_type &x, vector_type &y) const;
        public:
+          split_preconditioner() {}
+          split_preconditioner(Integer m, Integer n, Integer _intermediate_size)
+              : preconditioner<T, matrix_type, vector_type>(m, n),
+                intermediate_size(_intermediate_size)
+        { }
+
           virtual Integer left_nnz() const = 0;
           virtual Integer right_nnz() const = 0;
           virtual Integer total_nnz() const         { return left_nnz() + right_nnz(); }
@@ -165,7 +172,7 @@ template <class T, class matrix_type, class vector_type>
 
 //***********************************************************************************************************************//
 //                                                                                                                       //
-//         The class: indirect_split_triangular_preconditioner                                                                      //
+//         The class: indirect_split_triangular_preconditioner                                                           //
 //                                                                                                                       //
 //***********************************************************************************************************************//
 
@@ -193,6 +200,44 @@ template <class T, class matrix_type, class vector_type>
 
           virtual void print_info() const;
   };
+
+
+//***********************************************************************************************************************//
+//                                                                                                                       //
+//         The class: indirect_split_triangular_symmetric_preconditioner                                                 //
+//                                                                                                                       //
+//***********************************************************************************************************************//
+
+// symmetric L L^T - type preconditioner (Cholesky)
+template <class T, class matrix_type, class vector_type>
+class indirect_split_triangular_symmetric_preconditioner : public split_preconditioner <T, matrix_type, vector_type>
+{
+protected:
+    matrix_type Precond_left;     // the left preconditioning matrix
+    // the right preconditioning matrix is assumed to be the transpose of the left (L L^T factorization)
+    special_matrix_type left_form;
+    virtual void apply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
+    virtual void apply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
+    virtual void apply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const ;
+    virtual void apply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
+    virtual void unapply_preconditioner_left(matrix_usage_type use, const vector_type &v, vector_type &w) const;
+    virtual void unapply_preconditioner_left(matrix_usage_type use, vector_type &w) const;
+    virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
+    virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
+public:
+    indirect_split_triangular_symmetric_preconditioner() : preconditioner<T, matrix_type, vector_type>() {}
+    indirect_split_triangular_symmetric_preconditioner(matrix_type&& L, special_matrix_type L_form)
+        : split_preconditioner<T, matrix_type, vector_type>(L.rows(), L.columns(), L.columns()),
+          Precond_left(L),
+          left_form(L_form)
+    { }
+
+    const matrix_type& left_matrix() const    { return Precond_left; }
+    virtual Integer left_nnz() const          { return Precond_left.actual_non_zeroes(); }
+    virtual Integer right_nnz() const         { return 0; }
+
+    virtual void print_info() const;
+};
 
 
 //***********************************************************************************************************************//
@@ -353,7 +398,6 @@ template <class T, class matrix_type, class vector_type>
   {
        public:
           ILUTPreconditioner(const matrix_type &A, Integer max_fill_in, Real threshold); // default threshold=1000
-          virtual std::string special_info() const;
           virtual void write_binary(std::string filename) const;
           virtual void read_binary(std::string filename);
           virtual Integer left_nnz() const;

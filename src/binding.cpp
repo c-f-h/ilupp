@@ -141,6 +141,17 @@ py::list wrap_all_factor_matrices(const indirect_split_triangular_multilevel_pre
     return py::list();
 }
 
+template <class T, class matrix_type, class vector_type>
+py::list wrap_all_factor_matrices(const indirect_split_triangular_symmetric_preconditioner<T,matrix_type,vector_type>& pr)
+{
+    py::list result;
+
+    // the matrix constructor copies the matrix so that we don't destroy the original preconditioner
+    result.append(wrap_matrix(matrix(pr.left_matrix())));
+
+    return result;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Wrappers
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,6 +218,7 @@ typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
 typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
 typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
 typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
+typedef indirect_split_triangular_symmetric_preconditioner<Real, matrix, vector> _GenericLLTPreconditioner;
 
 PYBIND11_MODULE(_ilupp, m)
 {
@@ -278,6 +290,18 @@ PYBIND11_MODULE(_ilupp, m)
         .def_property_readonly("permutation",
             [](_ILUCPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
         );
+
+    // generic symmetric LLT preconditioner
+    wrapPreconditioner<_GenericLLTPreconditioner>(m, "GenericLLTPreconditioner");
+    // we don't define __init__ because it will only be created on the C++ side by specific functions below
+
+    m.def("IChol0Preconditioner",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
+            return _GenericLLTPreconditioner(
+                IChol0(*make_matrix(A_data, A_indices, A_indptr, is_csr)),
+                LOWER_TRIANGULAR
+            );
+        });
 
     m.def("ichol0",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {

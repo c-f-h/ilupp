@@ -198,6 +198,18 @@ class ILUCPPreconditioner(_BaseWrapper):
     def permutation(self):
         return self.pr.permutation
 
+class IChol0Preconditioner(_BaseWrapper):
+    """An IChol(0) preconditioner (no fill-in, same sparsity pattern as A).
+    Implements the scipy LinearOperator protocol.
+
+    Args:
+        A: a symmetric sparse matrix in CSR or CSC format
+    """
+    def __init__(self, A):
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.IChol0Preconditioner(Ad, Ai, Ap, Ao)
+        scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
+
 ########################################
 
 def ichol0(A):

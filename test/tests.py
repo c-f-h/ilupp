@@ -230,16 +230,25 @@ def is_upper_triangular(A):
     return all(i <= j for (i,j) in zip(*A.nonzero()))
 
 def _assert_factors_correct(A, P):
-    L, U = P.factors()
-    if not hasattr(P, 'permutation'):
-        # for preconditioners with pivoting, we only have
-        # that L[perm,:] or U[:,perm] is triangular, however
-        # A = L.U is still correct
-        assert is_lower_triangular(L)
-        assert is_upper_triangular(U)
-    LU = L.dot(U)
-    assert np.allclose(A.A, LU.A)
-    return True
+    factors = P.factors()
+    if len(factors) == 2:
+        # LU case
+        L, U = factors
+        if not hasattr(P, 'permutation'):
+            # for preconditioners with pivoting, we only have
+            # that L[perm,:] or U[:,perm] is triangular, however
+            # A = L.U is still correct
+            assert is_lower_triangular(L)
+            assert is_upper_triangular(U)
+        LU = L.dot(U)
+        assert np.allclose(A.A, LU.A)
+        return True
+    else:
+        # LLT case
+        L = factors[0]
+        LLT = L.dot(L.T)
+        assert np.allclose(A.A, LLT.A)
+        return True
 
 class TestCases(unittest.TestCase):
     # generate tests for preconditioner classes
@@ -264,6 +273,24 @@ class TestCases(unittest.TestCase):
         case_name = base_name + 'total_nnz'
         vars()[case_name] = _gen_test_with_predicate(P, {'threshold': 0.0}, 'laplace', (50,),
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
+
+    # generate tests for zero fill-in preconditioner classes
+    for P in [
+            ilupp.IChol0Preconditioner,
+    ]:
+        base_name = 'test_' + P.__name__[:-14] + '_'
+
+        for problem in ('laplace',):
+            for format in ('csr', 'csc'):
+                case_name = base_name + problem + '_' + format
+                vars()[case_name] = _gen_solve_in_one_step(P, {}, problem, (50,format))
+
+                case_name = base_name + problem + '_factorscorrect_' + format
+                vars()[case_name] = _gen_test_with_predicate(P, {}, problem, (50,format), _assert_factors_correct)
+
+        case_name = base_name + 'total_nnz'
+        vars()[case_name] = _gen_test_with_predicate(P, {}, 'laplace', (50,),
+                lambda A, pr: pr.total_nnz == (2*A.shape[0] - 1))   # one diagonal, one off-diagonal
 
     # test the pivoting preconditioners on pseudo-random matrices without diagonal dominance
     for P in [
