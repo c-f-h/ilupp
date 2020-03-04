@@ -93,6 +93,15 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         """Return all matrix factors (usually (L,U)) as a list of sparse matrices."""
         return [_matrix_from_info(*info) for info in self.pr.factors_info()]
 
+    def __repr__(self):
+        M,N = self.shape
+        if self.dtype is None:
+            dt = 'unspecified dtype'
+        else:
+            dt = 'dtype=' + str(self.dtype)
+
+        return '<%dx%d %s with nnz=%d, %s>' % (M, N, self.__class__.__name__, self.total_nnz, dt)
+
 
 class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner. Implements the scipy LinearOperator protocol.
