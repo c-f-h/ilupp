@@ -67,6 +67,11 @@ float fabs(std::complex<float> x)                { return std::abs(x); }
 double fabs(std::complex<double> x)              { return std::abs(x); }
 long double fabs(std::complex<long double> x)    { return std::abs(x); }
 
+template <class T>
+std::complex<T>   conj(std::complex<T> x)        { return std::conj(x); }
+template <class T>
+T                 conj(T x)                      { return x; }
+
 template<class T> Real absvalue_squared(T x)     { return std::abs(x * std::conj(x)); }
 template<>        Real absvalue_squared(Real x)  { return x * x; }
 
