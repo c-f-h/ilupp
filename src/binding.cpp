@@ -303,13 +303,21 @@ PYBIND11_MODULE(_ilupp, m)
             );
         });
 
+    m.def("ICholTPreconditioner",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer add_fill_in, Real threshold) {
+            return _GenericLLTPreconditioner(
+                ICholT(*make_matrix(A_data, A_indices, A_indptr, is_csr), add_fill_in, threshold),
+                LOWER_TRIANGULAR
+            );
+        });
+
     m.def("ichol0",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
             return wrap_matrix(IChol0(*make_matrix(A_data, A_indices, A_indptr, is_csr)));
         });
 
     m.def("icholt",
-        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, int add_fill_in, Real threshold) {
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer add_fill_in, Real threshold) {
             return wrap_matrix(ICholT(*make_matrix(A_data, A_indices, A_indptr, is_csr), add_fill_in, threshold));
         });
 

@@ -210,6 +210,24 @@ class IChol0Preconditioner(_BaseWrapper):
         self.pr = _ilupp.IChol0Preconditioner(Ad, Ai, Ap, Ao)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
+class ICholTPreconditioner(_BaseWrapper):
+    """An incomplete Cholesky preconditioner with user-specifiable additional fill-in and threshold.
+    With threshold=0, this is identical to the method described in (Lin, Moré 1999).
+    Implements the scipy LinearOperator protocol.
+
+    Args:
+        A: a symmetric sparse matrix in CSR or CSC format
+        add_fill_in (int): the number of additional nonzeros to allow per column. By default (0),
+            the factorization keeps the number (but not necessarily the positions) of the nonzeros
+            identical to the original matrix.
+        threshold: dropping threshold; entries with a relative magnitude less than this value are
+            dropped. By default (0.0), dropping is only performed based on the number of nonzeros.
+    """
+    def __init__(self, A, add_fill_in=0, threshold=0.0):
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.ICholTPreconditioner(Ad, Ai, Ap, Ao, add_fill_in, threshold)
+        scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
+
 ########################################
 
 def ichol0(A):

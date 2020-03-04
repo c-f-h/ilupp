@@ -277,6 +277,7 @@ class TestCases(unittest.TestCase):
     # generate tests for zero fill-in preconditioner classes
     for P in [
             ilupp.IChol0Preconditioner,
+            ilupp.ICholTPreconditioner,
     ]:
         base_name = 'test_' + P.__name__[:-14] + '_'
 
