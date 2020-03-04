@@ -34,7 +34,7 @@ def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
     return A
 
 
-def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None, params=None, info=False):
+def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=0.1, fill_in=None, params=None, info=False):
     """Solve the linear system Ax=b using a multilevel ILU++ preconditioner and BiCGStab.
 
     Args:
@@ -43,8 +43,9 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None,
         rtol: target relative reduction in the residual
         atol: target absolute magnitude of the residual
         max_iter: maximum number of iterations
+        threshold: the threshold parameter for ILU++; entries with relative
+            magnitude less than this are dropped
         fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
         params: an instance of iluplusplus_precond_parameter; if passed, overrides fill_in and threshold
         info: if True, a tuple (nr_of_iterations, achieved_relative_reduction, residual_magnitude) is returned
             along the solution
@@ -71,7 +72,9 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=1.0, fill_in=None,
 
 
 class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
-    """Wrapper base class which supports methods and properties common to all preconditioners."""
+    """Wrapper base class which supports methods and properties common to all preconditioners.
+
+    Implements the scipy.sparse.linalg.LinearOperator protocol."""
     def _matvec(self, x):
         if x.ndim != 1:
             raise ValueError('only implemented for 1D vectors')
@@ -87,10 +90,11 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
 
     @property
     def total_nnz(self):
+        """The total number of nonzeros stored in the factor matrices of the preconditioner."""
         return self.pr.total_nnz
 
     def factors(self):
-        """Return all matrix factors (usually (L,U)) as a list of sparse matrices."""
+        """Return all matrix factors (usually (L,U) or just (L,)) as a list of sparse matrices."""
         return [_matrix_from_info(*info) for info in self.pr.factors_info()]
 
     def __repr__(self):
@@ -109,7 +113,8 @@ class ILUppPreconditioner(_BaseWrapper):
     Args:
         A: a sparse matrix in CSR or CSC format
         fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+        threshold: the threshold parameter for ILU++; entries with relative
+            magnitude less than this are dropped
         params: an instance of iluplusplus_precond_parameter; if passed, overrides fill_in and threshold
     """
     def __init__(self, A, threshold=1.0, fill_in=None, params=None):
@@ -137,30 +142,32 @@ class ILUppPreconditioner(_BaseWrapper):
 
 
 class ILUTPreconditioner(_BaseWrapper):
-    """An ILUT preconditioner. Implements the scipy LinearOperator protocol.
+    """An ILUT (incomplete LU with thresholding) preconditioner.
 
     Args:
         A: a sparse matrix in CSR or CSC format
-        fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+        fill_in: the number of nonzeros to allow per row of L/U
+        threshold: entries with relative magnitude less than this are dropped
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000):
+    def __init__(self, A, fill_in=100, threshold=0.1):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUTPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
 class ILUTPPreconditioner(_BaseWrapper):
-    """An ILUTP preconditioner. Implements the scipy LinearOperator protocol.
+    """An ILUTP (incomplete LU with thresholding and column pivoting) preconditioner.
 
     Args:
         A: a sparse matrix in CSR or CSC format
-        fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+        fill_in: the number of nonzeros to allow per row of L/U
+        threshold: entries with relative magnitude less than this are dropped
+        piv_tol: pivoting tolerance; 0=only pivot when 0 encountered, 1=always pivot
+            to the largest entry, inbetween: pivot depending on relative magnitude
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000, piv_tol=0.0, row_pos=-1, mem_factor=10.0):
+    def __init__(self, A, fill_in=100, threshold=0.1, piv_tol=0.1, mem_factor=10.0):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUTPPreconditioner(Ad, Ai, Ap, Ao,
-                fill_in, threshold, piv_tol, row_pos, mem_factor)
+                fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property
@@ -168,30 +175,33 @@ class ILUTPPreconditioner(_BaseWrapper):
         return self.pr.permutation
 
 class ILUCPreconditioner(_BaseWrapper):
-    """An ILUC (Crout ILU) preconditioner. Implements the scipy LinearOperator protocol.
+    """An ILUC (Crout ILU) preconditioner. Similar to ILUT, but tends to be faster
+    for matrices with symmetric structure. See (Li, Saad, Chow 2003).
 
     Args:
         A: a sparse matrix in CSR or CSC format
-        fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+        fill_in: the number of nonzeros to allow per column/row of L/U
+        threshold: entries with relative magnitude less than this are dropped
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000):
+    def __init__(self, A, fill_in=100, threshold=0.1):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUCPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
 class ILUCPPreconditioner(_BaseWrapper):
-    """An ILUCP preconditioner. Implements the scipy LinearOperator protocol.
+    """An ILUCP (ILUC with pivoting) preconditioner. See (Mayer 2005).
 
     Args:
         A: a sparse matrix in CSR or CSC format
-        fill_in: the fill_in parameter for the ILU++ preconditioner
-        threshold: the threshold parameter for ILU++; entries smaller than 10^-threshold are dropped
+        fill_in: the number of nonzeros to allow per column/row of L/U
+        threshold: entries with relative magnitude less than this are dropped
+        piv_tol: pivoting tolerance; 0=only pivot when 0 encountered, 1=always pivot
+            to the largest entry, inbetween: pivot depending on relative magnitude
     """
-    def __init__(self, A, threshold=1.0, fill_in=10000, piv_tol=0.0, row_pos=-1, mem_factor=10.0):
+    def __init__(self, A, fill_in=100, threshold=0.1, piv_tol=0.1, mem_factor=10.0):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
         self.pr = _ilupp.ILUCPPreconditioner(Ad, Ai, Ap, Ao,
-                fill_in, threshold, piv_tol, row_pos, mem_factor)
+                fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
     @property
@@ -199,8 +209,8 @@ class ILUCPPreconditioner(_BaseWrapper):
         return self.pr.permutation
 
 class IChol0Preconditioner(_BaseWrapper):
-    """An IChol(0) preconditioner (no fill-in, same sparsity pattern as A).
-    Implements the scipy LinearOperator protocol.
+    """An IChol(0) preconditioner (no fill-in, same sparsity pattern as A) for a
+    symmetric positive definite matrix.
 
     Args:
         A: a symmetric sparse matrix in CSR or CSC format
@@ -213,15 +223,14 @@ class IChol0Preconditioner(_BaseWrapper):
 class ICholTPreconditioner(_BaseWrapper):
     """An incomplete Cholesky preconditioner with user-specifiable additional fill-in and threshold.
     With threshold=0, this is identical to the method described in (Lin, Moré 1999).
-    Implements the scipy LinearOperator protocol.
 
     Args:
         A: a symmetric sparse matrix in CSR or CSC format
-        add_fill_in (int): the number of additional nonzeros to allow per column. By default (0),
+        add_fill_in: the number of additional nonzeros to allow per column. By default (0),
             the factorization keeps the number (but not necessarily the positions) of the nonzeros
             identical to the original matrix.
-        threshold: dropping threshold; entries with a relative magnitude less than this value are
-            dropped. By default (0.0), dropping is only performed based on the number of nonzeros.
+        threshold: entries with a relative magnitude less than this are dropped. By default (0.0),
+            dropping is only performed based on the number of nonzeros.
     """
     def __init__(self, A, add_fill_in=0, threshold=0.0):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
@@ -242,10 +251,10 @@ def ilu0(A):
     """Compute the (L,U) factors of an incomplete LU decomposition without fill-in."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilu0(*_matrix_fields(A)))
 
-def ilut(A, fill_in=1000, threshold=0.1):
+def ilut(A, fill_in=100, threshold=0.1):
     """Compute the (L,U) factors of an incomplete LU decomposition with thresholding."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilut(*_matrix_fields(A), fill_in, threshold))
 
-def iluc(A, fill_in=1000, threshold=0.1):
+def iluc(A, fill_in=100, threshold=0.1):
     """Compute the (L,U) factors of an incomplete Crout LU decomposition with thresholding."""
     return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.iluc(*_matrix_fields(A), fill_in, threshold))
