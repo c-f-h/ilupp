@@ -193,6 +193,16 @@ template <class T, class matrix_type, class vector_type>
           virtual void unapply_preconditioner_right(matrix_usage_type use, const vector_type &v, vector_type &w) const;
           virtual void unapply_preconditioner_right(matrix_usage_type use, vector_type &w) const;
        public:
+          indirect_split_triangular_preconditioner()
+              : split_preconditioner<T, matrix_type, vector_type>()
+          {}
+          indirect_split_triangular_preconditioner(
+                  matrix_type&& L, special_matrix_type L_form, matrix_type&& R, special_matrix_type R_form)
+              : split_preconditioner<T, matrix_type, vector_type>(L.rows(), R.columns(), L.columns()),
+              Precond_left(L), Precond_right(R),
+              left_form(L_form), right_form(R_form)
+          { }
+
           const matrix_type& left_matrix() const    { return Precond_left; }
           const matrix_type& right_matrix() const   { return Precond_right; }
           virtual Integer left_nnz() const          { return Precond_left.actual_non_zeroes(); }

@@ -208,6 +208,17 @@ class ILUCPPreconditioner(_BaseWrapper):
     def permutation(self):
         return self.pr.permutation
 
+class ILU0Preconditioner(_BaseWrapper):
+    """An ILU(0) preconditioner (no fill-in, same sparsity pattern as A).
+
+    Args:
+        A: a symmetric sparse matrix in CSR or CSC format
+    """
+    def __init__(self, A):
+        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        self.pr = _ilupp.ILU0Preconditioner(Ad, Ai, Ap, Ao)
+        scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
+
 class IChol0Preconditioner(_BaseWrapper):
     """An IChol(0) preconditioner (no fill-in, same sparsity pattern as A) for a
     symmetric positive definite matrix.

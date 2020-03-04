@@ -275,9 +275,10 @@ class TestCases(unittest.TestCase):
                 lambda A, pr: pr.total_nnz <= 2 * (2*A.shape[0] - 1))
 
     # generate tests for zero fill-in preconditioner classes
-    for P in [
-            ilupp.IChol0Preconditioner,
-            ilupp.ICholTPreconditioner,
+    for (P, sym) in [
+            (ilupp.ILU0Preconditioner, False),
+            (ilupp.IChol0Preconditioner, True),
+            (ilupp.ICholTPreconditioner, True),
     ]:
         base_name = 'test_' + P.__name__[:-14] + '_'
 
@@ -290,8 +291,11 @@ class TestCases(unittest.TestCase):
                 vars()[case_name] = _gen_test_with_predicate(P, {}, problem, (50,format), _assert_factors_correct)
 
         case_name = base_name + 'total_nnz'
-        vars()[case_name] = _gen_test_with_predicate(P, {}, 'laplace', (50,),
-                lambda A, pr: pr.total_nnz == (2*A.shape[0] - 1))   # one diagonal, one off-diagonal
+        if sym:
+            check_nnz = (lambda A, pr: pr.total_nnz == (2*A.shape[0] - 1))      # one diagonal, one off-diagonal
+        else:
+            check_nnz = (lambda A, pr: pr.total_nnz == 2*(2*A.shape[0] - 1))    # two lower tridiagonal matrices
+        vars()[case_name] = _gen_test_with_predicate(P, {}, 'laplace', (50,), check_nnz)
 
     # test the pivoting preconditioners on pseudo-random matrices without diagonal dominance
     for P in [

@@ -218,6 +218,7 @@ typedef ILUTPPreconditioner<Real, matrix, vector> _ILUTPPreconditioner;
 typedef ILUCPreconditioner<Real, matrix, vector>  _ILUCPreconditioner;
 typedef ILUCPPreconditioner<Real, matrix, vector>  _ILUCPPreconditioner;
 typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPreconditioner;
+typedef indirect_split_triangular_preconditioner<Real, matrix, vector> _GenericLUPreconditioner;
 typedef indirect_split_triangular_symmetric_preconditioner<Real, matrix, vector> _GenericLLTPreconditioner;
 
 PYBIND11_MODULE(_ilupp, m)
@@ -291,9 +292,20 @@ PYBIND11_MODULE(_ilupp, m)
             [](_ILUCPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
         );
 
+    // generic triangular LU preconditioner
+    wrapPreconditioner<_GenericLUPreconditioner>(m, "GenericLUPreconditioner");
+    // we don't define __init__ because it will only be created on the C++ side by specific functions below
+
     // generic symmetric LLT preconditioner
     wrapPreconditioner<_GenericLLTPreconditioner>(m, "GenericLLTPreconditioner");
     // we don't define __init__ because it will only be created on the C++ side by specific functions below
+
+    m.def("ILU0Preconditioner",
+        [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
+            matrix L, U;
+            ILU0(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U);
+            return _GenericLUPreconditioner(std::move(L), LOWER_TRIANGULAR, std::move(U), UPPER_TRIANGULAR);
+        });
 
     m.def("IChol0Preconditioner",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
