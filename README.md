@@ -3,6 +3,8 @@
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
 
+[Read the documentation](https://ilupp.readthedocs.io/en/latest/)
+
 This project provides C++ implementations and Python bindings for many incomplete LU
 and incomplete Cholesky algorithms. It is based on the original ILU++ package
 described in the publication
