@@ -74,7 +74,13 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=0.1, fill_in=None,
 class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
     """Wrapper base class which supports methods and properties common to all preconditioners.
 
-    Implements the scipy.sparse.linalg.LinearOperator protocol."""
+    Implements the scipy.sparse.linalg.LinearOperator protocol, which means that it has a
+    ``.shape`` property and can be applied to a vector using ``.dot()`` or simply the
+    multiplication operator ``*``.
+
+    To apply the preconditioner to a vector in place, avoiding a copy, use the
+    :func:`apply` method.
+    """
     def _matvec(self, x):
         if x.ndim != 1:
             raise ValueError('only implemented for 1D vectors')
@@ -83,7 +89,7 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         return y
 
     def apply(self, x):
-        """Apply the preconditioner to `x` in-place."""
+        """Apply the preconditioner to the vector `x` in-place."""
         if x.ndim != 1:
             raise ValueError('only implemented for 1D vectors')
         self.pr.apply(x)
@@ -115,7 +121,7 @@ class ILUppPreconditioner(_BaseWrapper):
         fill_in: the fill_in parameter for the ILU++ preconditioner
         threshold: the threshold parameter for ILU++; entries with relative
             magnitude less than this are dropped
-        params: an instance of iluplusplus_precond_parameter; if passed, overrides fill_in and threshold
+        params: an instance of :class:`iluplusplus_precond_parameter`; if passed, overrides fill_in and threshold
     """
     def __init__(self, A, threshold=1.0, fill_in=None, params=None):
         if params is None:
