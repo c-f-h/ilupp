@@ -234,10 +234,16 @@ def _assert_factors_correct(A, P):
     if len(factors) == 2:
         # LU case
         L, U = factors
-        if not hasattr(P, 'permutation'):
+        if hasattr(P, 'permutations'):
             # for preconditioners with pivoting, we only have
             # that L[perm,:] or U[:,perm] is triangular, however
             # A = L.U is still correct
+            permL, permR = P.permutations()
+            L_p = L[permL,:] if (permL is not None) else L
+            U_p = U[:,permR] if (permR is not None) else U
+            assert is_lower_triangular(L_p)
+            assert is_upper_triangular(U_p)
+        else:
             assert is_lower_triangular(L)
             assert is_upper_triangular(U)
         LU = L.dot(U)

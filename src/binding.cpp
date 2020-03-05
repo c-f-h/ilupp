@@ -152,6 +152,25 @@ py::list wrap_all_factor_matrices(const indirect_split_triangular_symmetric_prec
     return result;
 }
 
+template <class T, class matrix_type, class vector_type>
+py::tuple wrap_permutations(const indirect_split_pseudo_triangular_preconditioner<T,matrix_type,vector_type>& pr)
+{
+    py::object permL = py::none();
+    py::object permR = py::none();
+
+    if (pr.left_permutation_index() == 1)
+        permL = wrap_vector_copying(pr.extract_permutation().vec());
+    else if (pr.left_permutation_index() == 2)
+        permL = wrap_vector_copying(pr.extract_permutation2().vec());
+
+    if (pr.right_permutation_index() == 1)
+        permR = wrap_vector_copying(pr.extract_permutation().vec());
+    else if (pr.right_permutation_index() == 2)
+        permR = wrap_vector_copying(pr.extract_permutation2().vec());
+
+    return py::make_tuple(permL, permR);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Wrappers
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,9 +290,7 @@ PYBIND11_MODULE(_ilupp, m)
                     throw std::runtime_error("ILUTP factorization failed");
             }
         )
-        .def_property_readonly("permutation",
-            [](_ILUTPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
-        );
+        .def("permutations", [](_ILUTPPreconditioner& pr) { return wrap_permutations(pr); });
 
     // ILUC - Crout ILU (Li, Saad, Chow)
     wrapPreconditioner<_ILUCPreconditioner>(m, "ILUCPreconditioner")
@@ -303,9 +320,7 @@ PYBIND11_MODULE(_ilupp, m)
                     throw std::runtime_error("ILUCP factorization failed");
             }
         )
-        .def_property_readonly("permutation",
-            [](_ILUCPPreconditioner& pr) { return wrap_vector_copying(pr.extract_permutation().vec()); }
-        );
+        .def("permutations", [](_ILUCPPreconditioner& pr) { return wrap_permutations(pr); });
 
     // generic triangular LU preconditioner
     wrapPreconditioner<_GenericLUPreconditioner>(m, "GenericLUPreconditioner");

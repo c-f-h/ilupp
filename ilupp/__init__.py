@@ -176,9 +176,9 @@ class ILUTPPreconditioner(_BaseWrapper):
                 fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
-    @property
-    def permutation(self):
-        return self.pr.permutation
+    def permutations(self):
+        """Return a pair (L,R) of permutation arrays to be applied from the left or right due to pivoting."""
+        return self.pr.permutations()
 
 class ILUCPreconditioner(_BaseWrapper):
     """An ILUC (Crout ILU) preconditioner. Similar to ILUT, but tends to be faster
@@ -210,9 +210,9 @@ class ILUCPPreconditioner(_BaseWrapper):
                 fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
-    @property
-    def permutation(self):
-        return self.pr.permutation
+    def permutations(self):
+        """Return a pair (L,R) of permutation arrays to be applied from the left or right due to pivoting."""
+        return self.pr.permutations()
 
 class ILU0Preconditioner(_BaseWrapper):
     """An ILU(0) preconditioner (no fill-in, same sparsity pattern as A).

@@ -350,6 +350,10 @@ template <class T, class matrix_type, class vector_type>
           virtual const index_list& extract_permutation() const    { return permutation; }
           virtual const index_list& extract_permutation2() const   { return permutation2; }
 
+          // return 0 for no permutation, 1 for perm1, 2 for perm2
+          int left_permutation_index() const        { return static_cast<int>(left_matrix_usage); }
+          int right_permutation_index() const       { return static_cast<int>(right_matrix_usage); }
+
           virtual void print_info() const;
           virtual void eliminate_permutations(matrix_type& A, vector_type &b);
   };

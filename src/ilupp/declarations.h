@@ -79,7 +79,7 @@ enum special_matrix_type {UNSTRUCTURED, LOWER_TRIANGULAR, UPPER_TRIANGULAR, PERM
 
 // types for preconditioners
 enum preconditioner_application1_type {NONE, LEFT, RIGHT, SPLIT};    // the manner in which a preconditioner is to be applied to a system to yield an approximate inverse Q
-enum perm_usage_type {NOPERM, PERM1, PERM2};                         // which permutation will be used if needed
+enum perm_usage_type {NOPERM=0, PERM1=1, PERM2=2};                   // which permutation will be used if needed
 
 // preprocessing types
 enum preprocessing_type {
