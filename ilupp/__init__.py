@@ -9,7 +9,7 @@ import numpy as np
 import scipy.sparse
 import scipy.sparse.linalg
 from . import _ilupp
-from ._ilupp import iluplusplus_precond_parameter
+from ._ilupp import iluplusplus_precond_parameter, preprocessing_sequence
 
 def _matrix_fields(A):
     if isinstance(A, scipy.sparse.csr_matrix):
@@ -46,7 +46,7 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=0.1, fill_in=None,
         threshold: the threshold parameter for ILU++; entries with relative
             magnitude less than this are dropped
         fill_in: the fill_in parameter for the ILU++ preconditioner
-        params: an instance of iluplusplus_precond_parameter; if passed, overrides fill_in and threshold
+        params: an instance of :class:`iluplusplus_precond_parameter`; if passed, overrides fill_in and threshold
         info: if True, a tuple (nr_of_iterations, achieved_relative_reduction, residual_magnitude) is returned
             along the solution
 
@@ -114,7 +114,7 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
 
 
 class ILUppPreconditioner(_BaseWrapper):
-    """A multilevel ILU++ preconditioner. Implements the scipy LinearOperator protocol.
+    """A multilevel ILU++ preconditioner.
 
     Args:
         A: a sparse matrix in CSR or CSC format
