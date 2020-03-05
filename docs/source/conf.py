@@ -14,7 +14,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -23,10 +23,12 @@ project = 'ilupp'
 copyright = '2020, Clemens Hofreither'
 author = 'Clemens Hofreither'
 
+import ilupp
+
 # The short X.Y version
-version = ''
+version = ilupp.__version__
 # The full version, including alpha/beta/rc tags
-release = ''
+release = ilupp.__version__
 
 
 # -- General configuration ---------------------------------------------------
