@@ -6,13 +6,20 @@ import setuptools
 
 # setup.py adapted from the pybind11 python_example by Sylvain Corlay
 
-__version__ = '0.0.1'
-
 def readme():
     with open(os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             'README.md')) as fp:
         return fp.read()
+
+def get_version(fname):
+    with open(fname) as f:
+        for line in f:
+            if line.startswith("__version__ = '"):
+                return line.split("'")[1]
+    raise RuntimeError('could not parse version string')
+
+__version__ = get_version('ilupp/__init__.py')
 
 class get_pybind_include(object):
     """Helper class to determine the pybind11 include path
