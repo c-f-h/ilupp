@@ -23,12 +23,17 @@ project = 'ilupp'
 copyright = '2020, Clemens Hofreither'
 author = 'Clemens Hofreither'
 
-import ilupp
+def get_version(fname):
+    with open(fname) as f:
+        for line in f:
+            if line.startswith("__version__ = '"):
+                return line.split("'")[1]
+    raise RuntimeError('could not parse version string')
 
 # The short X.Y version
-version = ilupp.__version__
+version = get_version('../../ilupp/__init__.py')
 # The full version, including alpha/beta/rc tags
-release = ilupp.__version__
+release = version
 
 
 # -- General configuration ---------------------------------------------------
