@@ -350,40 +350,64 @@ PYBIND11_MODULE(_ilupp, m)
 
     m.def("ichol0",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
-            return wrap_matrix(IChol0(*make_matrix(A_data, A_indices, A_indptr, is_csr)));
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+            matrix L;
+            {
+                py::gil_scoped_release release;
+                L = IChol0(*A);
+            }
+            return wrap_matrix(std::move(L));
         });
 
     m.def("icholt",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer add_fill_in, Real threshold) {
-            return wrap_matrix(ICholT(*make_matrix(A_data, A_indices, A_indptr, is_csr), add_fill_in, threshold));
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+            matrix L;
+            {
+                py::gil_scoped_release release;
+                L = ICholT(*A, add_fill_in, threshold);
+            }
+            return wrap_matrix(std::move(L));
         });
 
     m.def("ilu0",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
             matrix L, U;
-            ILU0(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U);
+            {
+                py::gil_scoped_release release;
+                ILU0(*A, L, U);
+            }
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
     m.def("ilut",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer fill_in, Real threshold) {
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
             matrix L, U;
-            Real time;
-            ILUT_heap(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold, time);
-            if (!is_csr) {
-                L.interchange(U);
-                L.transpose_in_place();
-                U.transpose_in_place();
+            {
+                py::gil_scoped_release release;
+                Real time;
+                ILUT_heap(*A, L, U, fill_in, threshold, time);
+                if (!is_csr) {
+                    L.interchange(U);
+                    L.transpose_in_place();
+                    U.transpose_in_place();
+                }
             }
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
     m.def("iluc",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer fill_in, Real threshold) {
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
             matrix L, U;
-            ILUC2(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U, fill_in, threshold);
-            if (!is_csr)
-                L.interchange(U);
+            {
+                py::gil_scoped_release release;
+                ILUC2(*A, L, U, fill_in, threshold);
+                if (!is_csr)
+                    L.interchange(U);
+            }
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
