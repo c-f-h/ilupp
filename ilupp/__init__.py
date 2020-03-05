@@ -75,8 +75,8 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
     """Wrapper base class which supports methods and properties common to all preconditioners.
 
     Implements the scipy.sparse.linalg.LinearOperator protocol, which means that it has a
-    ``.shape`` property and can be applied to a vector using ``.dot()`` or simply the
-    multiplication operator ``*``.
+    :code:`.shape` property and can be applied to a vector using :code:`.dot()` or simply the
+    multiplication operator :code:`*`.
 
     To apply the preconditioner to a vector in place, avoiding a copy, use the
     :func:`apply` method.
