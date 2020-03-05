@@ -9,5 +9,5 @@ __pycache__
 /dist/
 *.egg-info/
 .cache
-/docs/_build/
+/docs/build/
 /tmp/
