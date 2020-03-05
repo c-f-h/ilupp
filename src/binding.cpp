@@ -234,7 +234,10 @@ PYBIND11_MODULE(_ilupp, m)
             {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
                 new (&pr) _MultilevelILUCDPPreconditioner();
-                pr.make_preprocessed_multilevelILUCDP(*A, param);
+                {
+                    py::gil_scoped_release release;
+                    pr.make_preprocessed_multilevelILUCDP(*A, param);
+                }
                 if (!pr.exists())
                     throw std::runtime_error("Multilevel ILUCDP factorization failed");
             }
@@ -245,7 +248,10 @@ PYBIND11_MODULE(_ilupp, m)
         .def("__init__",
             [](_ILUTPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUTPreconditioner(*A, max_fill_in, threshold);
+                {
+                    py::gil_scoped_release release;
+                    new (&pr) _ILUTPreconditioner(*A, max_fill_in, threshold);
+                }
                 if (!pr.exists())
                     throw std::runtime_error("ILUT factorization failed");
             }
@@ -257,7 +263,10 @@ PYBIND11_MODULE(_ilupp, m)
             [](_ILUTPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
                     Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUTPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
+                {
+                    py::gil_scoped_release release;
+                    new (&pr) _ILUTPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
+                }
                 if (!pr.exists())
                     throw std::runtime_error("ILUTP factorization failed");
             }
@@ -271,7 +280,10 @@ PYBIND11_MODULE(_ilupp, m)
         .def("__init__",
             [](_ILUCPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer max_fill_in, Real threshold) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUCPreconditioner(*A, max_fill_in, threshold);
+                {
+                    py::gil_scoped_release release;
+                    new (&pr) _ILUCPreconditioner(*A, max_fill_in, threshold);
+                }
                 if (!pr.exists())
                     throw std::runtime_error("ILUC factorization failed");
             }
@@ -283,7 +295,10 @@ PYBIND11_MODULE(_ilupp, m)
             [](_ILUCPPreconditioner& pr, py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
                 Integer max_fill_in, Real threshold, Real piv_tol, Integer row_pos, Real mem_factor) {
                 auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
-                new (&pr) _ILUCPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
+                {
+                    py::gil_scoped_release release;
+                    new (&pr) _ILUCPPreconditioner(*A, max_fill_in, threshold, piv_tol, row_pos, mem_factor);
+                }
                 if (!pr.exists())
                     throw std::runtime_error("ILUCP factorization failed");
             }
@@ -302,25 +317,35 @@ PYBIND11_MODULE(_ilupp, m)
 
     m.def("ILU0Preconditioner",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
             matrix L, U;
-            ILU0(*make_matrix(A_data, A_indices, A_indptr, is_csr), L, U);
+            {
+                py::gil_scoped_release release;
+                ILU0(*A, L, U);
+            }
             return _GenericLUPreconditioner(std::move(L), LOWER_TRIANGULAR, std::move(U), UPPER_TRIANGULAR);
         });
 
     m.def("IChol0Preconditioner",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr) {
-            return _GenericLLTPreconditioner(
-                IChol0(*make_matrix(A_data, A_indices, A_indptr, is_csr)),
-                LOWER_TRIANGULAR
-            );
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+            matrix L;
+            {
+                py::gil_scoped_release release;
+                L = IChol0(*A);
+            }
+            return _GenericLLTPreconditioner(std::move(L), LOWER_TRIANGULAR);
         });
 
     m.def("ICholTPreconditioner",
         [](py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr, Integer add_fill_in, Real threshold) {
-            return _GenericLLTPreconditioner(
-                ICholT(*make_matrix(A_data, A_indices, A_indptr, is_csr), add_fill_in, threshold),
-                LOWER_TRIANGULAR
-            );
+            auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
+            matrix L;
+            {
+                py::gil_scoped_release release;
+                L = ICholT(*A, add_fill_in, threshold);
+            }
+            return _GenericLLTPreconditioner(std::move(L), LOWER_TRIANGULAR);
         });
 
     m.def("ichol0",
