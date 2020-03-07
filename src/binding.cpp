@@ -30,19 +30,39 @@ using namespace iluplusplus;
 // Utility functions
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class T>
-void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
+void check_is_contiguous(const py::buffer_info& I, std::string name)
 {
     if (I.ndim != 1)
         throw std::runtime_error("Expected 1D array for " + name + "!");
+
+    if (I.strides[0] != I.itemsize)
+        throw std::runtime_error("Expected contiguous array for " + name + "!");
+}
+
+template <class T>
+void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
+{
+    check_is_contiguous(I, name);
 
     if (I.format != py::format_descriptor<T>::format())
         throw std::runtime_error("Expected " + std::string(typeid(T).name()) + " (" +
                 py::format_descriptor<T>::format() + ") array for " + name +
                 ", got " + I.format + "!");
+}
 
-    if (I.strides[0] != I.itemsize)
-        throw std::runtime_error("Expected contiguous array for " + name + "!");
+template <class T>
+void check_is_1D_contiguous_int_array(const py::buffer_info& I, std::string name)
+{
+    check_is_contiguous(I, name);
+
+    // sadly on Windows we sometimes get i and sometimes l, so we need this
+    // more complicated check
+    // see: https://github.com/scipy/scipy/issues/11641
+    if (!(I.format.length() == 1 &&
+                (I.format[0] == 'i' || I.format[0] == 'l') &&
+                (I.itemsize == sizeof(T))))
+        throw std::runtime_error("Expected integer type with length " + std::to_string(sizeof(T))
+                + " for " + name + ", got " + I.format + "!");
 }
 
 std::unique_ptr<const matrix> make_matrix(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr)
@@ -50,9 +70,9 @@ std::unique_ptr<const matrix> make_matrix(py::buffer A_data, py::buffer A_indice
     py::buffer_info A_data_info = A_data.request();
     check_is_1D_contiguous_array<Real>(A_data_info, "A_data");
     py::buffer_info A_indices_info = A_indices.request();
-    check_is_1D_contiguous_array<Integer>(A_indices_info, "A_indices");
+    check_is_1D_contiguous_int_array<Integer>(A_indices_info, "A_indices");
     py::buffer_info A_indptr_info = A_indptr.request();
-    check_is_1D_contiguous_array<Integer>(A_indptr_info, "A_indptr");
+    check_is_1D_contiguous_int_array<Integer>(A_indptr_info, "A_indptr");
 
     Integer nnz = A_indices_info.shape[0];
     Integer n = A_indptr_info.shape[0] - 1;
