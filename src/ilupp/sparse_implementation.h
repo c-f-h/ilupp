@@ -3122,9 +3122,12 @@ matrix_sparse<T>::matrix_sparse(matrix_sparse&& X)
 
 template<class T> matrix_sparse<T>::~matrix_sparse() { // std::cout<<"matrixdestruktor"<<std::endl;
     if (!non_owning) {
-        if (data    != 0) delete [] data; data=0;
-        if (indices != 0) delete [] indices; indices=0;
-        if (pointer != 0) delete [] pointer; pointer=0;
+        if (data != 0) delete [] data;
+        data=0;
+        if (indices != 0) delete [] indices;
+        indices=0;
+        if (pointer != 0) delete [] pointer;
+        pointer=0;
     }
 }
 
@@ -3172,7 +3175,7 @@ void matrix_sparse<T>::append_row(Integer i, const vector_sparse_dynamic<T>& w, 
 
     Integer kk = pointer[i];
 
-    if (kk + row_indices.size() > nnz)
+    if (kk + (Integer)row_indices.size() > nnz)
         throw std::runtime_error("append_row: insufficient memory reserved");
 
     for (size_t j = 0; j < row_indices.size(); ++j) {
@@ -3190,7 +3193,7 @@ void matrix_sparse<T>::append_row_with_prefix(Integer i, const vector_sparse_dyn
 
     Integer kk = pointer[i];
 
-    if (kk + row_indices.size() + 1 > nnz)
+    if (kk + (Integer)row_indices.size() + 1 > nnz)
         throw std::runtime_error("append_row_with_prefix: insufficient memory reserved");
 
     // insert prefix element
@@ -3212,7 +3215,7 @@ void matrix_sparse<T>::append_row_with_suffix(Integer i, const vector_sparse_dyn
 
     Integer kk = pointer[i];
 
-    if (kk + row_indices.size() + 1 > nnz)
+    if (kk + (Integer)row_indices.size() + 1 > nnz)
         throw std::runtime_error("append_row_with_suffix: insufficient memory reserved");
 
     for (size_t j = 0; j < row_indices.size(); ++j) {
@@ -6152,7 +6155,9 @@ void index_list::interchange(index_list& A){
 }
 
 std::ostream& operator << (std::ostream& os, const index_list& x){
-    for(Integer i=0;i<x.dimension();i++) os << x[i] << std::endl; std::cout<<std::endl;
+    for (Integer i=0; i<x.dimension(); ++i)
+        os << x[i] << std::endl;
+    std::cout<<std::endl;
     return os;
 }
 

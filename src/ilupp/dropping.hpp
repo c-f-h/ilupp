@@ -20,7 +20,7 @@ void threshold_and_drop(const vector_sparse_dynamic<T>& w, std::vector<Integer>&
             list.push_back(x);
     }
 
-    if (list.size() > n) {
+    if ((Integer)list.size() > n) {
         // too many candidates -- sort by decreasing absolute size
         std::sort(list.begin(), list.end(),
                 [&](Integer x, Integer y) { return std::abs(w.get_data(x)) > std::abs(w.get_data(y)); });
