@@ -3,6 +3,10 @@
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
 
+**Install using pip:**
+
+    $ pip install ilupp
+
 [Read the documentation](https://ilupp.readthedocs.io/en/latest/)
 
 This project provides C++ implementations and Python bindings for many incomplete LU
