@@ -1,0 +1,35 @@
+environment:
+  matrix:
+    # For Python versions available on Appveyor, see
+    # http://www.appveyor.com/docs/installed-software#python
+
+    - PYTHON_VERSION: 3.6
+      MINICONDA: "C:\\Miniconda36"
+    - PYTHON_VERSION: 3.6
+      MINICONDA: "C:\\Miniconda36-x64"
+    - PYTHON_VERSION: 3.7
+      MINICONDA: "C:\\Miniconda37"
+    - PYTHON_VERSION: 3.7
+      MINICONDA: "C:\\Miniconda37-x64"
+
+init:
+  - "ECHO %PYTHON_VERSION% %MINICONDA%"
+
+install:
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - "conda create -q -n test-environment python=%PYTHON_VERSION% wheel setuptools nose %MSVC_RUNTIME% numpy scipy pybind11"
+  - activate test-environment
+
+build: off
+
+test_script:
+  - python setup.py nosetests --verbosity=2
+
+after_test:
+  # build the wheels
+  - python setup.py bdist_wheel
+
+artifacts:
+  # bdist_wheel puts the built wheel in the dist directory
+  - path: dist\*
