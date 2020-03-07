@@ -37,7 +37,9 @@ void check_is_1D_contiguous_array(const py::buffer_info& I, std::string name)
         throw std::runtime_error("Expected 1D array for " + name + "!");
 
     if (I.format != py::format_descriptor<T>::format())
-        throw std::runtime_error("Expected " + std::string(typeid(T).name()) + " array for " + name + "!");
+        throw std::runtime_error("Expected " + std::string(typeid(T).name()) + " (" +
+                py::format_descriptor<T>::format() + ") array for " + name +
+                ", got " + I.format + "!");
 
     if (I.strides[0] != I.itemsize)
         throw std::runtime_error("Expected contiguous array for " + name + "!");
