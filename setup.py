@@ -117,7 +117,7 @@ setup(
     author = 'Clemens Hofreither',
     author_email = 'chofreither@gmail.com',
     url = 'https://github.com/c-f-h/ilupp',
-    description = "Python bindings for Jan Mayer's ILU++ package for incomplete LU factorization",
+    description = "Incomplete LU algorithms for C++ and Python",
     long_description = readme(),
     long_description_content_type = 'text/markdown',
     classifiers=[
