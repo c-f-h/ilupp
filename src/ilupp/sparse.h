@@ -269,7 +269,7 @@ private:
         }
     };
 
-    typedef std::priority_queue<Integer, std::vector<T>, IndexComparator> Queue;
+    typedef std::priority_queue<Integer, std::vector<Integer>, IndexComparator> Queue;
     Queue pqueue;
 
 public:
