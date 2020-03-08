@@ -1,4 +1,5 @@
-# ilupp -- ILU algorithms for C++ and Python   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp)
+# ilupp -- ILU algorithms for C++ and Python   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp) [![Build status](https://ci.appveyor.com/api/projects/status/5ks0n8unaulf7lji?svg=true)](https://ci.appveyor.com/project/c-f-h/ilupp)
+
 
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
