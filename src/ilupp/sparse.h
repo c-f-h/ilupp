@@ -268,31 +268,31 @@ private:
             return me->get_pointer(x) > me->get_pointer(y);
         }
     };
+    IndexComparator index_comparator;
 
-    typedef std::priority_queue<Integer, std::vector<Integer>, IndexComparator> Queue;
-    Queue pqueue;
+    std::vector<Integer> index_heap;
 
 public:
     vector_sparse_ordered() :
-        vector_sparse_dynamic<T>(), pqueue(IndexComparator(*this))
+        vector_sparse_dynamic<T>(), index_comparator(*this)
     { }
 
     vector_sparse_ordered(Integer m) :
-        vector_sparse_dynamic<T>(m), pqueue(IndexComparator(*this))
+        vector_sparse_dynamic<T>(m), index_comparator(*this)
     { }
 
     void zero_set() {
         vector_sparse_dynamic<T>::zero_set();
-        pqueue = Queue(IndexComparator(*this));
+        index_heap.clear();
     }
     void zero_reset() {
         vector_sparse_dynamic<T>::zero_reset();
-        pqueue = Queue(IndexComparator(*this));
+        index_heap.clear();
     }
 
     void zero_set(Integer j) {
         vector_sparse_dynamic<T>::zero_set(j);
-        // there is no good way to remove the index from the pqueue, but it's ok;
+        // there is no good way to remove the index from the index_heap, but it's ok;
         // it will just come up as a numeric zero
     }
 
@@ -304,17 +304,19 @@ public:
             data[occupancy[j]] = static_cast<T>(0);
 
             // update the priority queue
-            pqueue.push(nnz-1);
+            index_heap.push_back(nnz-1);
+            std::push_heap(index_heap.begin(), index_heap.end(), index_comparator);
         }
         return data[occupancy[j]];
     }
 
     Integer pop_next_index() {
-        if (pqueue.empty())
+        if (index_heap.empty())
             return -1;
         else {
-            const Integer x = pqueue.top();
-            pqueue.pop();
+            std::pop_heap(index_heap.begin(), index_heap.end(), index_comparator);
+            const Integer x = index_heap.back();
+            index_heap.pop_back();
             return x;
         }
     }
