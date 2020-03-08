@@ -3,10 +3,16 @@ environment:
     # For Python versions available on Appveyor, see
     # http://www.appveyor.com/docs/installed-software#python
 
+    - PYTHON_VERSION: 3.5
+      MINICONDA: "C:\\Miniconda35"
+    - PYTHON_VERSION: 3.5
+      MINICONDA: "C:\\Miniconda35-x64"
+
     - PYTHON_VERSION: 3.6
       MINICONDA: "C:\\Miniconda36"
     - PYTHON_VERSION: 3.6
       MINICONDA: "C:\\Miniconda36-x64"
+
     - PYTHON_VERSION: 3.7
       MINICONDA: "C:\\Miniconda37"
     - PYTHON_VERSION: 3.7
