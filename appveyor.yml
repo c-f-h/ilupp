@@ -24,8 +24,9 @@ init:
 install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
-  - "conda create -q -n test-environment python=%PYTHON_VERSION% wheel setuptools nose %MSVC_RUNTIME% numpy scipy pybind11"
+  - "conda create -q -n test-environment python=%PYTHON_VERSION% wheel setuptools nose %MSVC_RUNTIME% numpy scipy"
   - activate test-environment
+  - pip install pybind11
 
 build: off
 
