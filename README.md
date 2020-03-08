@@ -3,7 +3,7 @@
     Copyright (C) 2020 Clemens Hofreither
     ILU++ is Copyright (C) 2006 by Jan Mayer
 
-**Install using pip:**
+**Install using pip:** [![PyPI version](https://badge.fury.io/py/ilupp.svg)](https://badge.fury.io/py/ilupp)
 
     $ pip install ilupp
 
