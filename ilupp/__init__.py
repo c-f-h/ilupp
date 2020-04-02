@@ -234,7 +234,7 @@ class ILU0Preconditioner(_BaseWrapper):
     """An ILU(0) preconditioner (no fill-in, same sparsity pattern as A).
 
     Args:
-        A: a symmetric sparse matrix in CSR or CSC format
+        A: a sparse matrix in CSR or CSC format
     """
     def __init__(self, A):
         Ad, Ai, Ap, Ao = _matrix_fields(A)
