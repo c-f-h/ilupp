@@ -375,9 +375,9 @@ bool ILUCP4inv(
     clock_t time_begin, time_end;
     time_begin=clock();
 
-    const Integer max_fill_in = IP.get_fill_in();
+    Integer max_fill_in = IP.get_fill_in();
     const Real threshold = IP.get_threshold();
-    const Real piv_tol = IP.get_piv_tol();
+    Real piv_tol = IP.get_piv_tol();
     const Real mem_factor = IP.get_MEM_FACTOR();
 
     Integer n = Acol.columns();
