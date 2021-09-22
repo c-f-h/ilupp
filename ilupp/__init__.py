@@ -39,7 +39,7 @@ def _matrix_fields(A):
         raise ValueError("A must be a square matrix!")
 
     A.sort_indices()    # most ILU algorithms require the indices to be ascending
-    return A.data, A.indices, A.indptr, is_csr
+    return A.data, A.indices.astype(np.int64, copy=False), A.indptr.astype(np.int64, copy=False), is_csr
 
 def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
     if is_csr:
