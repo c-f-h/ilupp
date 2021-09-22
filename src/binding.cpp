@@ -243,6 +243,15 @@ py::class_<P> wrapPreconditioner(py::module& m, const char* classname)
                 pr.apply_preconditioner_only(ID, *y);
             }
         )
+        .def("apply_t",
+            [](const P& pr, py::buffer x)
+            {
+                auto y = make_vector(x);
+                if (y->dim() != pr.pre_image_dimension())
+                    throw std::runtime_error("vector has wrong size for preconditioner!");
+                pr.apply_preconditioner_only(TRANSPOSE, *y);
+            }
+        )
         .def_property_readonly("total_nnz", [](const P& pr) { return pr.total_nnz(); })
         .def("factors_info", [](const P& pr) { return wrap_all_factor_matrices(pr); })
         .def_property_readonly("memory_used_calculations", &P::memory_used_calculations)

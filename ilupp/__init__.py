@@ -98,17 +98,22 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
     :func:`apply` method.
     """
     def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
+        y = x.copy().ravel()
         self.pr.apply(y)
+        return y
+
+    def _rmatvec(self, x):
+        y = x.copy().ravel()
+        self.pr.apply_t(y)
         return y
 
     def apply(self, x):
         """Apply the preconditioner to the vector `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
+        self.pr.apply(x.ravel())
+
+    def apply_t(self, x):
+        """Apply the preconditioner to the vector `x` in-place."""
+        self.pr.apply_t(x.ravel())
 
     @property
     def total_nnz(self):
