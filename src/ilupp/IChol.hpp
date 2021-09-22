@@ -83,7 +83,7 @@ matrix_sparse<T> ICholT_tri(const matrix_sparse<T>& A, Integer add_fill_in, Real
 
     // estimate maximal size needed for L
     Integer reserved_memory = std::min(
-            A.actual_non_zeroes() + std::max(add_fill_in, 0) * m,   // can add at most add_fill_in entries per column
+            A.actual_non_zeroes() + std::max(add_fill_in, Integer(0)) * m,   // can add at most add_fill_in entries per column
             (Integer)(A.actual_non_zeroes() * mem_factor));         // safety in case fillin is large but threshold is large too
 
     // firstL[j]: index of the first element in the j-th column having a row index >= j

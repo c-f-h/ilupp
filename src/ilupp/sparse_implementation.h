@@ -4970,7 +4970,7 @@ template<class T> void matrix_sparse<T>::diagonally_dominant_symmetric_move_to_c
     Integer i,j,current_index,counter=0;
     bool acceptable_index;
     sorted_vector w;
-    vector_dense<Integer> unused(n,0); // indicates which indices have been used 0 = unused; 1= used, -1 = rejected
+    vector_dense<Integer> unused(n,Integer(0)); // indicates which indices have been used 0 = unused; 1= used, -1 = rejected
     vector_dense<Real> row_gap(n,2.0);
     vector_dense<Real> col_gap(n,2.0);
     w.resize(n); // sets all weights to 0
