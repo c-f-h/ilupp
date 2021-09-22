@@ -199,7 +199,7 @@ py::tuple wrap_permutations(const indirect_split_pseudo_triangular_preconditione
 
 std::tuple<py::array_t<Real>, Integer, Real, Real>
 solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
-        py::buffer rhs, double rtol, double atol, int max_iter, iluplusplus_precond_parameter param)
+        py::buffer rhs, double rtol, double atol, Integer max_iter, iluplusplus_precond_parameter param)
 {
     auto A = make_matrix(A_data, A_indices, A_indptr, is_csr);
     auto b = make_vector(rhs);
