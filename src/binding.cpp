@@ -243,7 +243,7 @@ py::class_<P> wrapPreconditioner(py::module& m, const char* classname)
                 pr.apply_preconditioner_only(ID, *y);
             }
         )
-        .def("apply_t",
+        .def("apply_trans",
             [](const P& pr, py::buffer x)
             {
                 auto y = make_vector(x);

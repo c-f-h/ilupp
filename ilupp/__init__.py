@@ -104,7 +104,7 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
 
     def _rmatvec(self, x):
         y = x.copy().ravel()
-        self.pr.apply_t(y)
+        self.pr.apply_trans(y)
         return y
 
     def apply(self, x):
