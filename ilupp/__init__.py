@@ -112,7 +112,7 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         self.pr.apply(x.ravel())
 
     def apply_t(self, x):
-        """Apply the preconditioner to the vector `x` in-place."""
+        """Apply the transposed preconditioner to the vector `x` in-place."""
         self.pr.apply_t(x.ravel())
 
     @property
