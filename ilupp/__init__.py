@@ -96,19 +96,26 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
 
     To apply the preconditioner to a vector in place, avoiding a copy, use the
     :func:`apply` method.
+    To apply the transposed preconditioner, use :meth:`apply_trans` or obtain
+    the transposed operator with :code:`.T`.
     """
     def _matvec(self, x):
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        y = x.copy()
+        y = x.copy().ravel()
         self.pr.apply(y)
+        return y
+
+    def _rmatvec(self, x):
+        y = x.copy().ravel()
+        self.pr.apply_trans(y)
         return y
 
     def apply(self, x):
         """Apply the preconditioner to the vector `x` in-place."""
-        if x.ndim != 1:
-            raise ValueError('only implemented for 1D vectors')
-        self.pr.apply(x)
+        self.pr.apply(x.ravel())
+
+    def apply_trans(self, x):
+        """Apply the transposed preconditioner to the vector `x` in-place."""
+        self.pr.apply_trans(x.ravel())
 
     @property
     def total_nnz(self):
