@@ -59,7 +59,7 @@ void check_is_1D_contiguous_int_array(const py::buffer_info& I, std::string name
     // more complicated check
     // see: https://github.com/scipy/scipy/issues/11641
     if (!(I.format.length() == 1 &&
-                (I.format[0] == 'i' || I.format[0] == 'l') &&
+                (I.format[0] == 'i' || I.format[0] == 'l' || I.format[0] == 'q') &&
                 (I.itemsize == sizeof(T))))
         throw std::runtime_error("Expected integer type with length " + std::to_string(sizeof(T))
                 + " for " + name + ", got " + I.format + "!");
