@@ -202,6 +202,8 @@ def _gen_solve_in_one_step(Precond, params, problem, example_args):
         P.apply(x)
         print('Error:', np.linalg.norm(x - x_exact))
         assert np.allclose(x, x_exact)
+        ## check transpose of operator/preconditioner
+        assert np.allclose(P.T @ (A.T @ x_exact), x_exact)
     return test
 
 def _gen_test_with_predicate(Precond, params, problem, example_args, pred):
