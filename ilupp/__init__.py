@@ -113,9 +113,9 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         """Apply the preconditioner to the vector `x` in-place."""
         self.pr.apply(x.ravel())
 
-    def apply_t(self, x):
+    def apply_trans(self, x):
         """Apply the transposed preconditioner to the vector `x` in-place."""
-        self.pr.apply_t(x.ravel())
+        self.pr.apply_trans(x.ravel())
 
     @property
     def total_nnz(self):
