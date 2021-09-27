@@ -96,6 +96,8 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
 
     To apply the preconditioner to a vector in place, avoiding a copy, use the
     :func:`apply` method.
+    To apply the transposed preconditioner, use :meth:`apply_trans` or obtain
+    the transposed operator with :code:`.T`.
     """
     def _matvec(self, x):
         y = x.copy().ravel()
