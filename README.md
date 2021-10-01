@@ -1,4 +1,5 @@
-# ilupp -- ILU algorithms for C++ and Python   [![Build Status](https://travis-ci.com/c-f-h/ilupp.svg?branch=master)](https://travis-ci.com/c-f-h/ilupp) [![Build status](https://ci.appveyor.com/api/projects/status/5ks0n8unaulf7lji?svg=true)](https://ci.appveyor.com/project/c-f-h/ilupp)
+# ilupp -- ILU algorithms for C++ and Python   [![GH build](https://github.com/c-f-h/ilupp/actions/workflows/python-package.yml/badge.svg)](https://github.com/c-f-h/ilupp/actions/workflows/python-package.yml) [![Build status](https://ci.appveyor.com/api/projects/status/5ks0n8unaulf7lji?svg=true)](https://ci.appveyor.com/project/c-f-h/ilupp)
+
 
 
     Copyright (C) 2020 Clemens Hofreither
