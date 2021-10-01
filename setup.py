@@ -21,10 +21,6 @@ def get_version(fname):
 
 __version__ = get_version('ilupp/__init__.py')
 
-# env variable INT64_INDICES determines whether to use large indices
-INT64_INDICES = os.environ.get('INT64_INDICES')
-INT64_INDICES = True if (INT64_INDICES and int(INT64_INDICES)) else False
-
 class get_pybind_include(object):
     """Helper class to determine the pybind11 include path
 
@@ -51,6 +47,17 @@ ext_modules = [
         ],
         language='c++'
     ),
+    Extension(
+        'ilupp._ilupp64',
+        ['src/binding.cpp'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True)
+        ],
+        language='c++',
+        define_macros=[('INT64_INDICES', None)]
+    )
 ]
 
 
@@ -108,12 +115,8 @@ class BuildExt(build_ext):
             opts.append(cpp_flag(self.compiler))
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
-            if INT64_INDICES:
-                opts.append('-DINT64_INDICES=1')
         elif ct == 'msvc':
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
-            if INT64_INDICES:
-                opts.append('/DINT64_INDICES=1')
         for ext in self.extensions:
             ext.extra_compile_args = opts
             ext.extra_link_args = link_opts

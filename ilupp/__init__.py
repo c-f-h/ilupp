@@ -24,33 +24,22 @@ __version__ = '1.0.2'
 import numpy as np
 import scipy.sparse
 import scipy.sparse.linalg
-from . import _ilupp
-from ._ilupp import iluplusplus_precond_parameter, preprocessing_sequence
+from . import _ilupp, _ilupp64
 
-_index_size = _ilupp.index_size()
-if _index_size == 4:
-    _index_dtype = np.dtype(np.int32)
-elif _index_size == 8:
-    _index_dtype = np.dtype(np.int64)
-else:
-    raise RuntimeError('invalid index type size %d' % _index_size)
 
-def _upcast_indices(idx):
-    """Takes an integer array and makes sure it has the correct item size for
-    the compiled version of the ILU++ library.
+def _select_ilupp(A):
+    """Takes a scipy sparse matrix and determines the correct version of the ILU++ library.
     """
-    sz, target_sz = idx.dtype.itemsize, _index_size
-    if sz == target_sz:
-        return idx
-    elif sz < target_sz:
-        return idx.astype(_index_dtype)
+    sz = A.indices.dtype.itemsize
+    if sz == 4:
+        return _ilupp
+    elif sz == 8:
+        return _ilupp64
     else:
         raise TypeError(
                 'Index array has %d bytes per index, but the library '
-                'is compiled for %d bytes per index. Downcasting might '
-                'lead to integer overflow. Please compile ilupp with a '
-                'larger index type if you need to use very large matrices.'
-                % (sz, target_sz))
+                'is compiled only for  4 and 8 bytes per index.'
+                % (sz,))
 
 def _matrix_fields(A):
     """Accepts a square scipy CSR or CSC matrix and returns its (data, indices,
@@ -68,7 +57,8 @@ def _matrix_fields(A):
         raise ValueError("A must be a square matrix!")
 
     A.sort_indices()    # most ILU algorithms require the indices to be ascending
-    return A.data, _upcast_indices(A.indices), _upcast_indices(A.indptr), is_csr
+
+    return A.data, A.indices, A.indptr, is_csr, _select_ilupp(A)
 
 def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
     """The reverse operation of _matrix_fields: takes arrays and constructs a
@@ -101,13 +91,12 @@ def solve(A, b, rtol=1e-4, atol=1e-4, max_iter=500, threshold=0.1, fill_in=None,
     Returns:
         a vector containing the solution x
     """
+    Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
     if params is None:
-        params = iluplusplus_precond_parameter()
+        params = _ilupp.iluplusplus_precond_parameter()
         params.threshold = threshold
         if fill_in is not None:
             params.fill_in = fill_in
-
-    Ad, Ai, Ap, Ao = _matrix_fields(A)
     b = np.ascontiguousarray(b, dtype=np.float_)
 
     sol, iter, rtol_out, atol_out = _ilupp.solve(
@@ -168,6 +157,42 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         return '<%dx%d %s with nnz=%d, %s>' % (M, N, self.__class__.__name__, self.total_nnz, dt)
 
 
+class iluplusplus_precond_parameter:
+    """Construct iluplusplus_precond_parameter object.
+
+    Args:
+        dtype: numpy dtype specification for either 32bit or 64bit integer.
+            Defaults to 32bit. Set this to 64bit when working with very large
+            matrices with 64bit indices.
+    """
+    def __new__(cls, dtype=np.int32):
+        dtype = np.dtype(dtype)
+        if dtype.type is np.int32:
+            return _ilupp.iluplusplus_precond_parameter()
+        elif dtype.type is np.int64:
+            return _ilupp64.iluplusplus_precond_parameter()
+        else:
+            raise ValueError('dtype should be either 32bit or 64bit integer')
+
+
+class preprocessing_sequence:
+    """Construct preprocessing_sequence object.
+
+    Args:
+        dtype: numpy dtype specification for either 32bit or 64bit integer.
+            Defaults to 32bit. Set this to 64bit when working with very large
+            matrices with 64bit indices.
+    """
+    def __new__(cls, dtype=np.int32):
+        dtype = np.dtype(dtype)
+        if dtype.type is np.int32:
+            return _ilupp.preprocessing_sequence()
+        elif dtype.type is np.int64:
+            return _ilupp64.preprocessing_sequence()
+        else:
+            raise ValueError('dtype should be either 32bit or 64bit integer')
+
+
 class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner.
 
@@ -179,13 +204,14 @@ class ILUppPreconditioner(_BaseWrapper):
         params: an instance of :class:`iluplusplus_precond_parameter`; if passed, overrides fill_in and threshold
     """
     def __init__(self, A, threshold=1.0, fill_in=None, params=None):
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         if params is None:
-            params = iluplusplus_precond_parameter()
+            params = _ilupp.iluplusplus_precond_parameter()
             params.threshold = threshold
             if fill_in is not None:
                 params.fill_in = fill_in
 
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+
         self.pr = _ilupp.MultilevelILUCDPPreconditioner(Ad, Ai, Ap, Ao, params)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -211,7 +237,7 @@ class ILUTPreconditioner(_BaseWrapper):
         threshold: entries with relative magnitude less than this are dropped
     """
     def __init__(self, A, fill_in=100, threshold=0.1):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ILUTPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -226,7 +252,7 @@ class ILUTPPreconditioner(_BaseWrapper):
             to the largest entry, inbetween: pivot depending on relative magnitude
     """
     def __init__(self, A, fill_in=100, threshold=0.1, piv_tol=0.1, mem_factor=10.0):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ILUTPPreconditioner(Ad, Ai, Ap, Ao,
                 fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
@@ -245,7 +271,7 @@ class ILUCPreconditioner(_BaseWrapper):
         threshold: entries with relative magnitude less than this are dropped
     """
     def __init__(self, A, fill_in=100, threshold=0.1):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ILUCPreconditioner(Ad, Ai, Ap, Ao, fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -260,7 +286,7 @@ class ILUCPPreconditioner(_BaseWrapper):
             to the largest entry, inbetween: pivot depending on relative magnitude
     """
     def __init__(self, A, fill_in=100, threshold=0.1, piv_tol=0.1, mem_factor=10.0):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ILUCPPreconditioner(Ad, Ai, Ap, Ao,
                 fill_in, threshold, piv_tol, -1, mem_factor)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
@@ -276,7 +302,7 @@ class ILU0Preconditioner(_BaseWrapper):
         A: a sparse matrix in CSR or CSC format
     """
     def __init__(self, A):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ILU0Preconditioner(Ad, Ai, Ap, Ao)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -288,7 +314,7 @@ class IChol0Preconditioner(_BaseWrapper):
         A: a symmetric sparse matrix in CSR or CSC format
     """
     def __init__(self, A):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.IChol0Preconditioner(Ad, Ai, Ap, Ao)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -305,7 +331,7 @@ class ICholTPreconditioner(_BaseWrapper):
             dropping is only performed based on the number of nonzeros.
     """
     def __init__(self, A, add_fill_in=0, threshold=0.0):
-        Ad, Ai, Ap, Ao = _matrix_fields(A)
+        Ad, Ai, Ap, Ao, _ilupp = _matrix_fields(A)
         self.pr = _ilupp.ICholTPreconditioner(Ad, Ai, Ap, Ao, add_fill_in, threshold)
         scipy.sparse.linalg.LinearOperator.__init__(self, shape=A.shape, dtype=A.dtype)
 
@@ -313,20 +339,25 @@ class ICholTPreconditioner(_BaseWrapper):
 
 def ichol0(A):
     """Compute the L factor of an incomplete Cholesky decomposition without fill-in for the symmetric matrix A."""
-    return _matrix_from_info(*_ilupp.ichol0(*_matrix_fields(A)))
+    *matrix_fields, _ilupp = _matrix_fields(A)
+    return _matrix_from_info(*_ilupp.ichol0(*matrix_fields))
 
 def icholt(A, add_fill_in=0, threshold=0.0):
     """Compute the L factor of an incomplete Cholesky decomposition with thresholding for the symmetric matrix A."""
-    return _matrix_from_info(*_ilupp.icholt(*_matrix_fields(A), add_fill_in, threshold))
+    *matrix_fields, _ilupp = _matrix_fields(A)
+    return _matrix_from_info(*_ilupp.icholt(*matrix_fields, add_fill_in, threshold))
 
 def ilu0(A):
     """Compute the (L,U) factors of an incomplete LU decomposition without fill-in."""
-    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilu0(*_matrix_fields(A)))
+    *matrix_fields, _ilupp = _matrix_fields(A)
+    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilu0(*matrix_fields))
 
 def ilut(A, fill_in=100, threshold=0.1):
     """Compute the (L,U) factors of an incomplete LU decomposition with thresholding."""
-    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilut(*_matrix_fields(A), fill_in, threshold))
+    *matrix_fields, _ilupp = _matrix_fields(A)
+    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.ilut(*matrix_fields, fill_in, threshold))
 
 def iluc(A, fill_in=100, threshold=0.1):
     """Compute the (L,U) factors of an incomplete Crout LU decomposition with thresholding."""
-    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.iluc(*_matrix_fields(A), fill_in, threshold))
+    *matrix_fields, _ilupp = _matrix_fields(A)
+    return tuple(_matrix_from_info(*mtx) for mtx in _ilupp.iluc(*matrix_fields, fill_in, threshold))
