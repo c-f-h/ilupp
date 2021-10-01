@@ -157,6 +157,42 @@ class _BaseWrapper(scipy.sparse.linalg.LinearOperator):
         return '<%dx%d %s with nnz=%d, %s>' % (M, N, self.__class__.__name__, self.total_nnz, dt)
 
 
+class iluplusplus_precond_parameter:
+    """Construct iluplusplus_precond_parameter object.
+
+    Args:
+        dtype: numpy dtype specification for either 32bit or 64bit integer.
+            Defaults to 32bit. Set this to 64bit when working with very large
+            matrices with 64bit indices.
+    """
+    def __new__(cls, dtype=np.int32):
+        dtype = np.dtype(dtype)
+        if dtype.type is np.int32:
+            return _ilupp.iluplusplus_precond_parameter()
+        elif dtype.type is np.int64:
+            return _ilupp64.iluplusplus_precond_parameter()
+        else:
+            raise ValueError('dtype should be either 32bit or 64bit integer')
+
+
+class preprocessing_sequence:
+    """Construct preprocessing_sequence object.
+
+    Args:
+        dtype: numpy dtype specification for either 32bit or 64bit integer.
+            Defaults to 32bit. Set this to 64bit when working with very large
+            matrices with 64bit indices.
+    """
+    def __new__(cls, dtype=np.int32):
+        dtype = np.dtype(dtype)
+        if dtype.type is np.int32:
+            return _ilupp.preprocessing_sequence()
+        elif dtype.type is np.int64:
+            return _ilupp64.preprocessing_sequence()
+        else:
+            raise ValueError('dtype should be either 32bit or 64bit integer')
+
+
 class ILUppPreconditioner(_BaseWrapper):
     """A multilevel ILU++ preconditioner.
 
