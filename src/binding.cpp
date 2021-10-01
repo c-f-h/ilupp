@@ -26,6 +26,12 @@ namespace py = pybind11;
 
 using namespace iluplusplus;
 
+#ifdef INT64_INDICES
+    #define _ILUPP _ilupp64
+#else
+    #define _ILUPP _ilupp
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Utility functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +239,7 @@ solve(py::buffer A_data, py::buffer A_indices, py::buffer A_indptr, bool is_csr,
 template <class P>
 py::class_<P> wrapPreconditioner(py::module& m, const char* classname)
 {
-    return py::class_<P>(m, classname)
+    return py::class_<P>(m, classname, py::module_local())
         .def("apply",
             [](const P& pr, py::buffer x)
             {
@@ -271,7 +277,7 @@ typedef multilevelILUCDPPreconditioner<Real, matrix, vector> _MultilevelILUCDPPr
 typedef indirect_split_triangular_preconditioner<Real, matrix, vector> _GenericLUPreconditioner;
 typedef indirect_split_triangular_symmetric_preconditioner<Real, matrix, vector> _GenericLLTPreconditioner;
 
-PYBIND11_MODULE(_ilupp, m)
+PYBIND11_MODULE(_ILUPP, m)
 {
     // optional module docstring
     m.doc() = "ILU++ library for incomplete LU factorization";
@@ -459,7 +465,7 @@ PYBIND11_MODULE(_ilupp, m)
             return py::make_tuple(wrap_matrix(std::move(L)), wrap_matrix(std::move(U)));
         });
 
-    py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter")
+    py::class_<iluplusplus_precond_parameter>(m, "iluplusplus_precond_parameter", py::module_local())
         .def(py::init<>())
         .def("default_configuration", &iluplusplus_precond_parameter::default_configuration)
         //
@@ -543,7 +549,7 @@ PYBIND11_MODULE(_ilupp, m)
         .def("use_only_pivot_dropping", &iluplusplus_precond_parameter::use_only_pivot_dropping)
     ;
 
-    py::class_<preprocessing_sequence>(m, "preprocessing_sequence")
+    py::class_<preprocessing_sequence>(m, "preprocessing_sequence", py::module_local())
         .def("set_none", &preprocessing_sequence::set_none)
         .def("set_normalize", &preprocessing_sequence::set_normalize)
         .def("set_PQ", &preprocessing_sequence::set_PQ)

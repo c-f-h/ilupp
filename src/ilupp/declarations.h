@@ -49,7 +49,7 @@ namespace iluplusplus {
 #ifdef INT64_INDICES
 typedef std::int64_t Integer;                            // for integers, particularly indices
 #else
-typedef std::int32_t Integer;                            // for integers, particularly indices
+    typedef std::int32_t Integer;                            // for integers, particularly indices
 #endif
 
 typedef double Real;                                     // will be used for those quantities that are always Real (e.g. norms)

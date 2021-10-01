@@ -51,6 +51,17 @@ ext_modules = [
         ],
         language='c++'
     ),
+    Extension(
+        'ilupp._ilupp64',
+        ['src/binding.cpp'],
+        include_dirs=[
+            # Path to pybind11 headers
+            get_pybind_include(),
+            get_pybind_include(user=True)
+        ],
+        language='c++',
+        define_macros=[('INT64_INDICES', None)]
+    )
 ]
 
 
