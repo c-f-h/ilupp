@@ -276,6 +276,8 @@ PYBIND11_MODULE(_ilupp, m)
     // optional module docstring
     m.doc() = "ILU++ library for incomplete LU factorization";
 
+    m.def("index_size", []() { return sizeof(Integer); });
+
     m.def("solve", &solve, "Solve a linear system using ILU");
 
     wrapPreconditioner<_MultilevelILUCDPPreconditioner>(m, "MultilevelILUCDPPreconditioner")

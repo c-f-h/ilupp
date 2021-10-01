@@ -27,7 +27,36 @@ import scipy.sparse.linalg
 from . import _ilupp
 from ._ilupp import iluplusplus_precond_parameter, preprocessing_sequence
 
+_index_size = _ilupp.index_size()
+if _index_size == 4:
+    _index_dtype = np.dtype(np.int32)
+elif _index_size == 8:
+    _index_dtype = np.dtype(np.int64)
+else:
+    raise RuntimeError('invalid index type size %d' % _index_size)
+
+def _upcast_indices(idx):
+    """Takes an integer array and makes sure it has the correct item size for
+    the compiled version of the ILU++ library.
+    """
+    sz, target_sz = idx.dtype.itemsize, _index_size
+    if sz == target_sz:
+        return idx
+    elif sz < target_sz:
+        return idx.astype(_index_dtype)
+    else:
+        raise TypeError(
+                'Index array has %d bytes per index, but the library '
+                'is compiled for %d bytes per index. Downcasting might '
+                'lead to integer overflow. Please compile ilupp with a '
+                'larger index type if you need to use very large matrices.'
+                % (sz, target_sz))
+
 def _matrix_fields(A):
+    """Accepts a square scipy CSR or CSC matrix and returns its (data, indices,
+    indptr) arrays as well as a bool indicating whether it is CSR.  Also makes
+    sure the indices are sorted and have the proper item size for the library.
+    """
     if isinstance(A, scipy.sparse.csr_matrix):
         is_csr = True
     elif isinstance(A, scipy.sparse.csc_matrix):
@@ -39,9 +68,12 @@ def _matrix_fields(A):
         raise ValueError("A must be a square matrix!")
 
     A.sort_indices()    # most ILU algorithms require the indices to be ascending
-    return A.data, A.indices, A.indptr, is_csr
+    return A.data, _upcast_indices(A.indices), _upcast_indices(A.indptr), is_csr
 
 def _matrix_from_info(data, indices, indptr, is_csr, rows, cols):
+    """The reverse operation of _matrix_fields: takes arrays and constructs a
+    scipy CSR or CSC matrix without copying the data.
+    """
     if is_csr:
         A = scipy.sparse.csr_matrix((data, indices, indptr), shape=(rows, cols), copy=False)
     else:

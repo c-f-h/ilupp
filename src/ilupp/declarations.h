@@ -27,6 +27,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <cstdint>
 #include <ctime>
 #include <iomanip>
 #include <cmath>
@@ -44,8 +45,10 @@ namespace iluplusplus {
 //               Typedef
 //**************************************************************************************//
 
+// The following typedef can be changed to std::int64_t to support very large matrices.
+typedef std::int32_t Integer;                            // for integers, particularly indices
+
 typedef double Real;                                     // will be used for those quantities that are always Real (e.g. norms)
-typedef int Integer;                                     // for integers, particularly indices
 typedef std::complex<Real> Complex;                      // declarations for complex numbers. Will only be used if set below for the Coeff_Field.
 #ifndef ILUPLUSPLUS_USES_COMPLEX
     typedef Real Coeff_Field;                            // will be used for the coefficients of vectors and matrices
