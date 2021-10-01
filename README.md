@@ -42,6 +42,23 @@ linear system in a black-box way, or to compute a preconditioner and apply it
 to a vector.  In both cases, the matrix should be provided as a Scipy CSR or
 CSC matrix.
 
+## Building the package yourself
+
+If you just want to use the package, simply install it using `pip`. If you are
+interested in building it yourself, it should be as simple as
+
+    $ python setup.py build_ext -i
+
+For matrices with a very large number of nonzeros, Scipy automatically switches
+to 64 bit indices. `ilupp` does not support these out of the box, however you
+can simply build/install it using the environment variable
+
+    $ INT64_INDICES=1 python setup.py install
+
+to support such very large matrices.
+
+----------------------------------------------------------------------------------
+
 Below there is a reproduction of the most relevant parts of the original homepage.
 
 ## Choosing the Right Combination of Preprocessing and Preconditioner
