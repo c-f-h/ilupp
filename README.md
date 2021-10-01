@@ -42,6 +42,27 @@ linear system in a black-box way, or to compute a preconditioner and apply it
 to a vector.  In both cases, the matrix should be provided as a Scipy CSR or
 CSC matrix.
 
+## Basic usage
+
+Getting an ILU preconditioner with zero fill-in is as easy as this:
+
+```python
+import scipy.sparse
+import ilupp
+import numpy as np
+
+# plug in any CSR or CSC sparse matrix here
+A = scipy.sparse.rand(50, 50, format='csr') + scipy.sparse.eye(50)
+B = ilupp.ILU0Preconditioner(A)
+
+b = np.ones(50)
+x = B @ b    # approximately solve A x = b with ILU0
+```
+
+See [the docs](https://ilupp.readthedocs.io/en/latest/) for different preconditioners
+and further options.
+
+
 ## Building the package yourself
 
 If you just want to use the package, simply install it using `pip`. If you are
@@ -59,9 +80,12 @@ to support such very large matrices.
 
 ----------------------------------------------------------------------------------
 
-Below there is a reproduction of the most relevant parts of the original homepage.
+## Original ILU++ documentation
 
-## Choosing the Right Combination of Preprocessing and Preconditioner
+The following is a reproduction of the most relevant parts of the original ILU++ homepage
+by Jan Mayer.
+
+### Choosing the Right Combination of Preprocessing and Preconditioner
 
 The standard multilevel preconditioner of ILU++ depends on a larger number of
 parameters and it can be combined with many different preprocessing techniques.
@@ -76,7 +100,7 @@ taken to distinguish between the number of the default configuration and the
 number of the preconditioner which a particular default configuration uses in
 combination with preprocessing.
 
-### Default Configuration Number 0 (and 1000)
+#### Default Configuration Number 0 (and 1000)
 
 This is implementation is not the first choice of a general purpose solver and
 is included mostly for compatibility with previous releases. For each level,
@@ -96,7 +120,7 @@ Advantages:
 Disadvantages:
  - Memory requirements for intermediate calculations are quite high
 
-### Default Configuration Number 10 (and 1010)
+#### Default Configuration Number 10 (and 1010)
 
 This implementation uses the maximal weighted matching and scaling to produce
 an I-matrix as preprocessing. The factorisation used is number 0, which
@@ -114,7 +138,7 @@ Advantages:
 Disadvantages:
  - Memory requirements for intermediate calculations are quite high
 
-### Default Configuration Number 11 (and 1011)
+#### Default Configuration Number 11 (and 1011)
 
 This implementation uses the same preprocessing as default configuration number
 10 plus an additional symmetric reordering to produce an initial diagonally
@@ -135,7 +159,7 @@ Disadvantages:
  - Longer setup times
  - Preconditioner often not as sparse
 
-## Theoretical Background
+### Theoretical Background
 
 The preconditioning used in ILU++ consists of the following steps:
 
@@ -148,7 +172,7 @@ Because of 4), a preconditioner generally has several "levels", one
 corresponding to each matrix (coefficient matrix or Schur complement) being
 factored. Specifically, ILU++ does the following:
 
-### Step 1)
+#### Step 1)
 
 Preprocessing consists of reordering and scaling of rows and columns to make
 the coefficient matrix more suitable for incomplete factorization. The
@@ -160,7 +184,7 @@ improving the matrix structurally without taking the elements themselves into
 account (e.g. Reverse Cuthill-McKee, METIS, etc.) often result in little
 further improvement for the preconditioners implemented in ILU++.
 
-### Step 2)
+#### Step 2)
 
 The coefficient matrix A is factored using Crout's implementation of Gaussian
 elimination, meaning that in the k-th step the k-th row of U and the k-th
@@ -183,7 +207,7 @@ convergence for most matrices. However, for a few difficult matrices, this
 dropping rule results in convergence, whereas the default dropping rule does
 not.
 
-### Step 3)
+#### Step 3)
 
 After the calculation of the k-th step has been completed, it is possible to
 stop calculating L, D and U and to proceed to calculating (a sparse
@@ -205,7 +229,7 @@ resulted in reasonably good diagonal dominance). In this situation, terminating
 a level whenever the pivots become too small (in absolute value) works well.
 
 
-## Further Details and Citing ILU++
+### Further Details and Citing ILU++
 
 Further details can be found in
 
