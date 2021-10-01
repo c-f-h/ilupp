@@ -45,8 +45,12 @@ namespace iluplusplus {
 //               Typedef
 //**************************************************************************************//
 
-// The following typedef can be changed to std::int64_t to support very large matrices.
+// Define INT64_INDICES to use large index type.
+#ifdef INT64_INDICES
+typedef std::int64_t Integer;                            // for integers, particularly indices
+#else
 typedef std::int32_t Integer;                            // for integers, particularly indices
+#endif
 
 typedef double Real;                                     // will be used for those quantities that are always Real (e.g. norms)
 typedef std::complex<Real> Complex;                      // declarations for complex numbers. Will only be used if set below for the Coeff_Field.
